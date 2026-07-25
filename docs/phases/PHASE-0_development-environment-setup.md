@@ -1,9 +1,9 @@
 # Phase 0 — Development Environment Setup
 
 **Phase ID:** PHASE-0  
-**Status:** `NOT_STARTED`  
+**Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-25T14:27:34Z
 **Estimated Duration:** 1–2 weeks  
 **Dependencies:** None  
 **Language:** en  
@@ -101,7 +101,7 @@ python -c "import cv2, open3d, numpy; print('CV stack OK')"
 ### 0.3.5 .NET SDK
 
 - [ ] **TASK-0.3.5.1** — Install .NET LTS SDK
-- [ ] **TASK-0.3.5.2** — Configure `global.json` with SDK version
+- [x] **TASK-0.3.5.2** — Configure `global.json` with SDK version ✅ (2026-07-25T14:27:34Z)
 - [ ] **TASK-0.3.5.3** — Verify build and restore
 
 **Verification:**
@@ -124,7 +124,7 @@ pnpm --version
 
 ### 0.3.7 Database and Infrastructure Services
 
-- [ ] **TASK-0.3.7.1** — Create `docker-compose.yml` for local services
+- [x] **TASK-0.3.7.1** — Create `docker-compose.yml` for local services ✅ (2026-07-25T14:27:34Z)
 - [ ] **TASK-0.3.7.2** — Start PostgreSQL container
 - [ ] **TASK-0.3.7.3** — Start Redis container
 - [ ] **TASK-0.3.7.4** — Start MinIO (S3-compatible) container
@@ -152,30 +152,30 @@ python -c "import pyrealsense2 as rs; print('RealSense Python OK')"
 
 ### 0.3.9 Monitoring Stack
 
-- [ ] **TASK-0.3.9.1** — Add Prometheus container to compose
-- [ ] **TASK-0.3.9.2** — Add Grafana container to compose
-- [ ] **TASK-0.3.9.3** — Add Loki container to compose
+- [x] **TASK-0.3.9.1** — Add Prometheus container to compose ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.9.2** — Add Grafana container to compose ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.9.3** — Add Loki container to compose ✅ (2026-07-25T14:27:34Z)
 - [ ] **TASK-0.3.9.4** — Verify dashboards accessible
 
 ### 0.3.10 Repository Initialisation
 
-- [ ] **TASK-0.3.10.1** — Initialise Git repository
-- [ ] **TASK-0.3.10.2** — Create `.gitignore` (Python, .NET, Node, IDE, OS)
-- [ ] **TASK-0.3.10.3** — Create `.gitattributes` for LFS
-- [ ] **TASK-0.3.10.4** — Create `README.md` at repo root
-- [ ] **TASK-0.3.10.5** — Create initial directory structure per spec
-- [ ] **TASK-0.3.10.6** — Create `pyproject.toml` with dependency groups
-- [ ] **TASK-0.3.10.7** — Create `pnpm-workspace.yaml`
-- [ ] **TASK-0.3.10.8** — Create `Directory.Packages.props` for .NET
-- [ ] **TASK-0.3.10.9** — Create `global.json`
+- [x] **TASK-0.3.10.1** — Initialise Git repository ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.2** — Create `.gitignore` (Python, .NET, Node, IDE, OS) ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.3** — Create `.gitattributes` for LFS ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.4** — Create `README.md` at repo root ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.5** — Create initial directory structure per spec ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.6** — Create `pyproject.toml` with dependency groups ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.7** — Create `pnpm-workspace.yaml` ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.8** — Create `Directory.Packages.props` for .NET ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.10.9** — Create `global.json` ✅ (2026-07-25T14:27:34Z)
 - [ ] **TASK-0.3.10.10** — Initial commit
 
 ### 0.3.11 Environment Validation Script
 
-- [ ] **TASK-0.3.11.1** — Create `specproof-doctor` diagnostic script
-- [ ] **TASK-0.3.11.2** — Script must validate: OS, Git, Python, .NET, Node, Docker, DB, Camera SDK
-- [ ] **TASK-0.3.11.3** — Output clear PASS/FAIL for each component
-- [ ] **TASK-0.3.11.4** — Write automated tests for the doctor script itself
+- [x] **TASK-0.3.11.1** — Create `specproof-doctor` diagnostic script ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.11.2** — Script must validate: OS, Git, Python, .NET, Node, Docker, DB, Camera SDK ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.11.3** — Output clear PASS/FAIL for each component ✅ (2026-07-25T14:27:34Z)
+- [x] **TASK-0.3.11.4** — Write automated tests for the doctor script itself ✅ (2026-07-25T14:27:34Z)
 
 ---
 

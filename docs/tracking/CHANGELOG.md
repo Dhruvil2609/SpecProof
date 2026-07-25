@@ -9,6 +9,8 @@
 ## [Unreleased]
 
 ### Added
+- 2026-07-25T14:32:40Z — Added 17 unit test cases for `specproof-doctor` version parsing, command failures, result aggregation, formatting, and optional hardware behavior (TASK-0.3.11.4)
+- 2026-07-25T14:27:34Z — Added Phase 0 repository scaffolding, local compose stack, Windows setup guide, and `specproof-doctor` diagnostics (TASK-0.3.7.1, TASK-0.3.10.2, TASK-0.3.10.5, TASK-0.3.11.1)
 - 2026-07-25T13:15:00Z — Project documentation structure created
 - 2026-07-25T13:15:00Z — Development phase documents (Phase 0–8) created
 - 2026-07-25T13:15:00Z — Progress tracking system initialised

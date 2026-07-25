@@ -1,0 +1,68 @@
+[project]
+name = "specproof"
+version = "0.1.0"
+description = "SpecProof development tooling and service workspace."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = []
+
+[project.scripts]
+specproof-doctor = "specproof_doctor.cli:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+runtime = [
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "opencv-python>=4.10",
+  "open3d>=0.18",
+  "onnxruntime>=1.18",
+  "pydantic>=2.8",
+]
+ml = [
+  "torch>=2.7",
+  "trimesh>=4.4",
+]
+station = [
+  "pyrealsense2>=2.56",
+]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=5.0",
+  "ruff>=0.6",
+  "pyright>=1.1",
+]
+docs = [
+  "mkdocs>=1.6",
+]
+
+[tool.setuptools]
+package-dir = {"" = "tools/specproof-doctor/src"}
+
+[tool.setuptools.packages.find]
+where = ["tools/specproof-doctor/src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tools/specproof-doctor/src"]
+addopts = "-ra"
+markers = [
+  "unit: fast isolated tests",
+  "integration: tests that verify service boundaries",
+  "cross_platform: tests that verify Windows and Linux behavior",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+include = ["tools/specproof-doctor/src", "tests"]
