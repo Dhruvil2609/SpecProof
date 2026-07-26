@@ -135,7 +135,7 @@ pnpm --version
 **Verification:**
 ```powershell
 docker compose ps
-psql -h localhost -U specproof -c "SELECT version();"
+psql -h localhost -U Admin -d specproof -c "SELECT version();"
 ```
 
 ### 0.3.8 RealSense Camera SDK

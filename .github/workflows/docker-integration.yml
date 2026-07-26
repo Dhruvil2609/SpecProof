@@ -1,0 +1,17 @@
+name: docker-integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  compose:
+    name: Docker compose integration checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config --quiet
+      - run: docker compose up -d
+      - run: docker compose ps
+      - run: docker compose down --volumes

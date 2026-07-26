@@ -43,7 +43,12 @@ docs = [
 package-dir = {"" = "tools/specproof-doctor/src"}
 
 [tool.setuptools.packages.find]
-where = ["tools/specproof-doctor/src"]
+where = [
+  "tools/specproof-doctor/src",
+  "packages/geometry/src",
+  "apps/capture-service/src",
+  "apps/measurement-service/src",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -65,4 +70,10 @@ select = ["E", "F", "I", "UP", "B", "ANN"]
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
-include = ["tools/specproof-doctor/src", "tests"]
+include = [
+  "tools/specproof-doctor/src",
+  "packages/geometry/src",
+  "apps/capture-service/src",
+  "apps/measurement-service/src",
+  "tests",
+]

@@ -1,9 +1,9 @@
-# SpecProof — Development Progress Tracker
+# SpecProof ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Development Progress Tracker
 
-**Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T14:32:40Z
-**Timezone:** UTC  
-**Language:** en  
+**Created:** 2026-07-25T13:15:00Z
+**Last Updated:** 2026-07-26T13:13:08Z
+**Timezone:** UTC
+**Language:** en
 
 ---
 
@@ -11,11 +11,11 @@
 
 | Status | Symbol | Meaning |
 |--------|--------|---------|
-| Not Started | `⬜` | Work has not begun |
-| In Progress | `🟡` | Actively being developed |
-| Blocked | `🔴` | Blocked by dependency or issue |
-| Complete | `🟢` | Finished and verified |
-| Skipped | `⏭️` | Intentionally deferred |
+| Not Started | `ÃƒÂ¢Ã‚Â¬Ã…â€œ` | Work has not begun |
+| In Progress | `ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¡` | Actively being developed |
+| Blocked | `ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´` | Blocked by dependency or issue |
+| Complete | `ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¢` | Finished and verified |
+| Skipped | `ÃƒÂ¢Ã‚ÂÃ‚Â­ÃƒÂ¯Ã‚Â¸Ã‚Â` | Intentionally deferred |
 
 ---
 
@@ -23,16 +23,16 @@
 
 | Phase | Name | Status | Start Date (UTC) | End Date (UTC) | Tasks Total | Tasks Done | Progress |
 |-------|------|--------|-------------------|----------------|-------------|------------|----------|
-| 0 | Development Environment Setup | 🟡 | 2026-07-25T14:27:34Z | — | 37 | 18 | 49% |
-| 1 | Project Foundation | ⬜ | — | — | 39 | 0 | 0% |
-| 2 | Capture Station Core | ⬜ | — | — | 38 | 0 | 0% |
-| 3 | Perception Pipeline | ⬜ | — | — | 37 | 0 | 0% |
-| 4 | Measurement Engine | ⬜ | — | — | 36 | 0 | 0% |
-| 5 | Platform & Trust Layer | ⬜ | — | — | 37 | 0 | 0% |
-| 6 | Web Application | ⬜ | — | — | 39 | 0 | 0% |
-| 7 | Integration & Pilot | ⬜ | — | — | 27 | 0 | 0% |
-| 8 | Production Hardening | ⬜ | — | — | 36 | 0 | 0% |
-| **Total** | | | | | **326** | **18** | **6%** |
+| 0 | Development Environment Setup | ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¡ | 2026-07-25T14:27:34Z | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 18 | 49% |
+| 1 | Project Foundation | ðŸŸ¡ | 2026-07-26T10:17:24Z | â€” | 51 | 44 | 86% |
+| 2 | Capture Station Core | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 38 | 0 | 0% |
+| 3 | Perception Pipeline | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 0 | 0% |
+| 4 | Measurement Engine | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 36 | 0 | 0% |
+| 5 | Platform & Trust Layer | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 0 | 0% |
+| 6 | Web Application | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 39 | 0 | 0% |
+| 7 | Integration & Pilot | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 27 | 0 | 0% |
+| 8 | Production Hardening | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 36 | 0 | 0% |
+| **Total** | | | | | **338** | **62** | **18%** |
 
 ---
 
@@ -41,7 +41,7 @@
 | Phase | Unit | Integration | E2E | Regression | Security | Performance | Cross-Platform | Total |
 |-------|------|-------------|-----|------------|----------|-------------|----------------|-------|
 | 0 | 17 | 0 | 0 | 0 | 0 | 0 | 0 | 17 |
-| 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 1 | 12 | 3 | 0 | 0 | 0 | 0 | 0 | 15 |
 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -49,7 +49,7 @@
 | 6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **17** | **0** | **0** | **0** | **0** | **0** | **0** | **17** |
+| **Total** | **29** | **3** | **0** | **0** | **0** | **0** | **0** | **32** |
 
 ---
 
@@ -63,7 +63,7 @@
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.2 | Added repository setup files | AI Codex | Gitignore, attributes, manifests, workspace files |
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.7.1 | Added local Docker compose stack | AI Codex | PostgreSQL, Redis, MinIO, RabbitMQ, Prometheus, Grafana, Loki |
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.5 | Added Phase 0 directory skeleton | AI Codex | Phase 1 project generation intentionally deferred |
-| 2026-07-25T13:15:00Z | — | — | Project initialised | System | Documentation created |
+| 2026-07-25T13:15:00Z | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | Project initialised | System | Documentation created |
 
 ---
 
@@ -77,12 +77,13 @@
 | TASK-0.3.3.5 | 0 | 2026-07-25T14:27:34Z | CMake and Ninja not found | Install CMake and Ninja |
 | TASK-0.3.4.1 | 0 | 2026-07-25T14:27:34Z | Python command unavailable and `uv` not found | Install Python 3.11 through `uv` |
 | TASK-0.3.8.1 | 0 | 2026-07-25T14:27:34Z | RealSense SDK not verified | Install qualified RealSense SDK and validate camera |
+| TASK-1.2.3.7 | 1 | 2026-07-26T10:17:24Z | Python command unavailable and `uv` not found | Install Python 3.11 through `uv`, then run `uv run pytest tests/unit/python -v` |
 
 ---
 
 ## Notes
 
 - All timestamps are UTC
-- Progress percentages are calculated as `(tasks_done / tasks_total) × 100`
+- Progress percentages are calculated as `(tasks_done / tasks_total) ÃƒÆ’Ã¢â‚¬â€ 100`
 - Update this document after completing each task group
 - Each phase's detailed task list is in `docs/phases/PHASE-N_*.md`

@@ -1,0 +1,31 @@
+name: database-migrations
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  migrations:
+    name: Database migration model checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: Admin
+          POSTGRES_PASSWORD: Admin@123
+          POSTGRES_DB: specproof_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U Admin -d specproof_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet test tests/integration/dotnet/SpecProof.Data.Tests/SpecProof.Data.Tests.csproj --configuration Release

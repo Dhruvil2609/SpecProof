@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>SpecProof.Station.Host</AssemblyName>
+    <RootNamespace>SpecProof.Station.Host</RootNamespace>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\camera-abstractions\SpecProof.Camera.Abstractions.csproj" />
+    <ProjectReference Include="..\..\packages\contracts\SpecProof.Contracts.csproj" />
+  </ItemGroup>
+</Project>

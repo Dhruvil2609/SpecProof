@@ -38,6 +38,8 @@ TestResults/
 
 # Node and frontend
 node_modules/
+dist/
+apps/*/dist/
 .pnpm-store/
 coverage/
 .vite/

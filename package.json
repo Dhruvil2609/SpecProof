@@ -1,0 +1,20 @@
+{
+  "name": "@specproof/workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=10 <11"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --check \"**/*.{json,md,yml,yaml,ts,tsx,css}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

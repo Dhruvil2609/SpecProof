@@ -1,0 +1,28 @@
+repos:
+  - repo: local
+    hooks:
+      - id: dotnet-format
+        name: dotnet format
+        entry: dotnet format --verify-no-changes
+        language: system
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format --check
+        language: system
+        types: [python]
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check
+        language: system
+        types: [python]
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: system
+        pass_filenames: false
+      - id: pnpm-lint
+        name: pnpm lint
+        entry: pnpm lint
+        language: system
+        pass_filenames: false

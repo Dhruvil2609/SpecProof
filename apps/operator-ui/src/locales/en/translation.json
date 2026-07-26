@@ -1,0 +1,8 @@
+{
+  "app.title": "SpecProof Operator",
+  "capture.title": "Capture",
+  "dashboard.title": "Operator Dashboard",
+  "navigation.capture": "Capture",
+  "navigation.dashboard": "Dashboard",
+  "workflow.ready": "Ready for capture"
+}

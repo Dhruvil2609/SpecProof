@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/platform-api/">
+    <Project Path="apps/platform-api/SpecProof.Platform.Api.csproj" />
+  </Folder>
+  <Folder Name="/apps/station-host/">
+    <Project Path="apps/station-host/SpecProof.Station.Host.csproj" />
+  </Folder>
+  <Folder Name="/packages/" />
+  <Folder Name="/packages/camera-abstractions/">
+    <Project Path="packages/camera-abstractions/SpecProof.Camera.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/packages/contracts/">
+    <Project Path="packages/contracts/SpecProof.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/packages/platform-data/">
+    <Project Path="packages/platform-data/SpecProof.Platform.Data.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/integration/" />
+  <Folder Name="/tests/integration/dotnet/">
+    <Project Path="tests/integration/dotnet/SpecProof.Data.Tests/SpecProof.Data.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/" />
+  <Folder Name="/tests/unit/dotnet/">
+    <Project Path="tests/unit/dotnet/SpecProof.Contracts.Tests/SpecProof.Contracts.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -45,7 +45,7 @@ docker compose ps
 
 Local service endpoints:
 
-- PostgreSQL: `localhost:5432`, database `specproof`, user `specproof`.
+- PostgreSQL: `localhost:5432`, database `specproof`, user `Admin`, password `Admin@123`.
 - Redis: `localhost:6379`.
 - MinIO API: `http://localhost:9000`.
 - MinIO console: `http://localhost:9001`.
