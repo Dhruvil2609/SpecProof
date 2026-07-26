@@ -1,7 +1,7 @@
-# SpecProof ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Development Progress Tracker
+# SpecProof ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Development Progress Tracker
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-26T13:13:08Z
+**Last Updated:** 2026-07-26T13:16:49Z
 **Timezone:** UTC
 **Language:** en
 
@@ -11,11 +11,11 @@
 
 | Status | Symbol | Meaning |
 |--------|--------|---------|
-| Not Started | `ÃƒÂ¢Ã‚Â¬Ã…â€œ` | Work has not begun |
-| In Progress | `ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¡` | Actively being developed |
-| Blocked | `ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´` | Blocked by dependency or issue |
-| Complete | `ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¢` | Finished and verified |
-| Skipped | `ÃƒÂ¢Ã‚ÂÃ‚Â­ÃƒÂ¯Ã‚Â¸Ã‚Â` | Intentionally deferred |
+| Not Started | `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“` | Work has not begun |
+| In Progress | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¡` | Actively being developed |
+| Blocked | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â´` | Blocked by dependency or issue |
+| Complete | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¢` | Finished and verified |
+| Skipped | `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â­ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â` | Intentionally deferred |
 
 ---
 
@@ -23,15 +23,15 @@
 
 | Phase | Name | Status | Start Date (UTC) | End Date (UTC) | Tasks Total | Tasks Done | Progress |
 |-------|------|--------|-------------------|----------------|-------------|------------|----------|
-| 0 | Development Environment Setup | ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¡ | 2026-07-25T14:27:34Z | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 18 | 49% |
-| 1 | Project Foundation | ðŸŸ¡ | 2026-07-26T10:17:24Z | â€” | 51 | 44 | 86% |
-| 2 | Capture Station Core | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 38 | 0 | 0% |
-| 3 | Perception Pipeline | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 0 | 0% |
-| 4 | Measurement Engine | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 36 | 0 | 0% |
-| 5 | Platform & Trust Layer | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 37 | 0 | 0% |
-| 6 | Web Application | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 39 | 0 | 0% |
-| 7 | Integration & Pilot | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 27 | 0 | 0% |
-| 8 | Production Hardening | ÃƒÂ¢Ã‚Â¬Ã…â€œ | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | 36 | 0 | 0% |
+| 0 | Development Environment Setup | ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¡ | 2026-07-25T14:27:34Z | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 18 | 49% |
+| 1 | Project Foundation | Ã°Å¸Å¸Â¡ | 2026-07-26T10:17:24Z | Ã¢â‚¬â€ | 51 | 44 | 86% |
+| 2 | Capture Station Core | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 38 | 0 | 0% |
+| 3 | Perception Pipeline | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 0 | 0% |
+| 4 | Measurement Engine | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 36 | 0 | 0% |
+| 5 | Platform & Trust Layer | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 0 | 0% |
+| 6 | Web Application | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 39 | 0 | 0% |
+| 7 | Integration & Pilot | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 27 | 0 | 0% |
+| 8 | Production Hardening | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 36 | 0 | 0% |
 | **Total** | | | | | **338** | **62** | **18%** |
 
 ---
@@ -63,7 +63,7 @@
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.2 | Added repository setup files | AI Codex | Gitignore, attributes, manifests, workspace files |
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.7.1 | Added local Docker compose stack | AI Codex | PostgreSQL, Redis, MinIO, RabbitMQ, Prometheus, Grafana, Loki |
 | 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.5 | Added Phase 0 directory skeleton | AI Codex | Phase 1 project generation intentionally deferred |
-| 2026-07-25T13:15:00Z | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â | Project initialised | System | Documentation created |
+| 2026-07-25T13:15:00Z | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | Project initialised | System | Documentation created |
 
 ---
 
@@ -84,6 +84,6 @@
 ## Notes
 
 - All timestamps are UTC
-- Progress percentages are calculated as `(tasks_done / tasks_total) ÃƒÆ’Ã¢â‚¬â€ 100`
+- Progress percentages are calculated as `(tasks_done / tasks_total) ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 100`
 - Update this document after completing each task group
 - Each phase's detailed task list is in `docs/phases/PHASE-N_*.md`
