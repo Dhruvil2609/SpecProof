@@ -61,9 +61,44 @@ public sealed class CalibrationRecord : TenantEntity
 {
     public Guid CameraId { get; init; }
 
+    public int Version { get; init; }
+
+    public required string Mode { get; init; }
+
+    public Guid OperatorId { get; init; }
+
+    public required string ArtefactId { get; init; }
+
     public DateTimeOffset CalibratedAtUtc { get; init; }
 
+    public DateTimeOffset ExpiresAtUtc { get; init; }
+
+    public required string MetricsJson { get; init; }
+
     public required string CalibrationBlobSha256 { get; init; }
+
+    public DateTimeOffset? SupersededAtUtc { get; init; }
+}
+
+public sealed class CaptureAsset : TenantEntity
+{
+    public Guid StationId { get; init; }
+
+    public Guid CaptureId { get; init; }
+
+    public required string ObjectKey { get; init; }
+
+    public required string ContentType { get; init; }
+
+    public long SizeBytes { get; init; }
+
+    public required string ChecksumSha256 { get; init; }
+
+    public required string RetentionCategory { get; init; }
+
+    public bool Encrypted { get; init; }
+
+    public DateTimeOffset? UploadCompletedAtUtc { get; set; }
 }
 
 public sealed class GarmentCategory : TenantEntity

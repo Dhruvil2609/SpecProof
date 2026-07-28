@@ -8,6 +8,7 @@ dependencies = []
 
 [project.scripts]
 specproof-doctor = "specproof_doctor.cli:main"
+specproof-capture-service = "specproof_capture_service.grpc_server:main"
 
 [build-system]
 requires = ["setuptools>=69"]
@@ -15,22 +16,34 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 runtime = [
+  "boto3>=1.40",
+  "grpcio>=1.74",
   "numpy>=2.0",
   "scipy>=1.13",
   "opencv-python>=4.10",
   "open3d>=0.18",
   "onnxruntime>=1.18",
+  "opentelemetry-exporter-otlp>=1.36",
+  "opentelemetry-instrumentation-grpc>=0.57b0",
+  "opentelemetry-sdk>=1.36",
+  "protobuf>=6.31",
   "pydantic>=2.8",
+  "psycopg[binary]>=3.2",
+  "redis>=6.0",
+  "structlog>=25.4",
+  "pika>=1.3",
 ]
 ml = [
   "torch>=2.7",
   "trimesh>=4.4",
 ]
 station = [
-  "pyrealsense2>=2.56",
+  "pyrealsense2>=2.56; sys_platform == 'win32'",
 ]
 dev = [
+  "grpcio-tools>=1.74",
   "pytest>=8.3",
+  "pytest-asyncio>=1.1",
   "pytest-cov>=5.0",
   "ruff>=0.6",
   "pyright>=1.1",
@@ -40,29 +53,50 @@ docs = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "tools/specproof-doctor/src"}
+packages = [
+  "specproof_capture_service",
+  "specproof_capture_service.generated",
+  "specproof_doctor",
+  "specproof_geometry",
+  "specproof_measurement_service",
+]
+include-package-data = true
 
-[tool.setuptools.packages.find]
-where = [
+[tool.setuptools.package-data]
+specproof_capture_service = ["py.typed", "generated/*.pyi"]
+specproof_doctor = ["py.typed"]
+specproof_geometry = ["py.typed"]
+
+[tool.setuptools.package-dir]
+specproof_capture_service = "apps/capture-service/src/specproof_capture_service"
+"specproof_capture_service.generated" = "apps/capture-service/src/specproof_capture_service/generated"
+specproof_doctor = "tools/specproof-doctor/src/specproof_doctor"
+specproof_geometry = "packages/geometry/src/specproof_geometry"
+specproof_measurement_service = "apps/measurement-service/src/specproof_measurement_service"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [
   "tools/specproof-doctor/src",
   "packages/geometry/src",
   "apps/capture-service/src",
   "apps/measurement-service/src",
 ]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["tools/specproof-doctor/src"]
 addopts = "-ra"
+asyncio_mode = "auto"
 markers = [
   "unit: fast isolated tests",
   "integration: tests that verify service boundaries",
   "cross_platform: tests that verify Windows and Linux behavior",
+  "hardware: tests that require physical capture hardware",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = [
+  "apps/capture-service/src/specproof_capture_service/generated",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ANN"]
@@ -70,10 +104,43 @@ select = ["E", "F", "I", "UP", "B", "ANN"]
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
+reportMissingImports = false
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
 include = [
   "tools/specproof-doctor/src",
   "packages/geometry/src",
   "apps/capture-service/src",
   "apps/measurement-service/src",
-  "tests",
 ]
+extraPaths = [
+  "tools/specproof-doctor/src",
+  "packages/geometry/src",
+  "apps/capture-service/src",
+  "apps/measurement-service/src",
+]
+exclude = [
+  "apps/capture-service/src/specproof_capture_service/generated",
+  "apps/capture-service/src/specproof_capture_service/grpc_server.py",
+  "apps/capture-service/src/specproof_capture_service/identity.py",
+  "apps/capture-service/src/specproof_capture_service/observability.py",
+  "apps/capture-service/src/specproof_capture_service/realsense_provider.py",
+]
+
+[tool.coverage.run]
+branch = true
+source = [
+  "apps/capture-service/src/specproof_capture_service",
+  "packages/geometry/src/specproof_geometry",
+  "tools/specproof-doctor/src/specproof_doctor",
+]
+omit = [
+  "apps/capture-service/src/specproof_capture_service/generated/*",
+  "apps/capture-service/src/specproof_capture_service/identity.py",
+  "apps/capture-service/src/specproof_capture_service/observability.py",
+  "apps/capture-service/src/specproof_capture_service/realsense_provider.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

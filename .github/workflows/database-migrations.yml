@@ -29,3 +29,6 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet test tests/integration/dotnet/SpecProof.Data.Tests/SpecProof.Data.Tests.csproj --configuration Release
+        env:
+          SPEC_PROOF_RUN_DATABASE_INTEGRATION: "1"
+          SPEC_PROOF_TEST_DATABASE: Host=localhost;Database=specproof_test;Username=Admin;Password=Admin@123

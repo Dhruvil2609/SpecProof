@@ -1,5 +1,4 @@
 import pytest
-
 from specproof_geometry import Point3D, euclidean_distance_mm
 
 

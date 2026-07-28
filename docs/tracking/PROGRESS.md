@@ -1,89 +1,80 @@
-# SpecProof ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Development Progress Tracker
+# SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-26T13:16:49Z
+**Last Updated:** 2026-07-28T16:34:20Z
 **Timezone:** UTC
 **Language:** en
 
----
-
 ## Status Legend
 
-| Status | Symbol | Meaning |
-|--------|--------|---------|
-| Not Started | `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“` | Work has not begun |
-| In Progress | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¡` | Actively being developed |
-| Blocked | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â´` | Blocked by dependency or issue |
-| Complete | `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¢` | Finished and verified |
-| Skipped | `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â­ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â` | Intentionally deferred |
-
----
+| Status | Meaning |
+|--------|---------|
+| `NOT_STARTED` | Work has not begun |
+| `IN_PROGRESS` | Repository work exists but exit criteria remain |
+| `BLOCKED` | External, administrative, service, or hardware dependency prevents verification |
+| `COMPLETE` | All documented exit criteria are verified |
 
 ## Phase Summary
 
-| Phase | Name | Status | Start Date (UTC) | End Date (UTC) | Tasks Total | Tasks Done | Progress |
-|-------|------|--------|-------------------|----------------|-------------|------------|----------|
-| 0 | Development Environment Setup | ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¡ | 2026-07-25T14:27:34Z | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 18 | 49% |
-| 1 | Project Foundation | Ã°Å¸Å¸Â¡ | 2026-07-26T10:17:24Z | Ã¢â‚¬â€ | 51 | 44 | 86% |
-| 2 | Capture Station Core | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 38 | 0 | 0% |
-| 3 | Perception Pipeline | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 0 | 0% |
-| 4 | Measurement Engine | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 36 | 0 | 0% |
-| 5 | Platform & Trust Layer | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 37 | 0 | 0% |
-| 6 | Web Application | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 39 | 0 | 0% |
-| 7 | Integration & Pilot | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 27 | 0 | 0% |
-| 8 | Production Hardening | ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | 36 | 0 | 0% |
-| **Total** | | | | | **338** | **62** | **18%** |
+| Phase | Name | Status | Tasks | Done | Progress |
+|------:|------|--------|------:|-----:|---------:|
+| 0 | Development Environment Setup | `IN_PROGRESS` | 54 | 25 | 46% |
+| 1 | Project Foundation | `IN_PROGRESS` | 51 | 48 | 94% |
+| 2 | Capture Station Core | `IN_PROGRESS` | 43 | 29 | 67% |
+| 3 | Perception Pipeline | `NOT_STARTED` | 37 | 0 | 0% |
+| 4 | Measurement Engine | `NOT_STARTED` | 36 | 0 | 0% |
+| 5 | Platform and Trust Layer | `NOT_STARTED` | 37 | 0 | 0% |
+| 6 | Web Application | `NOT_STARTED` | 39 | 0 | 0% |
+| 7 | Integration and Pilot | `NOT_STARTED` | 27 | 0 | 0% |
+| 8 | Production Hardening | `NOT_STARTED` | 36 | 0 | 0% |
+| **Total** | | | **360** | **102** | **28%** |
 
----
+Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
-## Test Summary
+## Current Validation
 
-| Phase | Unit | Integration | E2E | Regression | Security | Performance | Cross-Platform | Total |
-|-------|------|-------------|-----|------------|----------|-------------|----------------|-------|
-| 0 | 17 | 0 | 0 | 0 | 0 | 0 | 0 | 17 |
-| 1 | 12 | 3 | 0 | 0 | 0 | 0 | 0 | 15 |
-| 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 8 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **29** | **3** | **0** | **0** | **0** | **0** | **0** | **32** |
+| Stack | Result | Evidence |
+|-------|--------|----------|
+| Python formatting and lint | PASS | Ruff, 66 files |
+| Python type checking | PASS | Pyright, zero errors |
+| Python tests and coverage | PASS | 58 tests, 80.15% total coverage |
+| .NET release build | PASS | Zero warnings, zero errors |
+| .NET tests | PASS | 7 tests |
+| Frontend lint and type-check | PASS | Operator and admin applications |
+| Frontend tests | PASS | 8 tests |
+| Frontend coverage | PASS | 86.36% statements per application |
+| Frontend production build | PASS | Operator and admin applications |
+| Docker Compose definition | PASS | `docker compose config --quiet` |
+| PostgreSQL migration runtime | BLOCKED | Docker daemon unavailable |
+| MinIO synchronization runtime | BLOCKED | Docker daemon unavailable |
+| Remote Windows/Linux CI | BLOCKED | Workflow execution not verified |
+| RealSense hardware acceptance | BLOCKED | Camera and qualified SDK unavailable |
 
----
+## Recent Activity
 
-## Recent Activity Log
-
-| Timestamp (UTC) | Phase | Task ID | Action | Agent | Notes |
-|-----------------|-------|---------|--------|-------|-------|
-| 2026-07-25T14:32:40Z | 0 | TASK-0.3.11.4 | Added 17 doctor unit test cases | AI Codex | Execution blocked until Python 3.11 and `uv` are installed |
-| 2026-07-25T14:32:40Z | 0 | TASK-0.3.7.1 | Validated compose configuration | AI Codex | `docker compose config --quiet` passed; Docker config permission warning remains |
-| 2026-07-25T14:27:34Z | 0 | TASK-0.3.11.1 | Added `specproof-doctor` diagnostics | AI Codex | Unit tests added; validation pending |
-| 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.2 | Added repository setup files | AI Codex | Gitignore, attributes, manifests, workspace files |
-| 2026-07-25T14:27:34Z | 0 | TASK-0.3.7.1 | Added local Docker compose stack | AI Codex | PostgreSQL, Redis, MinIO, RabbitMQ, Prometheus, Grafana, Loki |
-| 2026-07-25T14:27:34Z | 0 | TASK-0.3.10.5 | Added Phase 0 directory skeleton | AI Codex | Phase 1 project generation intentionally deferred |
-| 2026-07-25T13:15:00Z | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â | Project initialised | System | Documentation created |
-
----
+| Timestamp (UTC) | Phase | Action |
+|-----------------|-------|--------|
+| 2026-07-28T16:34:20Z | 0 | Pinned Compose images, strengthened doctor protocol checks, and generated `uv.lock` |
+| 2026-07-28T16:34:20Z | 1 | Fixed frontend lint, added generated OpenAPI, OpenTelemetry, stable .NET packages, coverage workflows, and real PostgreSQL migration tests |
+| 2026-07-28T16:34:20Z | 2 | Added protobuf contract, camera adapters, calibration records, `.spcapture`, SQLite queue, object storage, platform sync, gRPC service/client, and tests |
+| 2026-07-28T16:34:20Z | Docs | Replaced corrupted Phase 0/1/2 and tracking text with UTF-8 content |
 
 ## Blocked Items
 
-| Task ID | Phase | Blocked Since (UTC) | Blocked By | Resolution |
-|---------|-------|---------------------|-----------|------------|
-| TASK-0.3.2.1 | 0 | 2026-07-25T14:27:34Z | WSL status returned access denied | Requires host/admin remediation |
-| TASK-0.3.2.2 | 0 | 2026-07-25T14:27:34Z | Docker daemon not reachable | Start or install Docker Desktop with WSL2 backend |
-| TASK-0.3.3.4 | 0 | 2026-07-25T14:27:34Z | PowerShell 7 (`pwsh`) not found | Install PowerShell 7 |
-| TASK-0.3.3.5 | 0 | 2026-07-25T14:27:34Z | CMake and Ninja not found | Install CMake and Ninja |
-| TASK-0.3.4.1 | 0 | 2026-07-25T14:27:34Z | Python command unavailable and `uv` not found | Install Python 3.11 through `uv` |
-| TASK-0.3.8.1 | 0 | 2026-07-25T14:27:34Z | RealSense SDK not verified | Install qualified RealSense SDK and validate camera |
-| TASK-1.2.3.7 | 1 | 2026-07-26T10:17:24Z | Python command unavailable and `uv` not found | Install Python 3.11 through `uv`, then run `uv run pytest tests/unit/python -v` |
+| Task or Gate | Blocker | Required Resolution |
+|--------------|---------|---------------------|
+| Phase 0 Python 3.11 | Windows Application Control blocks managed native modules | Approve or install an enterprise-qualified Python 3.11 distribution |
+| Phase 0 Docker services | Docker daemon is not running | Start Docker Desktop and rerun doctor/service tests |
+| Phase 0 WSL/tooling | WSL access, PowerShell 7, CMake, Ninja, and GPU tooling unavailable | Complete host setup with administrator support |
+| Phase 0/2 RealSense | SDK, camera, USB 3 fixture, and artefact unavailable | Install qualified hardware stack and run HIL suite |
+| Phase 1 database acceptance | PostgreSQL container unavailable | Run configured forward/rollback/audit tests |
+| Phase 1 repository enforcement | GitHub administrative state unavailable | Enable branch protection and required workflows |
+| Phase 2 cross-platform acceptance | Linux runner not executed | Run replay and package tests on Linux |
+| Phase 2 stability | Physical camera unavailable | Run 30-minute zero-failure test |
 
----
+## Update Rules
 
-## Notes
-
-- All timestamps are UTC
-- Progress percentages are calculated as `(tasks_done / tasks_total) ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 100`
-- Update this document after completing each task group
-- Each phase's detailed task list is in `docs/phases/PHASE-N_*.md`
+- Use UTC ISO 8601 timestamps.
+- Mark tasks complete only when their implementation or verification statement is objectively satisfied.
+- Keep external or hardware acceptance gates blocked rather than marking them complete.
+- Update the phase file, this tracker, the changelog, and affected manuals in the same change.

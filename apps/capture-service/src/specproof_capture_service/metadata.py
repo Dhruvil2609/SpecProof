@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
@@ -14,4 +14,4 @@ class CaptureMetadata(BaseModel):
     station_id: str
     camera_serial: str
     checksum_sha256: str
-    captured_at_utc: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    captured_at_utc: datetime = Field(default_factory=lambda: datetime.now(UTC))

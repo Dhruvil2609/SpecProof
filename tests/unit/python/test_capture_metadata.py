@@ -1,7 +1,6 @@
-from datetime import timezone
+from datetime import UTC
 
 import pytest
-
 from specproof_capture_service import CaptureMetadata
 
 
@@ -14,4 +13,4 @@ def test_capture_metadata_default_timestamp_is_timezone_aware_utc() -> None:
         checksum_sha256="abc123",
     )
 
-    assert metadata.captured_at_utc.tzinfo == timezone.utc
+    assert metadata.captured_at_utc.tzinfo == UTC

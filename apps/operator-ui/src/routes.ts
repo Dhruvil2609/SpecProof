@@ -17,6 +17,12 @@ export const routes: readonly AppRoute[] = [
   },
 ];
 
+const defaultRoute: AppRoute = {
+  path: '/',
+  labelKey: 'navigation.dashboard',
+  titleKey: 'dashboard.title',
+};
+
 export function resolveRoute(pathname: string): AppRoute {
-  return routes.find((route) => route.path === pathname) ?? routes[0]!;
+  return routes.find((route) => route.path === pathname) ?? defaultRoute;
 }

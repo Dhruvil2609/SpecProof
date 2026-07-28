@@ -1,62 +1,39 @@
-# SpecProof ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Changelog
+# SpecProof Changelog
 
 **Timezone:** UTC
-**Format:** [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-**Versioning:** [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-
----
+**Format:** Keep a Changelog
+**Versioning:** Semantic Versioning
 
 ## [Unreleased]
 
 ### Added
-- 2026-07-26T13:16:49Z — Added root documentation manuals and update rules for end users, admins, and developer feature source-of-truth tracking (TASK-1.2.8.3)
-- 2026-07-26T13:09:09Z Ã¢â‚¬â€ Added Phase 1 database migration foundation, append-only audit trigger migration SQL, frontend routing shells, and i18n key validation tests (TASK-1.2.4.6, TASK-1.2.5.2, TASK-1.2.5.3, TASK-1.2.5.4, TASK-1.2.5.5, TASK-1.2.5.6, TASK-1.2.5.7, TASK-1.2.6.5, TASK-1.2.6.6)
-- 2026-07-26T10:17:24Z ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Added Phase 1 project foundation scaffold with .NET solution, contracts, camera abstractions, API/station apps, Python service packages, frontend shells, CI workflows, and standards enforcement (TASK-1.2.1.2, TASK-1.2.2.1, TASK-1.2.3.4, TASK-1.2.4.1, TASK-1.2.7.1)
-- 2026-07-26T10:17:24Z ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Added Phase 1 tests for contract serialization, EF Core model configuration, Python geometry/capture utilities, and frontend i18n shell rendering (TASK-1.2.2.8, TASK-1.2.3.7, TASK-1.2.4.7)
-- 2026-07-25T14:32:40Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Added 17 unit test cases for `specproof-doctor` version parsing, command failures, result aggregation, formatting, and optional hardware behavior (TASK-0.3.11.4)
-- 2026-07-25T14:27:34Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Added Phase 0 repository scaffolding, local compose stack, Windows setup guide, and `specproof-doctor` diagnostics (TASK-0.3.7.1, TASK-0.3.10.2, TASK-0.3.10.5, TASK-0.3.11.1)
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Project documentation structure created
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Development phase documents (Phase 0ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ8) created
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Progress tracking system initialised
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â AI agent skill files created
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Test strategy document created
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Coding standards document created
-- 2026-07-25T13:15:00Z ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â i18n strategy document created
+
+- 2026-07-28T16:34:20Z — Added the versioned capture-station protobuf contract and generated Python/C# types.
+- 2026-07-28T16:34:20Z — Added mock, replay, and Windows RealSense camera adapters with aligned RGB-D capture, recording, retry, and reconnect behavior.
+- 2026-07-28T16:34:20Z — Added immutable calibration records, daily/full validity, expiry enforcement, and persistence.
+- 2026-07-28T16:34:20Z — Added atomic ZIP64 `.spcapture` packages with canonical manifests, PNG payloads, camera geometry, and SHA-256 validation.
+- 2026-07-28T16:34:20Z — Added SQLite offline queueing, idempotent platform synchronization, MinIO/S3 storage, and capture-asset database records.
+- 2026-07-28T16:34:20Z — Added station registration, health, capture initiation, and upload-completion API endpoints.
+- 2026-07-28T16:34:20Z — Added Python, .NET, frontend, gRPC, package, calibration, queue, and migration tests with coverage reporting.
+- 2026-07-28T16:34:20Z — Added generated ASP.NET Core OpenAPI and OpenTelemetry traces, metrics, logs, and OTLP configuration.
+- 2026-07-26T13:16:49Z — Added end-user, administrator, and developer source-of-truth documentation.
+- 2026-07-25T14:27:34Z — Added Phase 0 scaffolding, local infrastructure, Windows setup guidance, and `specproof-doctor`.
 
 ### Changed
-- 2026-07-26T13:13:08Z â€” Updated PostgreSQL development credentials to the requested local-dev username/password across Docker compose, setup docs, CI service env, and EF test connection strings (TASK-0.3.7.1)
-- (none)
+
+- 2026-07-28T16:34:20Z — Pinned Compose images and Python dependencies for reproducibility.
+- 2026-07-28T16:34:20Z — Updated EF Core and Microsoft extensions to `10.0.10` and Npgsql EF provider to `10.0.3`.
+- 2026-07-28T16:34:20Z — Strengthened doctor checks for Windows build, PostgreSQL `SELECT 1`, Redis `PING`, RabbitMQ authentication, CV imports, and optional camera enumeration.
+- 2026-07-28T16:34:20Z — Updated development PostgreSQL credentials to local-only `Username=Admin;Password=Admin@123`.
 
 ### Fixed
-- (none)
 
-### Removed
-- (none)
+- 2026-07-28T16:34:20Z — Removed frontend non-null assertions that violated lint rules.
+- 2026-07-28T16:34:20Z — Replaced corrupted Phase 0, Phase 1, Phase 2, progress, and changelog text with valid UTF-8.
 
----
+### Blocked
 
-## Template for new entries
-
-```markdown
-## [X.Y.Z] ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â YYYY-MM-DDTHH:MM:SSZ
-
-### Added
-- 2026-07-26T13:16:49Z — Added root documentation manuals and update rules for end users, admins, and developer feature source-of-truth tracking (TASK-1.2.8.3)
-- 2026-07-26T13:09:09Z Ã¢â‚¬â€ Added Phase 1 database migration foundation, append-only audit trigger migration SQL, frontend routing shells, and i18n key validation tests (TASK-1.2.4.6, TASK-1.2.5.2, TASK-1.2.5.3, TASK-1.2.5.4, TASK-1.2.5.5, TASK-1.2.5.6, TASK-1.2.5.7, TASK-1.2.6.5, TASK-1.2.6.6)
-- 2026-07-26T10:17:24Z ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Added Phase 1 project foundation scaffold with .NET solution, contracts, camera abstractions, API/station apps, Python service packages, frontend shells, CI workflows, and standards enforcement (TASK-1.2.1.2, TASK-1.2.2.1, TASK-1.2.3.4, TASK-1.2.4.1, TASK-1.2.7.1)
-- 2026-07-26T10:17:24Z ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Added Phase 1 tests for contract serialization, EF Core model configuration, Python geometry/capture utilities, and frontend i18n shell rendering (TASK-1.2.2.8, TASK-1.2.3.7, TASK-1.2.4.7)
-- Description of new feature
-
-### Changed
-- 2026-07-26T13:13:08Z â€” Updated PostgreSQL development credentials to the requested local-dev username/password across Docker compose, setup docs, CI service env, and EF test connection strings (TASK-0.3.7.1)
-- Description of change to existing functionality
-
-### Fixed
-- Description of bug fix
-
-### Removed
-- Description of removed feature
-
-### Security
-- Description of security-related change
-```
+- Python 3.11 execution is blocked by Windows Application Control on the managed interpreter.
+- Docker service, PostgreSQL, MinIO, and migration runtime verification await a running Docker daemon.
+- Branch protection and remote Windows/Linux workflow status require GitHub administrative access.
+- RealSense, physical calibration, disconnect/reconnect, replay corpus, and stability acceptance require qualified hardware.

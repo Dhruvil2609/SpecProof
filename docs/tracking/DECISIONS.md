@@ -1,115 +1,99 @@
-# SpecProof — Architecture Decision Records (ADR)
+# SpecProof Architecture Decision Records
 
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-28T16:34:20Z
 **Timezone:** UTC  
-**Language:** en  
-
----
+**Language:** en
 
 ## ADR Index
 
 | ADR | Title | Status | Date (UTC) |
 |-----|-------|--------|------------|
 | ADR-001 | Use UTC for all timestamps | Accepted | 2026-07-25T13:15:00Z |
-| ADR-002 | Monorepo with workspace structure | Accepted | 2026-07-25T13:15:00Z |
-| ADR-003 | i18n from day one, English default | Accepted | 2026-07-25T13:15:00Z |
-| ADR-004 | All development by AI Codex with auto-testing | Accepted | 2026-07-25T13:15:00Z |
-
----
+| ADR-002 | Use a monorepo workspace | Accepted | 2026-07-25T13:15:00Z |
+| ADR-003 | Build i18n from day one | Accepted | 2026-07-25T13:15:00Z |
+| ADR-004 | Require automated verification for agent changes | Accepted | 2026-07-25T13:15:00Z |
+| ADR-005 | Use protobuf gRPC for station IPC | Accepted | 2026-07-28T16:34:20Z |
+| ADR-006 | Use checksummed `.spcapture` packages | Accepted | 2026-07-28T16:34:20Z |
 
 ## ADR-001: Use UTC for All Timestamps
 
-**Status:** Accepted  
-**Date:** 2026-07-25T13:15:00Z  
-
-### Context
-SpecProof is a globally-available system used across time zones. Consistent timestamps are critical for audit trails, evidence records, and cross-site comparisons.
+**Status:** Accepted
+**Date:** 2026-07-25T13:15:00Z
 
 ### Decision
-All timestamps in code, database, API, logs, and documentation use UTC. Display layers convert to local time for user presentation.
 
-### Consequences
-- Database columns use `timestamptz` (PostgreSQL) storing UTC
-- API responses include ISO 8601 timestamps with `Z` suffix
-- Frontend converts UTC to local time for display
-- Logs use UTC exclusively
-- No DST-related ambiguity in evidence records
+Use timezone-aware UTC in code, APIs, logs, evidence, documentation, and PostgreSQL `timestamptz` columns. Presentation layers may convert UTC for display.
 
----
+## ADR-002: Use a Monorepo Workspace
 
-## ADR-002: Monorepo with Workspace Structure
-
-**Status:** Accepted  
-**Date:** 2026-07-25T13:15:00Z  
-
-### Context
-SpecProof comprises .NET backend, Python CV/ML services, TypeScript frontend, Docker infrastructure, and shared contracts. These components share types and must be tested together.
+**Status:** Accepted
+**Date:** 2026-07-25T13:15:00Z
 
 ### Decision
-Use a single monorepo with workspace-level tooling (pnpm workspaces for TS, solution files for .NET, pyproject.toml groups for Python).
+
+Keep .NET, Python, TypeScript, infrastructure, contracts, and tests in one repository. Use pnpm workspaces, a .NET solution, and `pyproject.toml` dependency groups.
 
 ### Consequences
-- Single source of truth for all contracts
-- Atomic cross-component changes in one PR
-- CI must build and test all components
-- Git LFS for large binary assets
 
----
+- Cross-component contract changes remain atomic.
+- CI must validate every affected stack.
+- Large capture assets use Git LFS.
 
-## ADR-003: i18n from Day One, English Default
+## ADR-003: Build i18n from Day One
 
-**Status:** Accepted  
-**Date:** 2026-07-25T13:15:00Z  
-
-### Context
-SpecProof targets UK, European, and global factories. Multi-language support will be needed.
+**Status:** Accepted
+**Date:** 2026-07-25T13:15:00Z
 
 ### Decision
-Implement i18n framework from the start. English (en) as the default language. All user-visible strings must use translation keys.
 
-### Consequences
-- No hardcoded user-facing strings
-- Translation files are source-controlled
-- New languages added by creating translation files
-- Backend API supports `Accept-Language` header
-- Frontend supports language switcher
+Use English as the base locale and translation keys for user-visible strings. Frontends use react-i18next and APIs honor locale negotiation where user-facing messages are returned.
 
----
+## ADR-004: Require Automated Verification for Agent Changes
 
-## ADR-004: AI Codex Development with Auto-Testing
+**Status:** Accepted
+**Date:** 2026-07-25T13:15:00Z
+
+### Decision
+
+Code changes require relevant automated tests, static checks, progress updates, and honest recording of blocked external acceptance work.
+
+## ADR-005: Use Protobuf gRPC for Station IPC
 
 **Status:** Accepted  
-**Date:** 2026-07-25T13:15:00Z  
+**Date:** 2026-07-28T16:34:20Z
 
 ### Context
-All development is performed by AI Codex agents. Every change must be verifiable without human code review being the sole quality gate.
+
+RealSense access and RGB-D processing require native Python dependencies, while the Windows station supervisor and platform integration use .NET.
 
 ### Decision
-Every feature, fix, or change must include automatically generated test cases. AI agents follow skill files that enforce testing, coding standards, and documentation requirements.
+
+Use `packages/station-contracts/proto/v1/capture_station.proto` as the authoritative versioned IPC contract. Python hosts the camera service; .NET uses generated client types.
 
 ### Consequences
-- Minimum test coverage enforced per component
-- Skill files define agent behaviour per phase
-- Progress tracked automatically
-- CI blocks merges without passing tests
 
----
+- RealSense SDK calls remain isolated behind Python adapters.
+- Python and C# types derive from one contract.
+- Missing devices map to `NOT_FOUND`, invalid calibration to `FAILED_PRECONDITION`, and unavailable hardware or SDKs to `UNAVAILABLE`.
+- Contract compatibility tests are required before changing existing fields or methods.
 
-## ADR Template
+## ADR-006: Use Checksummed `.spcapture` Packages
 
-```markdown
-## ADR-NNN: Title
-
-**Status:** Proposed | Accepted | Deprecated | Superseded  
-**Date:** YYYY-MM-DDTHH:MM:SSZ  
+**Status:** Accepted
+**Date:** 2026-07-28T16:34:20Z
 
 ### Context
-Why is this decision needed?
+
+RGB-D evidence must move between Windows stations, Linux services, offline queues, and S3-compatible object storage without losing fidelity or provenance.
 
 ### Decision
-What was decided?
+
+Use ZIP64 `.spcapture` packages containing canonical UTF-8 `manifest.json`, lossless RGB and unsigned 16-bit depth PNGs, intrinsics, extrinsics, per-frame metadata, and `checksums.sha256`. Publish packages atomically after validation.
 
 ### Consequences
-What are the results?
-```
+
+- PostgreSQL stores metadata and object references, never image/depth binaries.
+- Real package fixtures use Git LFS.
+- Upload completion requires checksum verification and idempotency.
+- Windows/Linux readers must produce identical manifests, dimensions, hashes, and depth values.

@@ -2,7 +2,7 @@
 
 **Audience:** System administrators, quality managers, and SpecProof support engineers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-26T13:20:00Z
+**Last Updated:** 2026-07-28T16:34:20Z
 
 ## 1. Admin Scope
 
@@ -112,6 +112,20 @@ Use `specproof-doctor` when available to verify:
 - Camera SDK and RealSense Python binding.
 - GPU/CUDA availability where configured.
 
+Recommended local commands:
+
+```powershell
+docker compose config --quiet
+docker compose up -d
+uv run specproof-doctor
+dotnet run --project apps/station-host
+uv run specproof-capture-service
+```
+
+The capture service listens on `127.0.0.1:50051` by default. Configure `SPEC_PROOF_CAMERA_PROVIDER` as `mock`, `replay`, or `realsense`; replay mode also requires `SPEC_PROOF_REPLAY_PATH`. Persistent station data defaults to `station-data/` and can be changed with `SPEC_PROOF_STATION_DATA`.
+
+Queue states are `pending`, `uploading`, `completed`, and `failed`. On restart, interrupted `uploading` records are recovered for retry. Do not delete queued package files before checksum-verified completion.
+
 ## 10. Incident Response
 
 For repeated failures:
@@ -131,3 +145,11 @@ For repeated failures:
 - Rotate credentials and certificates.
 - Keep audit logs append-only.
 - Review data-retention and deletion requirements with each tenant.
+
+## 12. Capture Storage and Credentials
+
+- Keep station credentials behind the configured credential-store abstraction; Windows workstations use DPAPI.
+- Store `.spcapture` payloads in filesystem staging and MinIO/S3, never in PostgreSQL.
+- PostgreSQL stores capture identity, object key, checksum, size, status, and UTC timestamps.
+- Treat `Admin` / `Admin@123` and all Compose credentials as local-development values only.
+- Real `.bag` and `.spcapture` fixtures belong in Git LFS.

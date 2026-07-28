@@ -2,7 +2,7 @@
 
 **Audience:** Factory QC operators and reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-26T13:20:00Z
+**Last Updated:** 2026-07-28T16:34:20Z
 
 ## 1. What SpecProof Does
 
@@ -48,6 +48,9 @@ The MVP workflow is flat or relaxed garment metrology on a defined capture surfa
 2. Wait for the station to confirm framing and lighting.
 3. Start capture.
 4. Do not move the garment until capture finishes.
+5. If the network is unavailable, wait for the station to confirm that the capture is safely queued.
+
+The station captures 5 aligned RGB-D frames by default, fuses valid depth samples, and publishes the package only after checksum validation. Operators must not open or modify `.spcapture` files.
 
 ### Step 5 - Review Result
 
@@ -112,3 +115,10 @@ Escalate to a supervisor or administrator when:
 - A tech-pack mapping appears incorrect.
 - The expected order/style/size is missing.
 - The station cannot sync inspection records.
+
+## 9. Current Phase 2 Limitations
+
+- The operator-browser preview and capture-zone framing UI are not yet released.
+- Physical calibration must not be treated as valid until the approved camera, artefact, lighting, and acceptance procedure are available.
+- A queued capture is durable locally, but completion is not confirmed until the administrator verifies upload synchronization.
+- Hardware errors, expired calibration, and unavailable camera SDKs block capture rather than producing an untrusted result.

@@ -2,7 +2,7 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-26T13:20:00Z
+**Last Updated:** 2026-07-28T16:34:20Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
@@ -34,9 +34,9 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 | Feature ID | Feature | Status | Primary Users |
 |------------|---------|--------|---------------|
 | `SPF-001` | Station health diagnostics | Partially Implemented | Operator, Admin, Support |
-| `SPF-002` | Camera abstraction | Partially Implemented | Developer |
-| `SPF-003` | Calibration record management | Planned | Operator, Admin |
-| `SPF-004` | Garment capture workflow | Planned | Operator |
+| `SPF-002` | Camera abstraction | Implemented; hardware verification blocked | Developer |
+| `SPF-003` | Calibration record management | Partially Implemented | Operator, Admin |
+| `SPF-004` | Garment capture workflow | Partially Implemented | Operator |
 | `SPF-005` | Garment perception pipeline | Planned | Operator, Developer |
 | `SPF-006` | Geometry and surface processing | Partially Implemented | Developer |
 | `SPF-007` | Point-of-measure ontology | Planned | Technical Designer, Developer |
@@ -46,13 +46,13 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 | `SPF-011` | Inspection evidence record | Partially Implemented | Operator, Reviewer, Auditor |
 | `SPF-012` | Audit event stream | Partially Implemented | Admin, Auditor |
 | `SPF-013` | Tenant/user/role administration | Partially Implemented | Admin |
-| `SPF-014` | Station administration | Planned | Admin, Support |
+| `SPF-014` | Station administration | Partially Implemented | Admin, Support |
 | `SPF-015` | Tech-pack import and mapping | Planned | Technical Designer, Admin |
 | `SPF-016` | Operator UI | Partially Implemented | Operator |
 | `SPF-017` | Admin UI | Partially Implemented | Admin |
 | `SPF-018` | Reporting and exports | Planned | Quality Manager, Brand User |
 | `SPF-019` | API and webhooks | Planned | Integrator, Developer |
-| `SPF-020` | Observability and support bundle | Planned | Admin, Support |
+| `SPF-020` | Observability and support bundle | Partially Implemented | Admin, Support |
 
 ## 3. Feature Details
 
@@ -85,8 +85,10 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 
 **Current Implementation:**
 
-- `ICameraProvider` contract exists.
-- Real hardware provider is planned for Phase 2.
+- The canonical gRPC contract exposes device, health, preview, capture, recording, and calibration operations.
+- Python provides mock, `.spcapture` replay, and Windows RealSense adapters.
+- The .NET station host consumes generated client types and maps gRPC failures to typed station exceptions.
+- RealSense hardware acceptance remains blocked.
 
 ### `SPF-003` Calibration Record Management
 
@@ -97,6 +99,13 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 - Store calibration timestamp, expiry, artefact ID, camera serial, and checksum references.
 - Prevent automated decisions when calibration is expired.
 - Preserve historical calibration versions.
+
+**Current Implementation:**
+
+- Filesystem and PostgreSQL models preserve immutable version, mode, operator, artefact, metrics, validity window, checksum, and supersession metadata.
+- Full calibration defaults to 30 days; daily checks default to 24 hours.
+- Expired or missing calibration blocks capture.
+- Physical calibration metric evaluators remain blocked pending approved hardware and artefacts.
 
 ### `SPF-004` Garment Capture Workflow
 
@@ -109,6 +118,14 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 - Validate framing, orientation, lighting, and overlap.
 - Capture RGB-D frames.
 - Store raw/derived assets according to retention policy.
+
+**Current Implementation:**
+
+- The service captures 3–15 aligned frames, defaulting to 5.
+- Valid depth is fused by per-pixel median and RGB uses the temporal midpoint frame.
+- ZIP64 `.spcapture` packages use canonical manifests, lossless PNG payloads, camera geometry, metadata, and SHA-256 checksums.
+- Packages publish atomically and queue in SQLite for idempotent object-store synchronization.
+- Capture-zone framing and operator browser integration remain planned.
 
 ### `SPF-005` Garment Perception Pipeline
 

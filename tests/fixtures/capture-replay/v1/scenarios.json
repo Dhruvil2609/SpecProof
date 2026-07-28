@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    "valid",
+    "low-light",
+    "reflective-fabric",
+    "black-fabric",
+    "missing-depth",
+    "calibration-expired",
+    "corrupted",
+    "interrupted"
+  ]
+}

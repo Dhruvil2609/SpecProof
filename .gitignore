@@ -18,6 +18,7 @@ secrets/
 
 # Python
 .venv/
+.cache/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -47,6 +48,7 @@ coverage/
 
 # Docker and local data
 docker-data/
+station-data/
 *.log
 
 # Generated artifacts

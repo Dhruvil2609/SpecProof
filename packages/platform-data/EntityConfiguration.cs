@@ -141,14 +141,77 @@ internal sealed class CalibrationRecordConfiguration : IEntityTypeConfiguration<
         builder.ToTable("calibration_records");
         EntityConfiguration.ConfigureTenantEntity(builder);
         builder.Property(entity => entity.CameraId).HasColumnName("camera_id").IsRequired();
+        builder.Property(entity => entity.Version).HasColumnName("version").IsRequired();
+        builder.Property(entity => entity.Mode).HasColumnName("mode").HasMaxLength(20).IsRequired();
+        builder.Property(entity => entity.OperatorId).HasColumnName("operator_id").IsRequired();
+        builder.Property(entity => entity.ArtefactId)
+            .HasColumnName("artefact_id")
+            .HasMaxLength(200)
+            .IsRequired();
         builder.Property(entity => entity.CalibratedAtUtc)
             .HasColumnName("calibrated_at_utc")
             .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.ExpiresAtUtc)
+            .HasColumnName("expires_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.MetricsJson)
+            .HasColumnName("metrics")
+            .HasColumnType("jsonb")
             .IsRequired();
         builder.Property(entity => entity.CalibrationBlobSha256)
             .HasColumnName("calibration_blob_sha256")
             .HasMaxLength(128)
             .IsRequired();
+        builder.Property(entity => entity.SupersededAtUtc)
+            .HasColumnName("superseded_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.CameraId, entity.Version })
+            .IsUnique()
+            .HasDatabaseName("uq_calibration_records_camera_id_version");
+    }
+}
+
+internal sealed class CaptureAssetConfiguration : IEntityTypeConfiguration<CaptureAsset>
+{
+    public void Configure(EntityTypeBuilder<CaptureAsset> builder)
+    {
+        builder.ToTable("capture_assets");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.CaptureId).HasColumnName("capture_id").IsRequired();
+        builder.Property(entity => entity.ObjectKey)
+            .HasColumnName("object_key")
+            .HasMaxLength(1024)
+            .IsRequired();
+        builder.Property(entity => entity.ContentType)
+            .HasColumnName("content_type")
+            .HasMaxLength(200)
+            .IsRequired();
+        builder.Property(entity => entity.SizeBytes).HasColumnName("size_bytes").IsRequired();
+        builder.Property(entity => entity.ChecksumSha256)
+            .HasColumnName("checksum_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.RetentionCategory)
+            .HasColumnName("retention_category")
+            .HasMaxLength(50)
+            .HasDefaultValue("standard")
+            .IsRequired();
+        builder.Property(entity => entity.Encrypted)
+            .HasColumnName("encrypted")
+            .HasDefaultValue(false)
+            .IsRequired();
+        builder.Property(entity => entity.UploadCompletedAtUtc)
+            .HasColumnName("upload_completed_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.CaptureId })
+            .IsUnique()
+            .HasDatabaseName("uq_capture_assets_tenant_id_capture_id");
+        builder.HasIndex(entity => entity.ObjectKey)
+            .IsUnique()
+            .HasDatabaseName("uq_capture_assets_object_key");
     }
 }
 

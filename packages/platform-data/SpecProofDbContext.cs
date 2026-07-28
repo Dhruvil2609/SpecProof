@@ -20,6 +20,8 @@ public sealed class SpecProofDbContext(DbContextOptions<SpecProofDbContext> opti
 
     public DbSet<CalibrationRecord> CalibrationRecords => Set<CalibrationRecord>();
 
+    public DbSet<CaptureAsset> CaptureAssets => Set<CaptureAsset>();
+
     public DbSet<GarmentCategory> GarmentCategories => Set<GarmentCategory>();
 
     public DbSet<Style> Styles => Set<Style>();

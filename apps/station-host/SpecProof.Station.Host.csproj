@@ -9,4 +9,18 @@
     <ProjectReference Include="..\..\packages\camera-abstractions\SpecProof.Camera.Abstractions.csproj" />
     <ProjectReference Include="..\..\packages\contracts\SpecProof.Contracts.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <Protobuf Include="..\..\packages\station-contracts\proto\v1\capture_station.proto"
+              GrpcServices="Client"
+              Link="Protos\capture_station.proto" />
+  </ItemGroup>
 </Project>

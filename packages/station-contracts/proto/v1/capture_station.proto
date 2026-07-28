@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package specproof.station.v1;
+
+option csharp_namespace = "SpecProof.Station.Contracts.V1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service CaptureStation {
+  rpc ListDevices(google.protobuf.Empty) returns (ListDevicesResponse);
+  rpc GetHealth(google.protobuf.Empty) returns (StationHealth);
+  rpc StreamPreview(PreviewRequest) returns (stream PreviewFrame);
+  rpc Capture(CaptureRequest) returns (CaptureResponse);
+  rpc StartRecording(RecordingRequest) returns (RecordingResponse);
+  rpc StopRecording(google.protobuf.Empty) returns (RecordingResponse);
+  rpc RunCalibration(CalibrationRequest) returns (CalibrationRecord);
+  rpc GetActiveCalibration(ActiveCalibrationRequest) returns (CalibrationRecord);
+}
+
+message StreamProfile {
+  uint32 color_width = 1;
+  uint32 color_height = 2;
+  uint32 depth_width = 3;
+  uint32 depth_height = 4;
+  uint32 frames_per_second = 5;
+}
+
+message CameraDevice {
+  string serial_number = 1;
+  string name = 2;
+  string firmware_version = 3;
+  string usb_type = 4;
+  StreamProfile active_profile = 5;
+}
+
+message ListDevicesResponse {
+  repeated CameraDevice devices = 1;
+}
+
+message StationHealth {
+  string status = 1;
+  google.protobuf.Timestamp checked_at_utc = 2;
+  string camera_status = 3;
+  string storage_status = 4;
+  string clock_status = 5;
+  uint64 offline_queue_depth = 6;
+  string detail = 7;
+}
+
+message PreviewRequest {
+  string camera_serial = 1;
+  StreamProfile profile = 2;
+}
+
+message PreviewFrame {
+  string frame_id = 1;
+  google.protobuf.Timestamp captured_at_utc = 2;
+  bytes color_jpeg = 3;
+  bytes depth_preview_png = 4;
+  uint32 color_width = 5;
+  uint32 color_height = 6;
+}
+
+message CaptureRequest {
+  string camera_serial = 1;
+  string station_id = 2;
+  uint32 frame_count = 3;
+  StreamProfile profile = 4;
+}
+
+message CaptureResponse {
+  string capture_id = 1;
+  string package_path = 2;
+  string package_sha256 = 3;
+  google.protobuf.Timestamp captured_at_utc = 4;
+  string calibration_id = 5;
+}
+
+message RecordingRequest {
+  string camera_serial = 1;
+  string output_path = 2;
+  StreamProfile profile = 3;
+}
+
+message RecordingResponse {
+  bool active = 1;
+  string output_path = 2;
+}
+
+enum CalibrationMode {
+  CALIBRATION_MODE_UNSPECIFIED = 0;
+  CALIBRATION_MODE_DAILY = 1;
+  CALIBRATION_MODE_FULL = 2;
+}
+
+message CalibrationRequest {
+  string camera_serial = 1;
+  string station_id = 2;
+  string operator_id = 3;
+  string artefact_id = 4;
+  CalibrationMode mode = 5;
+}
+
+message ActiveCalibrationRequest {
+  string camera_serial = 1;
+  string station_id = 2;
+}
+
+message CalibrationMetrics {
+  double scale_error_percent = 1;
+  double plane_rms_mm = 2;
+  double tilt_degrees = 3;
+  double lighting_variation_percent = 4;
+  bool alignment_valid = 5;
+}
+
+message CalibrationRecord {
+  string calibration_id = 1;
+  uint32 version = 2;
+  string station_id = 3;
+  string camera_serial = 4;
+  string operator_id = 5;
+  string artefact_id = 6;
+  CalibrationMode mode = 7;
+  CalibrationMetrics metrics = 8;
+  google.protobuf.Timestamp calibrated_at_utc = 9;
+  google.protobuf.Timestamp expires_at_utc = 10;
+  string checksum_sha256 = 11;
+  bool valid = 12;
+}

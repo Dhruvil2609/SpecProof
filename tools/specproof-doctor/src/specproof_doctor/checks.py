@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import platform
 import re
 import shutil
@@ -14,17 +15,28 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from enum import Enum
-
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Protocol, cast
 
 CommandRunner = Callable[[Sequence[str], float], subprocess.CompletedProcess[str]]
 TcpConnector = Callable[[str, int, float], bool]
 HttpGetter = Callable[[str, float], int]
 ImportFinder = Callable[[str], bool]
+ServiceProbe = Callable[[float], bool]
 
 
-class CheckStatus(str, Enum):
+class _QueryResult(Protocol):
+    def fetchone(self) -> object: ...
+
+
+class _PostgresConnection(Protocol):
+    def execute(self, query: str) -> _QueryResult: ...
+
+    def close(self) -> None: ...
+
+
+class CheckStatus(StrEnum):
     """Status emitted for each diagnostic check."""
 
     PASS = "PASS"
@@ -56,7 +68,7 @@ class DoctorConfig:
 def utc_now_iso() -> str:
     """Return the current UTC timestamp in ISO 8601 format."""
 
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def default_command_runner(
@@ -108,7 +120,7 @@ def parse_semver(text: str) -> tuple[int, int, int] | None:
     match = re.search(r"(?<!\d)(\d+)\.(\d+)\.(\d+)(?!\d)", text)
     if match is None:
         return None
-    return tuple(int(part) for part in match.groups())
+    return int(match.group(1)), int(match.group(2)), int(match.group(3))
 
 
 def parse_major(text: str) -> int | None:
@@ -137,7 +149,9 @@ def is_python_311(text: str) -> bool:
 def is_dotnet_lts(text: str) -> bool:
     """Return true when .NET 10 SDK is available."""
 
-    versions = [tuple(int(part) for part in match) for match in re.findall(r"\b(10)\.(\d+)\.(\d+)\b", text)]
+    versions = [
+        tuple(int(part) for part in match) for match in re.findall(r"\b(10)\.(\d+)\.(\d+)\b", text)
+    ]
     return bool(versions)
 
 
@@ -214,10 +228,111 @@ def check_os() -> CheckResult:
 
     system = platform.system()
     release = platform.release()
+    version = platform.version()
     machine = platform.machine().lower()
-    if system == "Windows" and machine in {"amd64", "x86_64"}:
-        return CheckResult("Windows 11 x64", CheckStatus.PASS, f"{system} {release} {machine}")
-    return CheckResult("Windows 11 x64", CheckStatus.FAIL, f"Expected Windows x64, got {system} {machine}")
+    build_match = re.search(r"(?:^|\.)(\d{5})(?:\.|$)", version)
+    build = int(build_match.group(1)) if build_match is not None else 0
+    is_windows_11 = release == "11" or build >= 22000
+    if system == "Windows" and is_windows_11 and machine in {"amd64", "x86_64"}:
+        return CheckResult(
+            "Windows 11 x64",
+            CheckStatus.PASS,
+            f"{system} build {build or release} {machine}",
+        )
+    return CheckResult(
+        "Windows 11 x64", CheckStatus.FAIL, f"Expected Windows x64, got {system} {machine}"
+    )
+
+
+def default_postgres_probe(timeout_seconds: float) -> bool:
+    """Execute `SELECT 1` against the configured development database."""
+
+    try:
+        import psycopg
+
+        connection_string = os.getenv(
+            "SPEC_PROOF_POSTGRES",
+            "host=localhost port=5432 dbname=specproof user=Admin password=Admin@123",
+        )
+        connection = cast(
+            _PostgresConnection,
+            psycopg.connect(connection_string, connect_timeout=max(1, int(timeout_seconds))),
+        )
+        try:
+            return connection.execute("SELECT 1").fetchone() == (1,)
+        finally:
+            connection.close()
+    except Exception:
+        return False
+
+
+def default_redis_probe(timeout_seconds: float) -> bool:
+    """Execute Redis PING."""
+
+    try:
+        import redis
+
+        client = redis.Redis(
+            host="localhost",
+            port=6379,
+            socket_connect_timeout=timeout_seconds,
+            socket_timeout=timeout_seconds,
+        )
+        return bool(client.ping())
+    except Exception:
+        return False
+
+
+def default_rabbitmq_probe(timeout_seconds: float) -> bool:
+    """Open and close an authenticated RabbitMQ channel."""
+
+    try:
+        import pika
+
+        credentials = pika.PlainCredentials("specproof", "specproof_dev_password")
+        parameters = pika.ConnectionParameters(
+            "localhost",
+            5672,
+            "/",
+            credentials,
+            socket_timeout=timeout_seconds,
+            blocked_connection_timeout=timeout_seconds,
+        )
+        connection = pika.BlockingConnection(parameters)
+        connection.channel()
+        connection.close()
+        return True
+    except Exception:
+        return False
+
+
+def default_realsense_stream_probe(_: float) -> bool:
+    """Return whether at least one RealSense device can be enumerated."""
+
+    try:
+        import pyrealsense2 as rs
+
+        devices = cast(Sequence[object], rs.context().query_devices())
+        return len(devices) > 0
+    except (ImportError, RuntimeError):
+        return False
+
+
+def protocol_service_check(
+    name: str,
+    probe: ServiceProbe,
+    timeout_seconds: float,
+    success_detail: str,
+    failure_detail: str,
+) -> CheckResult:
+    """Run a protocol-level service probe."""
+
+    succeeded = probe(timeout_seconds)
+    return CheckResult(
+        name,
+        CheckStatus.PASS if succeeded else CheckStatus.FAIL,
+        success_detail if succeeded else failure_detail,
+    )
 
 
 def check_docker_daemon(runner: CommandRunner, timeout_seconds: float) -> CheckResult:
@@ -252,12 +367,12 @@ def _compose_has_services(output: str) -> bool:
     if not output:
         return False
     try:
-        parsed = json.loads(output)
+        parsed: object = json.loads(output)
     except json.JSONDecodeError:
         return "specproof-" in output
     if isinstance(parsed, list):
-        return bool(parsed)
-    return isinstance(parsed, dict) and bool(parsed)
+        return len(cast(list[object], parsed)) > 0
+    return isinstance(parsed, dict) and len(cast(dict[object, object], parsed)) > 0
 
 
 def tcp_service_check(
@@ -286,7 +401,9 @@ def http_service_check(
     status_code = getter(url, timeout_seconds)
     if status_code in expected_statuses:
         return CheckResult(name, CheckStatus.PASS, f"{url} returned HTTP {status_code}")
-    return CheckResult(name, CheckStatus.FAIL, f"{url} returned HTTP {status_code or 'no response'}")
+    return CheckResult(
+        name, CheckStatus.FAIL, f"{url} returned HTTP {status_code or 'no response'}"
+    )
 
 
 def import_check(
@@ -312,6 +429,10 @@ def run_checks(
     tcp_connector: TcpConnector = default_tcp_connector,
     http_getter: HttpGetter = default_http_getter,
     import_finder: ImportFinder = default_import_finder,
+    postgres_probe: ServiceProbe = default_postgres_probe,
+    redis_probe: ServiceProbe = default_redis_probe,
+    rabbitmq_probe: ServiceProbe = default_rabbitmq_probe,
+    realsense_stream_probe: ServiceProbe = default_realsense_stream_probe,
 ) -> list[CheckResult]:
     """Run the Phase 0 environment checks."""
 
@@ -386,19 +507,76 @@ def run_checks(
         ),
         check_docker_daemon(runner, command_timeout),
         check_compose_services(runner, command_timeout),
-        tcp_service_check("PostgreSQL", "localhost", 5432, tcp_connector, network_timeout),
-        tcp_service_check("Redis", "localhost", 6379, tcp_connector, network_timeout),
-        http_service_check("MinIO", "http://localhost:9000/minio/health/live", http_getter, network_timeout, {200}),
-        tcp_service_check("RabbitMQ", "localhost", 5672, tcp_connector, network_timeout),
-        http_service_check("Prometheus", "http://localhost:9090/-/healthy", http_getter, network_timeout, {200}),
-        http_service_check("Grafana", "http://localhost:3000/api/health", http_getter, network_timeout, {200}),
-        http_service_check("Loki", "http://localhost:3100/ready", http_getter, network_timeout, {200}),
+        protocol_service_check(
+            "PostgreSQL",
+            postgres_probe,
+            network_timeout,
+            "SELECT 1 succeeded",
+            "PostgreSQL query failed",
+        ),
+        protocol_service_check(
+            "Redis",
+            redis_probe,
+            network_timeout,
+            "PING returned PONG",
+            "Redis PING failed",
+        ),
+        http_service_check(
+            "MinIO", "http://localhost:9000/minio/health/live", http_getter, network_timeout, {200}
+        ),
+        protocol_service_check(
+            "RabbitMQ",
+            rabbitmq_probe,
+            network_timeout,
+            "Authenticated channel opened",
+            "RabbitMQ channel probe failed",
+        ),
+        http_service_check(
+            "Prometheus", "http://localhost:9090/-/healthy", http_getter, network_timeout, {200}
+        ),
+        http_service_check(
+            "Grafana", "http://localhost:3000/api/health", http_getter, network_timeout, {200}
+        ),
+        http_service_check(
+            "Loki", "http://localhost:3100/ready", http_getter, network_timeout, {200}
+        ),
         import_check(
             "RealSense Python",
             "pyrealsense2",
             import_finder,
             required=settings.require_realsense,
             missing_detail="RealSense Python binding is optional until camera work is required",
+        ),
+        *[
+            import_check(
+                name,
+                module,
+                import_finder,
+                required=True,
+                missing_detail=f"{module} is required",
+            )
+            for name, module in (
+                ("NumPy", "numpy"),
+                ("OpenCV", "cv2"),
+                ("Open3D", "open3d"),
+                ("PyTorch", "torch"),
+            )
+        ],
+        (
+            protocol_service_check(
+                "RealSense camera stream",
+                realsense_stream_probe,
+                network_timeout,
+                "RealSense device enumeration succeeded",
+                "No RealSense camera stream is available",
+            )
+            if settings.require_camera_stream
+            else CheckResult(
+                "RealSense camera stream",
+                CheckStatus.SKIP,
+                "Physical camera validation is optional",
+                required=False,
+            )
         ),
         optional_command_check(
             "NVIDIA GPU",

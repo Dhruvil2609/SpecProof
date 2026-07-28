@@ -20,4 +20,8 @@ jobs:
           global-json-file: global.json
       - run: dotnet restore SpecProof.slnx
       - run: dotnet build SpecProof.slnx --configuration Release --no-restore
-      - run: dotnet test SpecProof.slnx --configuration Release --no-build --collect:"XPlat Code Coverage"
+      - run: dotnet test SpecProof.slnx --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-coverage-${{ matrix.os }}
+          path: TestResults/**/coverage.cobertura.xml
