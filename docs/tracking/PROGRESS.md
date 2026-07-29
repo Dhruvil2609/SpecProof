@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-29T17:22:46Z
+**Last Updated:** 2026-07-29T17:43:19Z
 **Timezone:** UTC
 **Language:** en
 
@@ -47,7 +47,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Docker Compose definition     | PASS    | `docker compose config --quiet`      |
 | Docker daemon                 | PASS    | Doctor host verification             |
 | PostgreSQL protocol runtime   | PASS    | Doctor `SELECT 1` on Docker port 55432 |
-| PostgreSQL migration runtime  | BLOCKED | Windows Application Control blocks unsigned local .NET test assemblies |
+| PostgreSQL migration runtime  | PASS    | 7 real PostgreSQL integration tests on Docker port 55432 |
 | MinIO synchronization runtime | BLOCKED | End-to-end synchronization test not implemented |
 | Remote Windows/Linux CI       | BLOCKED | Workflow execution not verified      |
 | RealSense hardware acceptance | BLOCKED | Camera and qualified SDK unavailable |
@@ -56,6 +56,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-29T17:43:19Z | 1     | Resolved .NET Application Control test execution blocker and passed 7 PostgreSQL migration/audit integration tests                                      |
 | 2026-07-29T17:22:46Z | 0     | Resolved Python 3.11 native module blocker, started the full dev stack, passed doctor with zero required failures, and moved Docker PostgreSQL to 55432 |
 | 2026-07-29T17:22:46Z | 1     | Re-ran PostgreSQL integration tests; execution is blocked by Windows Application Control for unsigned local .NET assemblies                              |
 | 2026-07-28T18:14:56Z | Dev   | Added Docker-only launcher mode for infrastructure startup while Python Application Control approval remains blocked                                     |
@@ -73,7 +74,6 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Task or Gate                      | Blocker                                                             | Required Resolution                                                 |
 | --------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Phase 0 time/tooling              | NTP has no time source; CMake, Ninja, and OpenSSL are unavailable   | Configure approved NTP and install the missing tools                |
-| Phase 1 .NET test execution       | Windows Application Control blocks unsigned local build assemblies  | Approve repo-built .NET DLLs or configure local development signing |
 | Phase 0/2 RealSense               | Native SDK, camera, USB 3 fixture, and artefact unavailable         | Install qualified hardware stack and run HIL suite                  |
 | Phase 1 repository enforcement    | GitHub administrative state unavailable                             | Enable branch protection and required workflows                     |
 | Phase 2 cross-platform acceptance | Linux runner not executed                                           | Run replay and package tests on Linux                               |

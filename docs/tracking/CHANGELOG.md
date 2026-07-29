@@ -33,6 +33,7 @@
 
 ### Fixed
 
+- 2026-07-29T17:43:19Z - Resolved .NET Application Control test execution blocker and passed 7 real PostgreSQL migration/audit integration tests.
 - 2026-07-29T17:22:46Z - Resolved the Python 3.11 native module blocker and verified `specproof-doctor` exits with zero required failures.
 - 2026-07-28T18:14:56Z - Improved the launcher Python policy failure message with the Docker-only startup workaround.
 - 2026-07-28T18:06:57Z - Fixed the distroless Loki healthcheck, registered the missing initial EF migration, corrected PostgreSQL audit-test fixture ordering, and added early launcher detection for blocked Python native modules.
@@ -42,7 +43,6 @@
 
 ### Blocked
 
-- .NET integration test execution is blocked by Windows Application Control for unsigned local build assemblies.
 - MinIO synchronization runtime verification awaits an executable end-to-end synchronization test.
 - Branch protection and remote Windows/Linux workflow status require GitHub administrative access.
 - RealSense, physical calibration, disconnect/reconnect, replay corpus, and stability acceptance require qualified hardware.

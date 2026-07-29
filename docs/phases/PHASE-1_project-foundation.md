@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-1
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-28T18:06:57Z
+**Last Updated:** 2026-07-29T17:43:19Z
 **Estimated Duration:** 2–3 weeks
 **Dependencies:** Phase 0
 **Language:** en
@@ -45,7 +45,8 @@ Placeholder generation remains deferred to the phase that owns each application.
 - [x] **TASK-1.2.3.6** — Create shared geometry utilities
 - [x] **TASK-1.2.3.7** — Test utility and service functions
 
-The locked project targets Python 3.11. Local execution used an ignored Python 3.14 validation environment because Windows Application Control blocks the managed Python 3.11 native extension modules on this workstation.
+The locked project targets Python 3.11. Local execution now uses the pinned Python
+3.11 environment after Application Control approval.
 
 ### 1.2.4 Frontend Project Setup
 
@@ -67,7 +68,8 @@ The locked project targets Python 3.11. Local execution used an ignored Python 3
 - [x] **TASK-1.2.5.6** — Store timestamps as UTC `timestamptz`
 - [x] **TASK-1.2.5.7** — Add forward, rollback, constraint, and append-only migration tests
 
-Real PostgreSQL tests are opt-in locally and enabled in the database CI workflow. They remain unexecuted on this workstation while Docker is stopped.
+Real PostgreSQL tests are opt-in locally and enabled in the database CI workflow.
+They pass on this workstation against Docker PostgreSQL on `localhost:55432`.
 
 ### 1.2.6 Internationalisation Framework
 
@@ -124,4 +126,4 @@ Branch protection requires repository administrative access and cannot be verifi
 - [x] OpenAPI is generated from endpoints
 - [ ] All required remote checks are enforced
 
-Phase 1 remains `IN_PROGRESS` until PostgreSQL integration and remote repository enforcement are verified.
+Phase 1 remains `IN_PROGRESS` until remote repository enforcement is verified.
