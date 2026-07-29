@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-1
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-28T16:34:20Z
+**Last Updated:** 2026-07-28T18:06:57Z
 **Estimated Duration:** 2–3 weeks
 **Dependencies:** Phase 0
 **Language:** en
@@ -102,7 +102,7 @@ Branch protection requires repository administrative access and cannot be verifi
 | Check | Status | Evidence |
 |-------|--------|----------|
 | .NET release build | PASS | Zero warnings and zero errors |
-| .NET tests | PASS | 7 tests |
+| .NET tests | PASS | 8 tests |
 | Ruff | PASS | 66 files formatted; zero violations |
 | Pyright | PASS | Zero errors |
 | Python tests | PASS | 58 tests; 80.15% total coverage |
@@ -111,14 +111,14 @@ Branch protection requires repository administrative access and cannot be verifi
 | Frontend production builds | PASS | Both applications |
 | Generated OpenAPI configuration | PASS | `AddOpenApi` and `MapOpenApi` build successfully |
 | Docker compose configuration | PASS | `docker compose config --quiet` |
-| PostgreSQL apply and rollback | BLOCKED | Docker daemon unavailable |
+| PostgreSQL apply and rollback | PASS | 7 real PostgreSQL integration tests |
 | Windows and Linux CI | BLOCKED | Remote workflow execution not verified |
 | Branch protection | BLOCKED | GitHub administrative access required |
 
 ## 1.4 Exit Criteria
 
 - [x] Active workspace projects build and pass local linting
-- [ ] Database migrations run forward and backward against PostgreSQL
+- [x] Database migrations run forward and backward against PostgreSQL
 - [ ] CI is green on Windows and Linux runners
 - [x] English i18n framework is functional
 - [x] OpenAPI is generated from endpoints

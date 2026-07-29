@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-2  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-28T16:34:20Z
+**Last Updated:** 2026-07-28T18:06:57Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 1 foundation; hardware acceptance depends on Phase 0 workstation remediation
 **Language:** en
@@ -100,8 +100,8 @@ Real recordings and `.spcapture` packages must use Git LFS. Synthetic metadata f
 | gRPC list, health, preview, capture, calibration, recording | PASS | Direct service tests |
 | Python quality gate | PASS | Ruff, Pyright, 58 tests, 80.15% total coverage |
 | .NET station client and platform API build | PASS | Release build, zero warnings |
-| PostgreSQL forward/rollback/audit behavior | BLOCKED | Docker daemon unavailable locally; CI test is configured |
-| MinIO upload integration | BLOCKED | Docker daemon unavailable locally |
+| PostgreSQL forward/rollback/audit behavior | PASS | 7 real PostgreSQL integration tests |
+| MinIO upload integration | BLOCKED | End-to-end synchronization test not implemented |
 | Windows RealSense hardware tests | BLOCKED | Camera and qualified SDK unavailable |
 | Linux replay compatibility | BLOCKED | Linux runner not executed locally |
 | 30-minute stability run | BLOCKED | Physical hardware unavailable |

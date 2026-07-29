@@ -16,7 +16,7 @@ public sealed class ModelConfigurationTests
     public void SpecProofDbContext_Model_UsesUtcTimestampColumnTypes()
     {
         var options = new DbContextOptionsBuilder<SpecProofDbContext>()
-            .UseNpgsql("Host=localhost;Database=specproof_test;Username=Admin;Password=Admin@123")
+            .UseNpgsql("Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123")
             .Options;
 
         using var context = new SpecProofDbContext(options);
@@ -31,7 +31,7 @@ public sealed class ModelConfigurationTests
     public void SpecProofDbContext_Model_MapsAllEntityTimestampsAsTimestamptz()
     {
         var options = new DbContextOptionsBuilder<SpecProofDbContext>()
-            .UseNpgsql("Host=localhost;Database=specproof_test;Username=Admin;Password=Admin@123")
+            .UseNpgsql("Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123")
             .Options;
 
         using var context = new SpecProofDbContext(options);
@@ -64,6 +64,21 @@ public sealed class ModelConfigurationTests
         Assert.Contains(
             operations,
             sql => sql.Contains("prevent_calibration_modification", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void MigrationAssembly_ContainsFoundationAndCaptureMigrations()
+    {
+        var options = new DbContextOptionsBuilder<SpecProofDbContext>()
+            .UseNpgsql("Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123")
+            .Options;
+
+        using var context = new SpecProofDbContext(options);
+        var migrationIds = context.GetService<IMigrationsAssembly>().Migrations.Keys.ToArray();
+
+        Assert.Equal(
+            ["20260726103000_InitialFoundation", "20260727170000_CaptureStationCore"],
+            migrationIds);
     }
 
     [Fact]
@@ -108,6 +123,8 @@ public sealed class ModelConfigurationTests
             Name = "Integration Tenant",
         };
         context.Tenants.Add(tenant);
+        await context.SaveChangesAsync();
+
         var auditEvent = new AuditEvent
         {
             Id = Guid.NewGuid(),
@@ -136,7 +153,7 @@ public sealed class ModelConfigurationTests
     {
         var connectionString =
             Environment.GetEnvironmentVariable("SPEC_PROOF_TEST_DATABASE")
-            ?? "Host=localhost;Database=specproof_test;Username=Admin;Password=Admin@123";
+            ?? "Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123";
         var options = new DbContextOptionsBuilder<SpecProofDbContext>()
             .UseNpgsql(connectionString)
             .Options;

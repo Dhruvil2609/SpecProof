@@ -1,6 +1,6 @@
 # Phase 0 Windows Development Environment Setup
 
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-29T17:22:46Z
 **Timezone:** UTC  
 **Language:** en
 
@@ -22,6 +22,21 @@ winver
 Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsBuildNumber, OsArchitecture
 w32tm /query /status
 ```
+
+If the status reports `Source: Local CMOS Clock`, `Stratum: 0`, or no successful sync,
+configure the organisation-approved NTP source from an elevated PowerShell terminal.
+For a non-domain development workstation, the Windows public source can be configured
+as follows:
+
+```powershell
+w32tm /config /manualpeerlist:"time.windows.com,0x8" /syncfromflags:manual /update
+Restart-Service W32Time
+w32tm /resync /rediscover
+w32tm /query /status
+```
+
+Domain-joined workstations must use the organisation's approved domain/NTP policy
+instead of overriding it locally.
 
 ## WSL2 and Docker Desktop
 
@@ -45,7 +60,7 @@ docker compose ps
 
 Local service endpoints:
 
-- PostgreSQL: `localhost:5432`, database `specproof`, user `Admin`, password `Admin@123`.
+- PostgreSQL: `localhost:55432`, database `specproof`, user `Admin`, password `Admin@123`.
 - Redis: `localhost:6379`.
 - MinIO API: `http://localhost:9000`.
 - MinIO console: `http://localhost:9001`.

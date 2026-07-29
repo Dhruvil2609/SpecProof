@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import subprocess
+import sys
+import types
 
 import pytest
 from specproof_doctor import checks
@@ -17,6 +19,10 @@ def test_parse_semver_valid_text_returns_tuple() -> None:
     result = checks.parse_semver("git version 2.53.0.windows.1")
 
     assert result == (2, 53, 0)
+
+
+def test_doctor_command_timeout_allows_slow_sdk_startup() -> None:
+    assert DoctorConfig().command_timeout_seconds == 10.0
 
 
 @pytest.mark.parametrize(
@@ -83,6 +89,26 @@ def test_command_check_missing_command_returns_failure(monkeypatch: pytest.Monke
     )
 
     assert result.status == CheckStatus.FAIL
+
+
+def test_default_command_runner_uses_resolved_executable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    resolved_command: list[str] = []
+
+    def fake_run(
+        command: checks.Sequence[str],
+        **_: object,
+    ) -> subprocess.CompletedProcess[str]:
+        resolved_command.extend(command)
+        return completed("10.14.0")
+
+    monkeypatch.setattr(checks.shutil, "which", lambda _: r"C:\tools\pnpm.CMD")
+    monkeypatch.setattr(checks.subprocess, "run", fake_run)
+
+    checks.default_command_runner(["pnpm", "--version"], 1)
+
+    assert resolved_command == [r"C:\tools\pnpm.CMD", "--version"]
 
 
 def test_command_check_valid_output_returns_success(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -245,6 +271,38 @@ def test_protocol_service_check_calls_probe_once() -> None:
     result = checks.protocol_service_check("Service", probe, 1.0, "ok", "failed")
 
     assert result.status == CheckStatus.PASS and calls == 1
+
+
+def test_default_postgres_probe_uses_docker_development_port(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured_connection_strings: list[str] = []
+
+    class QueryResult:
+        def fetchone(self) -> tuple[int]:
+            return (1,)
+
+    class Connection:
+        def execute(self, query: str) -> QueryResult:
+            assert query == "SELECT 1"
+            return QueryResult()
+
+        def close(self) -> None:
+            return None
+
+    def connect(connection_string: str, connect_timeout: int) -> Connection:
+        captured_connection_strings.append(connection_string)
+        assert connect_timeout == 1
+        return Connection()
+
+    fake_psycopg = types.SimpleNamespace(connect=connect)
+    monkeypatch.setitem(sys.modules, "psycopg", fake_psycopg)
+    monkeypatch.delenv("SPEC_PROOF_POSTGRES", raising=False)
+
+    assert checks.default_postgres_probe(1.5) is True
+    assert captured_connection_strings == [
+        "host=localhost port=55432 dbname=specproof user=Admin password=Admin@123"
+    ]
 
 
 @pytest.mark.parametrize(

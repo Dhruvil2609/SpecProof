@@ -1,76 +1,83 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-28T16:34:20Z
+**Last Updated:** 2026-07-29T17:22:46Z
 **Timezone:** UTC
 **Language:** en
 
 ## Status Legend
 
-| Status | Meaning |
-|--------|---------|
-| `NOT_STARTED` | Work has not begun |
-| `IN_PROGRESS` | Repository work exists but exit criteria remain |
-| `BLOCKED` | External, administrative, service, or hardware dependency prevents verification |
-| `COMPLETE` | All documented exit criteria are verified |
+| Status        | Meaning                                                                         |
+| ------------- | ------------------------------------------------------------------------------- |
+| `NOT_STARTED` | Work has not begun                                                              |
+| `IN_PROGRESS` | Repository work exists but exit criteria remain                                 |
+| `BLOCKED`     | External, administrative, service, or hardware dependency prevents verification |
+| `COMPLETE`    | All documented exit criteria are verified                                       |
 
 ## Phase Summary
 
-| Phase | Name | Status | Tasks | Done | Progress |
-|------:|------|--------|------:|-----:|---------:|
-| 0 | Development Environment Setup | `IN_PROGRESS` | 54 | 25 | 46% |
-| 1 | Project Foundation | `IN_PROGRESS` | 51 | 48 | 94% |
-| 2 | Capture Station Core | `IN_PROGRESS` | 43 | 29 | 67% |
-| 3 | Perception Pipeline | `NOT_STARTED` | 37 | 0 | 0% |
-| 4 | Measurement Engine | `NOT_STARTED` | 36 | 0 | 0% |
-| 5 | Platform and Trust Layer | `NOT_STARTED` | 37 | 0 | 0% |
-| 6 | Web Application | `NOT_STARTED` | 39 | 0 | 0% |
-| 7 | Integration and Pilot | `NOT_STARTED` | 27 | 0 | 0% |
-| 8 | Production Hardening | `NOT_STARTED` | 36 | 0 | 0% |
-| **Total** | | | **360** | **102** | **28%** |
+|     Phase | Name                          | Status        |   Tasks |    Done | Progress |
+| --------: | ----------------------------- | ------------- | ------: | ------: | -------: |
+|         0 | Development Environment Setup | `IN_PROGRESS` |      54 |      40 |      74% |
+|         1 | Project Foundation            | `IN_PROGRESS` |      51 |      48 |      94% |
+|         2 | Capture Station Core          | `IN_PROGRESS` |      43 |      29 |      67% |
+|         3 | Perception Pipeline           | `NOT_STARTED` |      37 |       0 |       0% |
+|         4 | Measurement Engine            | `NOT_STARTED` |      36 |       0 |       0% |
+|         5 | Platform and Trust Layer      | `NOT_STARTED` |      37 |       0 |       0% |
+|         6 | Web Application               | `NOT_STARTED` |      39 |       0 |       0% |
+|         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
+|         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
+| **Total** |                               |               | **360** | **117** |  **33%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
 ## Current Validation
 
-| Stack | Result | Evidence |
-|-------|--------|----------|
-| Python formatting and lint | PASS | Ruff, 66 files |
-| Python type checking | PASS | Pyright, zero errors |
-| Python tests and coverage | PASS | 58 tests, 80.15% total coverage |
-| .NET release build | PASS | Zero warnings, zero errors |
-| .NET tests | PASS | 7 tests |
-| Frontend lint and type-check | PASS | Operator and admin applications |
-| Frontend tests | PASS | 8 tests |
-| Frontend coverage | PASS | 86.36% statements per application |
-| Frontend production build | PASS | Operator and admin applications |
-| Docker Compose definition | PASS | `docker compose config --quiet` |
-| PostgreSQL migration runtime | BLOCKED | Docker daemon unavailable |
-| MinIO synchronization runtime | BLOCKED | Docker daemon unavailable |
-| Remote Windows/Linux CI | BLOCKED | Workflow execution not verified |
+| Stack                         | Result  | Evidence                             |
+| ----------------------------- | ------- | ------------------------------------ |
+| Python formatting and lint    | PASS    | Ruff, 66 files                       |
+| Python type checking          | PASS    | Pyright, zero errors                 |
+| Python tests and coverage     | PASS    | 58-test full baseline; 34 focused launcher/doctor tests |
+| .NET release build            | PASS    | Zero warnings, zero errors           |
+| .NET tests                    | PASS    | 8 tests                              |
+| Frontend lint and type-check  | PASS    | Operator and admin applications      |
+| Frontend tests                | PASS    | 8 tests                              |
+| Frontend coverage             | PASS    | 86.36% statements per application    |
+| Frontend production build     | PASS    | Operator and admin applications      |
+| Docker Compose definition     | PASS    | `docker compose config --quiet`      |
+| Docker daemon                 | PASS    | Doctor host verification             |
+| PostgreSQL protocol runtime   | PASS    | Doctor `SELECT 1` on Docker port 55432 |
+| PostgreSQL migration runtime  | BLOCKED | Windows Application Control blocks unsigned local .NET test assemblies |
+| MinIO synchronization runtime | BLOCKED | End-to-end synchronization test not implemented |
+| Remote Windows/Linux CI       | BLOCKED | Workflow execution not verified      |
 | RealSense hardware acceptance | BLOCKED | Camera and qualified SDK unavailable |
 
 ## Recent Activity
 
-| Timestamp (UTC) | Phase | Action |
-|-----------------|-------|--------|
-| 2026-07-28T16:34:20Z | 0 | Pinned Compose images, strengthened doctor protocol checks, and generated `uv.lock` |
-| 2026-07-28T16:34:20Z | 1 | Fixed frontend lint, added generated OpenAPI, OpenTelemetry, stable .NET packages, coverage workflows, and real PostgreSQL migration tests |
-| 2026-07-28T16:34:20Z | 2 | Added protobuf contract, camera adapters, calibration records, `.spcapture`, SQLite queue, object storage, platform sync, gRPC service/client, and tests |
-| 2026-07-28T16:34:20Z | Docs | Replaced corrupted Phase 0/1/2 and tracking text with UTF-8 content |
+| Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
+| -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-29T17:22:46Z | 0     | Resolved Python 3.11 native module blocker, started the full dev stack, passed doctor with zero required failures, and moved Docker PostgreSQL to 55432 |
+| 2026-07-29T17:22:46Z | 1     | Re-ran PostgreSQL integration tests; execution is blocked by Windows Application Control for unsigned local .NET assemblies                              |
+| 2026-07-28T18:14:56Z | Dev   | Added Docker-only launcher mode for infrastructure startup while Python Application Control approval remains blocked                                     |
+| 2026-07-28T18:06:57Z | 0/1/2 | Fixed Loki health, started all Compose services, registered the foundation migration, and passed 7 real PostgreSQL migration/audit tests                |
+| 2026-07-28T17:50:19Z | 0     | Verified BitLocker, WSL2, Docker daemon, PowerShell 7, Python dependency groups, and RealSense Python; native Python modules were still policy-blocked |
+| 2026-07-28T17:50:19Z | Dev   | Added unified start/stop scripts, declarative service configuration, process logging, health checks, and 4 launcher configuration tests                  |
+| 2026-07-28T16:53:43Z | Docs  | Added the end-to-end Phase 0-2 development, startup, validation, and manual completion runbook                                                           |
+| 2026-07-28T16:34:20Z | 0     | Pinned Compose images, strengthened doctor protocol checks, and generated `uv.lock`                                                                      |
+| 2026-07-28T16:34:20Z | 1     | Fixed frontend lint, added generated OpenAPI, OpenTelemetry, stable .NET packages, coverage workflows, and real PostgreSQL migration tests               |
+| 2026-07-28T16:34:20Z | 2     | Added protobuf contract, camera adapters, calibration records, `.spcapture`, SQLite queue, object storage, platform sync, gRPC service/client, and tests |
+| 2026-07-28T16:34:20Z | Docs  | Replaced corrupted Phase 0/1/2 and tracking text with UTF-8 content                                                                                      |
 
 ## Blocked Items
 
-| Task or Gate | Blocker | Required Resolution |
-|--------------|---------|---------------------|
-| Phase 0 Python 3.11 | Windows Application Control blocks managed native modules | Approve or install an enterprise-qualified Python 3.11 distribution |
-| Phase 0 Docker services | Docker daemon is not running | Start Docker Desktop and rerun doctor/service tests |
-| Phase 0 WSL/tooling | WSL access, PowerShell 7, CMake, Ninja, and GPU tooling unavailable | Complete host setup with administrator support |
-| Phase 0/2 RealSense | SDK, camera, USB 3 fixture, and artefact unavailable | Install qualified hardware stack and run HIL suite |
-| Phase 1 database acceptance | PostgreSQL container unavailable | Run configured forward/rollback/audit tests |
-| Phase 1 repository enforcement | GitHub administrative state unavailable | Enable branch protection and required workflows |
-| Phase 2 cross-platform acceptance | Linux runner not executed | Run replay and package tests on Linux |
-| Phase 2 stability | Physical camera unavailable | Run 30-minute zero-failure test |
+| Task or Gate                      | Blocker                                                             | Required Resolution                                                 |
+| --------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Phase 0 time/tooling              | NTP has no time source; CMake, Ninja, and OpenSSL are unavailable   | Configure approved NTP and install the missing tools                |
+| Phase 1 .NET test execution       | Windows Application Control blocks unsigned local build assemblies  | Approve repo-built .NET DLLs or configure local development signing |
+| Phase 0/2 RealSense               | Native SDK, camera, USB 3 fixture, and artefact unavailable         | Install qualified hardware stack and run HIL suite                  |
+| Phase 1 repository enforcement    | GitHub administrative state unavailable                             | Enable branch protection and required workflows                     |
+| Phase 2 cross-platform acceptance | Linux runner not executed                                           | Run replay and package tests on Linux                               |
+| Phase 2 stability                 | Physical camera unavailable                                         | Run 30-minute zero-failure test                                     |
 
 ## Update Rules
 

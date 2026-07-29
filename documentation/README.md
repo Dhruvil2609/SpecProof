@@ -4,6 +4,8 @@ This folder contains the living product documentation for SpecProof.
 
 ## Files
 
+- `DEVELOPMENT-RUNBOOK.md` - End-to-end workstation setup, project startup, validation,
+  and Phase 0-2 completion guide.
 - `USER-MANUAL.md` - End-user/operator manual for day-to-day garment inspection.
 - `ADMIN-MANUAL.md` - Administrator manual for users, tenants, stations, policies, and support operations.
 - `FEATURE-SOURCE-OF-TRUTH.md` - Developer-facing feature catalogue and expected behaviour source of truth.

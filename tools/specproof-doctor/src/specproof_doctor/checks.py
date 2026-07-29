@@ -61,7 +61,7 @@ class DoctorConfig:
     require_gpu: bool = False
     require_realsense: bool = False
     require_camera_stream: bool = False
-    command_timeout_seconds: float = 3.0
+    command_timeout_seconds: float = 10.0
     network_timeout_seconds: float = 1.5
 
 
@@ -76,8 +76,9 @@ def default_command_runner(
 ) -> subprocess.CompletedProcess[str]:
     """Run a command and capture text output."""
 
+    resolved_executable = shutil.which(command[0]) or command[0]
     return subprocess.run(
-        command,
+        [resolved_executable, *command[1:]],
         capture_output=True,
         check=False,
         text=True,
@@ -252,7 +253,7 @@ def default_postgres_probe(timeout_seconds: float) -> bool:
 
         connection_string = os.getenv(
             "SPEC_PROOF_POSTGRES",
-            "host=localhost port=5432 dbname=specproof user=Admin password=Admin@123",
+            "host=localhost port=55432 dbname=specproof user=Admin password=Admin@123",
         )
         connection = cast(
             _PostgresConnection,

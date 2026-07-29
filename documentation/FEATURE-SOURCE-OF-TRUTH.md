@@ -2,7 +2,7 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-28T16:34:20Z
+**Last Updated:** 2026-07-29T17:22:46Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
@@ -53,6 +53,7 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 | `SPF-018` | Reporting and exports | Planned | Quality Manager, Brand User |
 | `SPF-019` | API and webhooks | Planned | Integrator, Developer |
 | `SPF-020` | Observability and support bundle | Partially Implemented | Admin, Support |
+| `SPF-021` | Unified development launcher | Implemented | Developer, Support |
 
 ## 3. Feature Details
 
@@ -319,6 +320,29 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 - Produce structured logs, metrics, and traces.
 - Track camera FPS, dropped frames, invalid depth, latency, resource usage, calibration age, sync status, and result counts.
 - Redact credentials in support bundles.
+
+### `SPF-021` Unified Development Launcher
+
+**Use Case:** A developer starts or stops the complete local SpecProof environment
+without manually coordinating each process.
+
+**Expected Behaviour:**
+
+- Validate required commands, project paths, and application ports before startup.
+- Start Compose infrastructure and wait for healthy containers.
+- Use Docker PostgreSQL on `localhost:55432` to avoid conflicts with host PostgreSQL installs.
+- Start capture, station, API, operator, and admin processes with isolated logs.
+- Support mock, replay, and RealSense camera-provider modes.
+- Support Docker-only infrastructure startup when Python workstation approval is pending.
+- Record process IDs for deterministic shutdown.
+- Stop applications started in the current launcher session when startup fails.
+
+**Evidence and Tests:**
+
+- `tests/unit/tools/test_development_launcher.py` validates configured processes,
+  unique ports, working directories, .NET project paths, and infrastructure-only mode.
+- `start-development.ps1 -ValidateOnly -SkipInfrastructure` verifies host command
+  resolution without starting services.
 
 ## 4. Source-of-Truth Update Rules
 

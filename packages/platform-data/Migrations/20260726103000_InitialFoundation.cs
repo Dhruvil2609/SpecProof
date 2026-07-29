@@ -1,10 +1,13 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace SpecProof.Platform.Data.Migrations;
 
+[DbContext(typeof(SpecProofDbContext))]
+[Migration("20260726103000_InitialFoundation")]
 public partial class InitialFoundation : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

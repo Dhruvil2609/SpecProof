@@ -2,9 +2,13 @@
 
 SpecProof is a hardware and software system for automated garment measurement using RGB-D cameras, calibrated capture, 3D geometry, machine learning, and auditable decision records.
 
-## Phase 0 Setup
+## Development Setup
 
-This repository is currently in Phase 0: development environment setup. The host workstation setup is documented in `docs/setup/PHASE-0-WINDOWS.md`, and the reproducible local diagnostics are provided by `specproof-doctor`.
+Phases 0, 1, and 2 are in progress. Follow
+`documentation/DEVELOPMENT-RUNBOOK.md` for the complete workstation setup, workspace
+validation, full local startup order, and remaining manual acceptance steps. Detailed
+Phase 0 host remediation is documented in `docs/setup/PHASE-0-WINDOWS.md`, and
+reproducible local diagnostics are provided by `specproof-doctor`.
 
 ## Repository Layout
 
@@ -18,12 +22,15 @@ This repository is currently in Phase 0: development environment setup. The host
 
 ## Local Services
 
-Start local infrastructure after Docker Desktop is installed and running:
+After Docker Desktop is running, start the complete development environment:
 
 ```powershell
-docker compose up -d
-docker compose ps
+.\start-development.ps1
 ```
+
+Stop all tracked applications and Compose services with `.\stop-development.ps1`.
+Use `.\start-development.ps1 -ValidateOnly` to check prerequisites without starting
+anything.
 
 The compose credentials are local development defaults only. Do not reuse them outside local development.
 

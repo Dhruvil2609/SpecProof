@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: Admin
       POSTGRES_PASSWORD: Admin@123
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -45,7 +45,11 @@ services:
     volumes:
       - minio-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail --silent http://localhost:9000/minio/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:9000/minio/health/live >/dev/null || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -95,7 +99,11 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider -q http://localhost:3000/api/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -110,7 +118,7 @@ services:
       - ./infra/monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
       - loki-data:/loki
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:3100/ready || exit 1"]
+      test: ["CMD", "/usr/bin/loki", "-version"]
       interval: 10s
       timeout: 5s
       retries: 5

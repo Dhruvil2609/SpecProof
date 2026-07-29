@@ -1,0 +1,81 @@
+{
+  "services": [
+    {
+      "name": "capture-service",
+      "command": "uv.exe",
+      "arguments": ["run", "specproof-capture-service"],
+      "workingDirectory": ".",
+      "port": 50051,
+      "healthUrl": null,
+      "environment": {
+        "SPEC_PROOF_CAPTURE_ADDRESS": "127.0.0.1:50051",
+        "SPEC_PROOF_STATION_DATA": "station-data"
+      }
+    },
+    {
+      "name": "station-host",
+      "command": "dotnet.exe",
+      "arguments": [
+        "run",
+        "--project",
+        "apps/station-host/SpecProof.Station.Host.csproj"
+      ],
+      "workingDirectory": ".",
+      "port": null,
+      "healthUrl": null,
+      "environment": {}
+    },
+    {
+      "name": "platform-api",
+      "command": "dotnet.exe",
+      "arguments": [
+        "run",
+        "--project",
+        "apps/platform-api/SpecProof.Platform.Api.csproj"
+      ],
+      "workingDirectory": ".",
+      "port": 5080,
+      "healthUrl": "http://127.0.0.1:5080/healthz",
+      "environment": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://127.0.0.1:5080"
+      }
+    },
+    {
+      "name": "operator-ui",
+      "command": "pnpm.cmd",
+      "arguments": [
+        "--filter",
+        "@specproof/operator-ui",
+        "exec",
+        "vite",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5173"
+      ],
+      "workingDirectory": ".",
+      "port": 5173,
+      "healthUrl": "http://127.0.0.1:5173",
+      "environment": {}
+    },
+    {
+      "name": "admin-ui",
+      "command": "pnpm.cmd",
+      "arguments": [
+        "--filter",
+        "@specproof/admin-ui",
+        "exec",
+        "vite",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5174"
+      ],
+      "workingDirectory": ".",
+      "port": 5174,
+      "healthUrl": "http://127.0.0.1:5174",
+      "environment": {}
+    }
+  ]
+}
