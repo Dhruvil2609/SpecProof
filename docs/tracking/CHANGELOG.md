@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-07-30T17:59:35Z - Added synthetic calibration evaluators, capture-zone framing validation, replay package validation, Phase 3 RGB-D preprocessing, point-cloud utilities, and focused Python tests.
 - 2026-07-30T17:19:06Z - Added `docs/phases/README.md` defining software-first development before hardware acceptance.
 - 2026-07-28T18:14:56Z - Added `start-development.ps1 -InfrastructureOnly` to start Docker services while Python Application Control approval is pending.
 - 2026-07-28T17:50:19Z - Added unified PowerShell start/stop scripts with Docker health waiting, application readiness checks, PID tracking, per-service logs, camera-provider modes, and configuration tests.
@@ -45,6 +46,6 @@
 
 ### Blocked
 
-- MinIO synchronization runtime verification awaits an executable end-to-end synchronization test.
+- 2026-07-30T18:16:18Z - Verified local Docker MinIO synchronization integration test passes.
 - Branch protection and remote Windows/Linux workflow status require GitHub administrative access.
 - RealSense, physical calibration, disconnect/reconnect, hardware replay corpus, and stability acceptance are deferred until qualified hardware is available.

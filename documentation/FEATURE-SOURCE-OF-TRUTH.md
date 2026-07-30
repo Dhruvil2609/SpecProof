@@ -2,7 +2,7 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-07-30T17:59:35Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
@@ -44,7 +44,7 @@ gates.
 | `SPF-002` | Camera abstraction | Implemented; hardware acceptance deferred | Developer |
 | `SPF-003` | Calibration record management | Partially Implemented | Operator, Admin |
 | `SPF-004` | Garment capture workflow | Partially Implemented | Operator |
-| `SPF-005` | Garment perception pipeline | Planned | Operator, Developer |
+| `SPF-005` | Garment perception pipeline | Partially Implemented | Operator, Developer |
 | `SPF-006` | Geometry and surface processing | Partially Implemented | Developer |
 | `SPF-007` | Point-of-measure ontology | Planned | Technical Designer, Developer |
 | `SPF-008` | POM compiler | Planned | Technical Designer, Developer |
@@ -133,7 +133,8 @@ gates.
 - Valid depth is fused by per-pixel median and RGB uses the temporal midpoint frame.
 - ZIP64 `.spcapture` packages use canonical manifests, lossless PNG payloads, camera geometry, metadata, and SHA-256 checksums.
 - Packages publish atomically and queue in SQLite for idempotent object-store synchronization.
-- Capture-zone framing and operator browser integration remain planned.
+- Capture-zone framing is implemented for synthetic/replay masks.
+- Operator browser integration remains planned.
 
 ### `SPF-005` Garment Perception Pipeline
 
@@ -147,6 +148,11 @@ gates.
 - Propose landmarks with confidence.
 - Refine landmarks using category and spec constraints.
 
+**Current Implementation:**
+
+- Background modelling, depth filtering, RGB-depth mask refinement, colour smoothing, and deterministic preprocessing are implemented for synthetic/replay RGB-D inputs.
+- Model training, model export, category classification, orientation detection, and learned landmark detection remain planned.
+
 ### `SPF-006` Geometry and Surface Processing
 
 **Use Case:** Compute reliable distances and surface paths from metric RGB-D data.
@@ -158,6 +164,11 @@ gates.
 - Generate point cloud or mesh.
 - Compute straight, projected, contour, or geodesic paths.
 - Preserve mapping between 2D developed surface and 3D coordinates.
+
+**Current Implementation:**
+
+- Organised point-cloud projection, normal estimation, support-plane fitting, and garment-to-plane separation are implemented with known-shape unit tests.
+- Mesh generation, UV mapping, confidence scoring, and full surface parameterisation remain planned.
 
 **Current Implementation:**
 

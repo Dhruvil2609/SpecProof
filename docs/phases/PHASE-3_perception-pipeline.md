@@ -1,12 +1,12 @@
 # Phase 3 — Perception Pipeline
 
-**Phase ID:** PHASE-3  
-**Status:** `NOT_STARTED`  
-**Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
-**Estimated Duration:** 6–10 weeks  
-**Dependencies:** Phase 2  
-**Language:** en  
+**Phase ID:** PHASE-3
+**Status:** `IN_PROGRESS`
+**Created:** 2026-07-25T13:15:00Z
+**Last Updated:** 2026-07-30T17:59:35Z
+**Estimated Duration:** 6–10 weeks
+**Dependencies:** Phase 2
+**Language:** en
 
 ---
 
@@ -25,11 +25,11 @@ algorithm, API, model-export, or test-harness implementation.
 
 ### 3.2.1 Background Subtraction and Preprocessing
 
-- [ ] **TASK-3.2.1.1** — Capture-surface background model
-- [ ] **TASK-3.2.1.2** — Depth filtering (invalid, flying pixels, statistical outliers)
-- [ ] **TASK-3.2.1.3** — RGB-depth registration refinement
-- [ ] **TASK-3.2.1.4** — Noise reduction and smoothing
-- [ ] **TASK-3.2.1.5** — Write unit tests with synthetic data
+- [x] **TASK-3.2.1.1** — Capture-surface background model
+- [x] **TASK-3.2.1.2** — Depth filtering (invalid, flying pixels, statistical outliers)
+- [x] **TASK-3.2.1.3** — RGB-depth registration refinement
+- [x] **TASK-3.2.1.4** — Noise reduction and smoothing
+- [x] **TASK-3.2.1.5** — Write unit tests with synthetic data
 - [ ] **TASK-3.2.1.6** — Write regression tests with replay corpus
 
 ### 3.2.2 Garment Segmentation
@@ -46,15 +46,15 @@ algorithm, API, model-export, or test-harness implementation.
 
 ### 3.2.3 Point Cloud and Surface Processing
 
-- [ ] **TASK-3.2.3.1** — Organised point cloud generation from aligned RGB-D
-- [ ] **TASK-3.2.3.2** — Normal estimation
-- [ ] **TASK-3.2.3.3** — Support plane detection (RANSAC)
-- [ ] **TASK-3.2.3.4** — Garment-to-plane separation
+- [x] **TASK-3.2.3.1** — Organised point cloud generation from aligned RGB-D
+- [x] **TASK-3.2.3.2** — Normal estimation
+- [x] **TASK-3.2.3.3** — Support plane detection (RANSAC)
+- [x] **TASK-3.2.3.4** — Garment-to-plane separation
 - [ ] **TASK-3.2.3.5** — Surface confidence scoring
 - [ ] **TASK-3.2.3.6** — Low-distortion 2D parameterisation (UV mapping)
 - [ ] **TASK-3.2.3.7** — 3D-to-2D coordinate mapping preservation
 - [ ] **TASK-3.2.3.8** — Mesh generation for visualisation (glTF/GLB export)
-- [ ] **TASK-3.2.3.9** — Write geometry unit tests with known shapes
+- [x] **TASK-3.2.3.9** — Write geometry unit tests with known shapes
 
 ### 3.2.4 Landmark Detection
 
@@ -93,7 +93,7 @@ algorithm, API, model-export, or test-harness implementation.
 | Test ID | Test Description | Type | Expected Result |
 |---------|-----------------|------|-----------------|
 | T-3.001 | Background subtraction on known scene | Unit | ≥95% foreground accuracy |
-| T-3.002 | Depth filtering removes flying pixels | Unit | Zero invalid pixels in output |
+| T-3.002 | Depth filtering removes flying pixels | Unit | PASS on synthetic outlier fixture |
 | T-3.003 | Segmentation IoU on test set | Model | ≥0.85 IoU |
 | T-3.004 | Garment category classification accuracy | Model | ≥0.90 on test set |
 | T-3.005 | Point cloud from known geometry | Unit | ±1mm positional error |

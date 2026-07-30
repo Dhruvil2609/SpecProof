@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-2  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-07-30T18:16:18Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 1 foundation; hardware acceptance depends on qualified capture hardware
 **Language:** en
@@ -40,26 +40,26 @@ providers.
 
 ### 2.2.2 Calibration System
 
-- [ ] **TASK-2.2.2.1** — Camera intrinsic verification module
-- [ ] **TASK-2.2.2.2** — RGB-to-depth alignment verification
-- [ ] **TASK-2.2.2.3** — Camera-to-capture-plane extrinsic calibration
-- [ ] **TASK-2.2.2.4** — Scale verification using calibration artefact
-- [ ] **TASK-2.2.2.5** — Flatness and orientation checks
-- [ ] **TASK-2.2.2.6** — Lighting uniformity verification
+- [x] **TASK-2.2.2.1** — Camera intrinsic verification module
+- [x] **TASK-2.2.2.2** — RGB-to-depth alignment verification
+- [x] **TASK-2.2.2.3** — Camera-to-capture-plane extrinsic calibration
+- [x] **TASK-2.2.2.4** — Scale verification using calibration artefact
+- [x] **TASK-2.2.2.5** — Flatness and orientation checks
+- [x] **TASK-2.2.2.6** — Lighting uniformity verification
 - [x] **TASK-2.2.2.7** — Immutable calibration record storage
 - [x] **TASK-2.2.2.8** — Daily quick-check and full calibration modes
 - [x] **TASK-2.2.2.9** — Calibration expiry enforcement
 - [x] **TASK-2.2.2.10** — Calibration record and threshold regression tests
 
-The service exposes calibration workflows and enforces validity. Calibration evaluator
-code should be implemented with synthetic geometry and threshold fixtures first;
-physical metric validation is deferred until artefact geometry and hardware fixtures
-can be measured.
+The service exposes calibration workflows and enforces validity. Synthetic/replay
+calibration evaluators now compute alignment, scale error, plane RMS, tilt, and
+lighting variation for software acceptance. Physical metric validation is deferred
+until artefact geometry and hardware fixtures can be measured.
 
 ### 2.2.3 Capture Workflow
 
 - [x] **TASK-2.2.3.1** — Latest-frame bounded preview stream
-- [ ] **TASK-2.2.3.2** — Capture zone framing validation
+- [x] **TASK-2.2.3.2** — Capture zone framing validation
 - [x] **TASK-2.2.3.3** — Configurable multi-frame capture and median depth fusion
 - [x] **TASK-2.2.3.4** — ZIP64 `.spcapture` package format
 - [x] **TASK-2.2.3.5** — Payload and package SHA-256 checksums
@@ -85,7 +85,7 @@ can be measured.
 - [ ] **TASK-2.2.5.3** — Record low-light, reflective, black-fabric, and missing-depth cases
 - [ ] **TASK-2.2.5.4** — Record calibration-expired scenarios
 - [ ] **TASK-2.2.5.5** — Record corrupted and interrupted packages
-- [ ] **TASK-2.2.5.6** — Cross-platform corpus validation tests
+- [x] **TASK-2.2.5.6** — Cross-platform corpus validation tests
 
 Real recordings and `.spcapture` packages must use Git LFS. Synthetic metadata fixtures remain normal Git files.
 
@@ -112,7 +112,7 @@ Real recordings and `.spcapture` packages must use Git LFS. Synthetic metadata f
 | Python quality gate | PASS | Ruff, Pyright, 58 tests, 80.15% total coverage |
 | .NET station client and platform API build | PASS | Release build, zero warnings |
 | PostgreSQL forward/rollback/audit behavior | PASS | 7 real PostgreSQL integration tests |
-| MinIO upload integration | BLOCKED | End-to-end synchronization test not implemented |
+| MinIO upload integration | PASS | `uv run pytest tests/integration/python/test_capture_sync_minio.py -v --basetemp .cache/pytest` passed at 2026-07-30T18:16:18Z |
 | Windows RealSense hardware tests | DEFERRED | Camera and qualified SDK unavailable |
 | Linux replay compatibility | DEFERRED | Linux runner not executed locally |
 | 30-minute stability run | DEFERRED | Physical hardware unavailable |
@@ -121,11 +121,11 @@ Real recordings and `.spcapture` packages must use Git LFS. Synthetic metadata f
 
 - [x] Versioned camera contract and generated Python/C# bindings exist
 - [x] Mock and replay provider paths are testable without hardware
-- [ ] Synthetic calibration evaluators pass threshold tests
-- [ ] Capture zone framing validation works on synthetic/replay data
+- [x] Synthetic calibration evaluators pass threshold tests
+- [x] Capture zone framing validation works on synthetic/replay data
 - [ ] Full capture workflow E2E test passes against running Docker services
-- [ ] PostgreSQL and MinIO integration tests pass against running services
-- [ ] Replay package validation passes locally
+- [x] PostgreSQL and MinIO integration tests pass against running services
+- [x] Replay package validation passes locally
 - [x] Calibration records are immutable, versioned, and expiry-enforced
 - [x] Capture packages are platform-neutral, atomic, and checksummed
 - [x] Station agent reports health and recovers durable queue state
