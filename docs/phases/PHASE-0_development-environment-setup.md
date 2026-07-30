@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-0  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-29T17:22:46Z
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 1–2 weeks  
 **Dependencies:** None  
 **Language:** en
@@ -11,6 +11,10 @@
 ## 0.1 Objective
 
 Provide reproducible repository configuration and diagnostics for a Windows 11 development workstation. Privileged host configuration remains a documented manual responsibility and is verified by `specproof-doctor`.
+
+Software development can proceed without physical capture hardware. RealSense camera,
+GPU, and physical streaming checks are capture-workstation acceptance gates and remain
+deferred until hardware is available.
 
 ## 0.2 Tasks
 
@@ -135,8 +139,8 @@ No new commit was created during this implementation.
 | WSL2 | PASS |
 | PowerShell 7 | PASS, version 7.6.4 |
 | CMake, Ninja, OpenSSL | BLOCKED |
-| RealSense SDK and camera stream | BLOCKED |
-| NVIDIA/CUDA | BLOCKED or unavailable |
+| RealSense SDK and camera stream | DEFERRED until hardware is available |
+| NVIDIA/CUDA | DEFERRED unless GPU acceleration is required |
 
 ## 0.4 Exit Criteria
 
@@ -145,6 +149,8 @@ No new commit was created during this implementation.
 - [x] Initial repository structure and historical initial commit exist
 - [x] `docker compose up -d` starts all services ✅ (2026-07-29T17:22:46Z)
 - [ ] Python, .NET, and Node environments are reproducible and usable
-- [ ] RealSense and optional GPU requirements are resolved for the target workstation
+- [ ] RealSense and optional GPU requirements are resolved for the target capture workstation
 
-See `docs/setup/PHASE-0-WINDOWS.md` for manual remediation. Phase 0 remains `IN_PROGRESS`.
+See `docs/setup/PHASE-0-WINDOWS.md` for manual remediation. Phase 0 remains
+`IN_PROGRESS` for workstation-level acceptance, but it no longer blocks software
+module development.

@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -13,6 +13,11 @@
 ## 8.1 Objective
 
 Harden all components for production deployment: security audit, installer packaging, code signing, update mechanism, compliance documentation, and full quality gates. The system must be ready for factory deployment.
+
+Most Phase 8 software hardening can proceed before hardware is available: packaging,
+signing, update/rollback, security scans, SBOM, observability, backup/restore, and
+support runbooks. Hardware-in-loop, calibration accuracy, USB recovery, and stability
+quality gates remain deferred final-release gates.
 
 ---
 
@@ -112,7 +117,8 @@ Harden all components for production deployment: security audit, installer packa
 
 ## 8.4 Exit Criteria
 
-- [ ] All 15 quality gates pass (section 8.2.6)
+- [ ] All software quality gates pass
+- [ ] Hardware-in-loop quality gates pass after hardware becomes available
 - [ ] Signed installers for Windows and Linux
 - [ ] Update and rollback mechanism tested
 - [ ] Security scan clean

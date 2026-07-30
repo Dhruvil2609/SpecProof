@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -13,6 +13,11 @@
 ## 7.1 Objective
 
 Integrate all components end-to-end, run comprehensive system tests, conduct the measurement validation study, and prepare for factory pilot deployment.
+
+Before hardware is available, Phase 7 should run a software integration track using
+mock capture services, replay packages, synthetic garments, seeded platform data, and
+Docker infrastructure. The physical measurement validation study, camera crash tests,
+operator study, and factory pilot remain deferred hardware acceptance activities.
 
 ---
 
@@ -36,6 +41,10 @@ Integrate all components end-to-end, run comprehensive system tests, conduct the
 - [ ] **TASK-7.2.2.6** — Compute agreement with manual (MAE ≤5mm)
 - [ ] **TASK-7.2.2.7** — Report per POM, not aggregated
 - [ ] **TASK-7.2.2.8** — Generate Gauge R&R report
+
+Study protocol, data schemas, analysis scripts, report templates, and synthetic dry
+runs can be completed before hardware arrives. Real data collection and acceptance
+statistics require physical hardware and garments.
 
 ### 7.2.3 Performance Optimisation
 
@@ -93,9 +102,13 @@ Integrate all components end-to-end, run comprehensive system tests, conduct the
 ## 7.4 Exit Criteria
 
 - [ ] Full pipeline runs end-to-end without manual intervention
-- [ ] Measurement validation study meets POC targets
+- [ ] Software E2E pipeline runs with mock/replay capture data
+- [ ] Measurement validation study meets POC targets on hardware-captured data
 - [ ] <15s processing on dev workstation
 - [ ] Resilience tests pass (power, network, crash recovery)
 - [ ] Cross-platform replay produces equivalent results
 - [ ] Pilot documentation complete
 - [ ] All test cases pass
+
+Software integration can be completed before hardware. Pilot readiness and measurement
+validation remain deferred until qualified capture hardware and garments are available.

@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-5  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 4  
 **Language:** en  
@@ -13,6 +13,10 @@
 ## 5.1 Objective
 
 Build the multi-tenant platform API, authentication and authorisation, signed evidence records, device management, and data synchronisation. This is the enterprise backbone connecting stations, users, and brands.
+
+Hardware is not required for Phase 5 coding. Station management, device identity,
+sync, evidence signing, reporting, and API behavior should be implemented and tested
+with simulated stations, generated capture metadata, Docker PostgreSQL, and MinIO.
 
 ---
 
@@ -120,3 +124,6 @@ Build the multi-tenant platform API, authentication and authorisation, signed ev
 - [ ] Reporting and export APIs functional
 - [ ] All security test cases pass
 - [ ] All test cases pass on both Windows and Linux runners
+
+Hardware-originated capture payloads can be substituted with synthetic or replay
+packages until physical stations are available.

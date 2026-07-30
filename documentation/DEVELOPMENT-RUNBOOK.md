@@ -3,7 +3,7 @@
 **Audience:** Developers, workstation administrators, and technical testers  
 **Scope:** Phases 0, 1, and 2  
 **Status:** Living runbook  
-**Last Updated:** 2026-07-29T17:07:31Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Platform:** Windows 11 x64  
 **Shell:** PowerShell 7
 
@@ -19,9 +19,14 @@ and tracking documents only after the result is successful.
 
 | Phase   | Status        | Main Remaining Gates                                                                                             |
 | ------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Phase 0 | `IN_PROGRESS` | Approved Python 3.11, Docker runtime, host tools, RealSense, and optional GPU verification                       |
-| Phase 1 | `IN_PROGRESS` | PostgreSQL migration tests, remote CI, branch protection, and required checks                                    |
-| Phase 2 | `IN_PROGRESS` | Physical calibration features, replay corpus, service integration, cross-platform, hardware, and stability tests |
+| Phase 0 | `IN_PROGRESS` | Host tooling, RealSense, and optional GPU acceptance remain manual/deferred                                      |
+| Phase 1 | `IN_PROGRESS` | Remote CI, branch protection, and required checks                                                               |
+| Phase 2 | `IN_PROGRESS` | Software work continues with mock/replay/synthetic fixtures; hardware acceptance is deferred                    |
+
+Hardware is not currently available. Continue software development for Phases 2-8
+with mock providers, replay packages, synthetic fixtures, Docker services, and API
+simulators. Do not mark physical camera, calibration, disconnect/reconnect, stability,
+pilot, or measurement-validation gates complete until hardware evidence exists.
 
 Review the authoritative task lists before changing a phase status:
 
@@ -386,9 +391,11 @@ Do not mark the branch-protection tasks complete until the rule is enabled and t
 
 ## 5. Phase 2: Run and Complete Capture Station Core
 
-Phase 2 can run with a mock camera today. Full completion additionally requires
-implemented physical calibration checks, qualified hardware, real replay files,
-cross-platform execution, service integrations, and a stability test.
+Phase 2 can run with a mock camera today. Implement all software modules using mock,
+replay, synthetic, and Docker-backed tests before hardware arrives. Full hardware
+acceptance additionally requires physical calibration checks, qualified hardware,
+real replay files, cross-platform execution, service integrations, and a stability
+test.
 
 ### Step 2.1: Start the Mock Capture Service
 

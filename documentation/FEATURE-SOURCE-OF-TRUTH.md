@@ -2,13 +2,20 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-29T17:22:46Z
+**Last Updated:** 2026-07-30T17:19:06Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
 ## 1. Product Scope
 
 SpecProof is a calibrated RGB-D garment measurement and inspection system for flat or relaxed finished garments on a defined capture surface.
+
+Hardware is not currently available. The system must be developed software-first:
+coding modules, contracts, APIs, perception logic, measurement logic, UI workflows,
+storage, sync, and reporting proceed with mock providers, replay packages, synthetic
+fixtures, Docker services, and simulated station APIs. Physical camera validation,
+calibration acceptance, hardware stability, and pilot evidence are deferred acceptance
+gates.
 
 ### MVP Scope
 
@@ -34,7 +41,7 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 | Feature ID | Feature | Status | Primary Users |
 |------------|---------|--------|---------------|
 | `SPF-001` | Station health diagnostics | Partially Implemented | Operator, Admin, Support |
-| `SPF-002` | Camera abstraction | Implemented; hardware verification blocked | Developer |
+| `SPF-002` | Camera abstraction | Implemented; hardware acceptance deferred | Developer |
 | `SPF-003` | Calibration record management | Partially Implemented | Operator, Admin |
 | `SPF-004` | Garment capture workflow | Partially Implemented | Operator |
 | `SPF-005` | Garment perception pipeline | Planned | Operator, Developer |
@@ -89,7 +96,7 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 - The canonical gRPC contract exposes device, health, preview, capture, recording, and calibration operations.
 - Python provides mock, `.spcapture` replay, and Windows RealSense adapters.
 - The .NET station host consumes generated client types and maps gRPC failures to typed station exceptions.
-- RealSense hardware acceptance remains blocked.
+- RealSense hardware acceptance is deferred until qualified hardware is available.
 
 ### `SPF-003` Calibration Record Management
 
@@ -106,7 +113,7 @@ SpecProof is a calibrated RGB-D garment measurement and inspection system for fl
 - Filesystem and PostgreSQL models preserve immutable version, mode, operator, artefact, metrics, validity window, checksum, and supersession metadata.
 - Full calibration defaults to 30 days; daily checks default to 24 hours.
 - Expired or missing calibration blocks capture.
-- Physical calibration metric evaluators remain blocked pending approved hardware and artefacts.
+- Physical calibration metric acceptance is deferred pending approved hardware and artefacts.
 
 ### `SPF-004` Garment Capture Workflow
 

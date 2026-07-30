@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-07-30T17:19:06Z - Added `docs/phases/README.md` defining software-first development before hardware acceptance.
 - 2026-07-28T18:14:56Z - Added `start-development.ps1 -InfrastructureOnly` to start Docker services while Python Application Control approval is pending.
 - 2026-07-28T17:50:19Z - Added unified PowerShell start/stop scripts with Docker health waiting, application readiness checks, PID tracking, per-service logs, camera-provider modes, and configuration tests.
 - 2026-07-28T16:53:43Z - Added the Phase 0-2 development runbook with ordered workstation setup, full-stack startup, verification, hardware, and completion steps.
@@ -24,6 +25,7 @@
 
 ### Changed
 
+- 2026-07-30T17:19:06Z - Updated Phase 0-8 roadmap language so coding proceeds with mock, replay, synthetic, Docker, and simulated API tests while hardware gates remain deferred acceptance items.
 - 2026-07-29T17:22:46Z - Moved local Docker PostgreSQL from `localhost:5432` to `localhost:55432` to avoid conflict with an existing Windows PostgreSQL process.
 - 2026-07-28T17:50:19Z - Installed and locked the Python 3.11 runtime, ML, station, and development dependency groups and updated Phase 0 evidence from host verification.
 - 2026-07-28T16:34:20Z — Pinned Compose images and Python dependencies for reproducibility.
@@ -45,4 +47,4 @@
 
 - MinIO synchronization runtime verification awaits an executable end-to-end synchronization test.
 - Branch protection and remote Windows/Linux workflow status require GitHub administrative access.
-- RealSense, physical calibration, disconnect/reconnect, replay corpus, and stability acceptance require qualified hardware.
+- RealSense, physical calibration, disconnect/reconnect, hardware replay corpus, and stability acceptance are deferred until qualified hardware is available.

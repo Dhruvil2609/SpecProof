@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-29T17:43:19Z
+**Last Updated:** 2026-07-30T17:19:06Z
 **Timezone:** UTC
 **Language:** en
 
@@ -50,12 +50,13 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | PostgreSQL migration runtime  | PASS    | 7 real PostgreSQL integration tests on Docker port 55432 |
 | MinIO synchronization runtime | BLOCKED | End-to-end synchronization test not implemented |
 | Remote Windows/Linux CI       | BLOCKED | Workflow execution not verified      |
-| RealSense hardware acceptance | BLOCKED | Camera and qualified SDK unavailable |
+| RealSense hardware acceptance | DEFERRED | Hardware unavailable; software work proceeds with mock/replay/synthetic fixtures |
 
 ## Recent Activity
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-30T17:19:06Z | 0-8   | Updated phase roadmap for software-first development before hardware arrives; hardware gates are deferred acceptance items, not coding blockers        |
 | 2026-07-29T17:43:19Z | 1     | Resolved .NET Application Control test execution blocker and passed 7 PostgreSQL migration/audit integration tests                                      |
 | 2026-07-29T17:22:46Z | 0     | Resolved Python 3.11 native module blocker, started the full dev stack, passed doctor with zero required failures, and moved Docker PostgreSQL to 55432 |
 | 2026-07-29T17:22:46Z | 1     | Re-ran PostgreSQL integration tests; execution is blocked by Windows Application Control for unsigned local .NET assemblies                              |
@@ -74,14 +75,13 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Task or Gate                      | Blocker                                                             | Required Resolution                                                 |
 | --------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Phase 0 time/tooling              | NTP has no time source; CMake, Ninja, and OpenSSL are unavailable   | Configure approved NTP and install the missing tools                |
-| Phase 0/2 RealSense               | Native SDK, camera, USB 3 fixture, and artefact unavailable         | Install qualified hardware stack and run HIL suite                  |
 | Phase 1 repository enforcement    | GitHub administrative state unavailable                             | Enable branch protection and required workflows                     |
 | Phase 2 cross-platform acceptance | Linux runner not executed                                           | Run replay and package tests on Linux                               |
-| Phase 2 stability                 | Physical camera unavailable                                         | Run 30-minute zero-failure test                                     |
+| Hardware acceptance gates         | RealSense camera, USB 3 fixture, artefact, and garments unavailable | Deferred until hardware arrives; continue software-first development |
 
 ## Update Rules
 
 - Use UTC ISO 8601 timestamps.
 - Mark tasks complete only when their implementation or verification statement is objectively satisfied.
-- Keep external or hardware acceptance gates blocked rather than marking them complete.
+- Keep external or hardware acceptance gates deferred or blocked rather than marking them complete.
 - Update the phase file, this tracker, the changelog, and affected manuals in the same change.

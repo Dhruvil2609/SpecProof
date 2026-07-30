@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-6  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 5  
 **Language:** en  
@@ -13,6 +13,10 @@
 ## 6.1 Objective
 
 Build the operator and admin web applications (React/TypeScript or Angular/TypeScript) with full i18n support, live camera preview, inspection workflows, measurement overlays, reporting dashboards, and user/role management.
+
+Hardware is not required for Phase 6 coding. Live preview, capture workflow, station
+health, calibration status, and result review should be implemented against simulated
+station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 
 ---
 
@@ -125,3 +129,6 @@ Build the operator and admin web applications (React/TypeScript or Angular/TypeS
 - [ ] Reporting dashboards display accurate data
 - [ ] All test cases pass on Chrome and Edge
 - [ ] No accessibility violations (WCAG 2.1 AA basic checks)
+
+When hardware becomes available, the same UI workflows must be rerun against a live
+station. That hardware pass is acceptance evidence, not a blocker for UI development.

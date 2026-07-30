@@ -3,14 +3,19 @@
 **Phase ID:** PHASE-2  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-28T18:06:57Z
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 4–6 weeks  
-**Dependencies:** Phase 1 foundation; hardware acceptance depends on Phase 0 workstation remediation
+**Dependencies:** Phase 1 foundation; hardware acceptance depends on qualified capture hardware
 **Language:** en
 
 ## 2.1 Objective
 
 Build the versioned RGB-D capture boundary, camera adapters, calibration records, capture packages, offline station queue, and platform synchronization foundation. Native RealSense access remains in Python; the .NET station host supervises it through gRPC.
+
+No physical hardware is currently available. Phase 2 coding proceeds with mock camera
+providers, replay adapters, synthetic RGB-D frames, metadata-only fixtures, and Docker
+services. RealSense streaming, physical calibration, disconnect/reconnect, and
+stability execution are deferred hardware acceptance gates.
 
 ## 2.2 Tasks
 
@@ -28,7 +33,10 @@ Build the versioned RGB-D capture boundary, camera adapters, calibration records
 - [x] **TASK-2.2.1.10** — Unit tests with mock camera
 - [ ] **TASK-2.2.1.11** — Integration tests with physical `.bag` replay data
 
-Implementation is complete for the adapter boundary. RealSense hardware behavior remains blocked pending a D435-class camera, qualified SDK, USB 3 connection, and hardware-in-loop execution.
+Implementation is complete for the adapter boundary. RealSense hardware behavior
+remains deferred pending a D435-class camera, qualified SDK, USB 3 connection, and
+hardware-in-loop execution. Software work should continue against mock and replay
+providers.
 
 ### 2.2.2 Calibration System
 
@@ -43,7 +51,10 @@ Implementation is complete for the adapter boundary. RealSense hardware behavior
 - [x] **TASK-2.2.2.9** — Calibration expiry enforcement
 - [x] **TASK-2.2.2.10** — Calibration record and threshold regression tests
 
-The service exposes calibration workflows and enforces validity. Physical metric evaluators are intentionally unavailable until artefact geometry and hardware fixtures can be validated.
+The service exposes calibration workflows and enforces validity. Calibration evaluator
+code should be implemented with synthetic geometry and threshold fixtures first;
+physical metric validation is deferred until artefact geometry and hardware fixtures
+can be measured.
 
 ### 2.2.3 Capture Workflow
 
@@ -102,20 +113,31 @@ Real recordings and `.spcapture` packages must use Git LFS. Synthetic metadata f
 | .NET station client and platform API build | PASS | Release build, zero warnings |
 | PostgreSQL forward/rollback/audit behavior | PASS | 7 real PostgreSQL integration tests |
 | MinIO upload integration | BLOCKED | End-to-end synchronization test not implemented |
-| Windows RealSense hardware tests | BLOCKED | Camera and qualified SDK unavailable |
-| Linux replay compatibility | BLOCKED | Linux runner not executed locally |
-| 30-minute stability run | BLOCKED | Physical hardware unavailable |
+| Windows RealSense hardware tests | DEFERRED | Camera and qualified SDK unavailable |
+| Linux replay compatibility | DEFERRED | Linux runner not executed locally |
+| 30-minute stability run | DEFERRED | Physical hardware unavailable |
 
-## 2.5 Exit Criteria
+## 2.5 Software Completion Criteria
 
-- [ ] RealSense captures aligned RGB-D frames reliably on qualified Windows hardware
+- [x] Versioned camera contract and generated Python/C# bindings exist
+- [x] Mock and replay provider paths are testable without hardware
+- [ ] Synthetic calibration evaluators pass threshold tests
+- [ ] Capture zone framing validation works on synthetic/replay data
+- [ ] Full capture workflow E2E test passes against running Docker services
+- [ ] PostgreSQL and MinIO integration tests pass against running services
+- [ ] Replay package validation passes locally
 - [x] Calibration records are immutable, versioned, and expiry-enforced
 - [x] Capture packages are platform-neutral, atomic, and checksummed
 - [x] Station agent reports health and recovers durable queue state
-- [ ] PostgreSQL and MinIO integration tests pass against running services
+
+## 2.6 Deferred Hardware Acceptance Criteria
+
+- [ ] RealSense captures aligned RGB-D frames reliably on qualified Windows hardware
 - [ ] Physical calibration evaluators pass known-artefact acceptance thresholds
 - [ ] USB disconnect/reconnect hardware test passes
 - [ ] 30-minute zero-failure stability test passes
 - [ ] Replay tests pass on Linux and Windows
 
-Phase 2 remains `IN_PROGRESS` until all blocked integration, cross-platform, and hardware acceptance gates pass.
+Phase 2 software implementation should continue without hardware. Phase 2 remains
+`IN_PROGRESS` until software completion criteria pass. Final hardware acceptance is
+deferred until qualified hardware is available.

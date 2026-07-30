@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-4  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 3  
 **Language:** en  
@@ -13,6 +13,11 @@
 ## 4.1 Objective
 
 Build the core measurement engine comprising the point-of-measure (POM) ontology, tech-pack compiler, measurement rule executor, and inspection decision engine. This is the domain logic core of SpecProof.
+
+Hardware is not required to begin Phase 4. Measurement rules, compiler behavior,
+decision logic, uncertainty models, and evidence hashing should be developed with
+known synthetic geometry, generated perception outputs, and replay capture packages.
+Physical measurement validation is deferred to Phase 7.
 
 ---
 
@@ -113,3 +118,7 @@ Build the core measurement engine comprising the point-of-measure (POM) ontology
 - [ ] Decision engine routes PASS/FAIL/REVIEW/INVALID correctly
 - [ ] Evidence records are tamper-detectable via hashes
 - [ ] All test cases pass
+
+Software completion is based on deterministic synthetic geometry, fixture tech packs,
+and replay packages. Hardware measurement studies are acceptance evidence, not a
+blocker for implementing the engine.

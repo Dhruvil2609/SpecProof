@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-3  
 **Status:** `NOT_STARTED`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-25T13:15:00Z  
+**Last Updated:** 2026-07-30T17:19:06Z
 **Estimated Duration:** 6–10 weeks  
 **Dependencies:** Phase 2  
 **Language:** en  
@@ -13,6 +13,11 @@
 ## 3.1 Objective
 
 Build the computer vision pipeline that transforms raw RGB-D captures into segmented garment surfaces, extracted features, and detected landmarks. This is the perception layer between raw camera data and the measurement engine.
+
+Hardware is not required to begin Phase 3. Development should use synthetic RGB-D
+scenes, generated garment masks, metadata-only fixtures, and replay `.spcapture`
+packages. Hardware-captured datasets improve model validation later but do not block
+algorithm, API, model-export, or test-harness implementation.
 
 ---
 
@@ -111,3 +116,7 @@ Build the computer vision pipeline that transforms raw RGB-D captures into segme
 - [ ] Full pipeline runs within 15 seconds on dev workstation
 - [ ] All model cards and evaluation reports generated
 - [ ] All test cases pass
+
+Initial software completion may use synthetic and replay datasets. Final model
+acceptance must be rerun with hardware-captured garments when qualified hardware and
+capture fixtures are available.
