@@ -87,7 +87,9 @@ asyncio_mode = "auto"
 markers = [
   "unit: fast isolated tests",
   "integration: tests that verify service boundaries",
+  "regression: deterministic replay and compatibility tests",
   "cross_platform: tests that verify Windows and Linux behavior",
+  "performance: tests that verify runtime budgets",
   "hardware: tests that require physical capture hardware",
 ]
 

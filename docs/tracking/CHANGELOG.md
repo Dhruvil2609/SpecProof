@@ -8,6 +8,12 @@
 
 ### Added
 
+- 2026-08-01T08:20:52Z - Added Phase 3 replay regression and performance tests for canonical perception JSON stability, landmark consistency, mesh validity, and the 15-second runtime target.
+- 2026-08-01T08:09:33Z - Added Phase 3 lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and unit tests.
+- 2026-07-31T17:05:12Z - Added Phase 3 low-distortion UV surface parameterisation, pixel-to-3D-to-2D mapping preservation, perception-result mapping export, and unit tests.
+- 2026-07-31T16:47:39Z - Added the Phase 3 `.spcapture` perception orchestrator, versioned `PerceptionResult` JSON contract, canonical result writer, and pipeline tests.
+- 2026-07-31T16:29:53Z - Added Phase 3 surface confidence scoring, T-shirt landmark vocabulary, contour-based landmark heuristics, review flags, recall scoring, and unit tests.
+- 2026-07-31T16:16:10Z - Added deterministic Phase 3 RGB-depth garment segmentation, boundary extraction, T-shirt category/orientation heuristics, IoU scoring, and unit tests.
 - 2026-07-30T17:59:35Z - Added synthetic calibration evaluators, capture-zone framing validation, replay package validation, Phase 3 RGB-D preprocessing, point-cloud utilities, and focused Python tests.
 - 2026-07-30T17:19:06Z - Added `docs/phases/README.md` defining software-first development before hardware acceptance.
 - 2026-07-28T18:14:56Z - Added `start-development.ps1 -InfrastructureOnly` to start Docker services while Python Application Control approval is pending.

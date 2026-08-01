@@ -3,7 +3,7 @@
 **Audience:** Developers, workstation administrators, and technical testers  
 **Scope:** Phases 0, 1, and 2  
 **Status:** Living runbook  
-**Last Updated:** 2026-07-30T18:16:18Z
+**Last Updated:** 2026-08-01T08:20:52Z
 **Platform:** Windows 11 x64  
 **Shell:** PowerShell 7
 
@@ -22,7 +22,7 @@ and tracking documents only after the result is successful.
 | Phase 0 | `IN_PROGRESS` | Host tooling, RealSense, and optional GPU acceptance remain manual/deferred                                      |
 | Phase 1 | `IN_PROGRESS` | Remote CI, branch protection, and required checks                                                               |
 | Phase 2 | `IN_PROGRESS` | Linux replay and deferred hardware acceptance remain; local MinIO sync is verified                            |
-| Phase 3 | `IN_PROGRESS` | Perception preprocessing and point-cloud baselines are started with synthetic/replay fixtures                  |
+| Phase 3 | `IN_PROGRESS` | `.spcapture` perception pipeline has replay regression, mesh validity, and runtime tests                       |
 
 Hardware is not currently available. Continue software development for Phases 2-8
 with mock providers, replay packages, synthetic fixtures, Docker services, and API

@@ -2,7 +2,7 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-07-30T17:59:35Z
+**Last Updated:** 2026-08-01T08:20:52Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
@@ -151,7 +151,14 @@ gates.
 **Current Implementation:**
 
 - Background modelling, depth filtering, RGB-depth mask refinement, colour smoothing, and deterministic preprocessing are implemented for synthetic/replay RGB-D inputs.
-- Model training, model export, category classification, orientation detection, and learned landmark detection remain planned.
+- Deterministic RGB-depth mask fusion, garment boundary extraction, T-shirt category classification, front/back orientation detection, and IoU scoring are implemented as the software-first baseline.
+- Surface confidence scoring now combines valid depth, capture-zone coverage, plane fit, and normal consistency.
+- T-shirt landmark vocabulary, contour landmark heuristics, landmark confidence, missing/occluded review flags, and recall scoring are implemented for synthetic masks.
+- The perception orchestrator loads `.spcapture`, runs preprocessing, segmentation, point-cloud, confidence, landmark, and UV parameterisation stages, then writes canonical versioned `PerceptionResult` JSON.
+- Surface parameterisation preserves pixel coordinates, metric 3D points, and flattened UV millimetre coordinates for measurement-engine path construction.
+- Lightweight indexed visualisation mesh generation exports stable vertices, triangle indices, vertex counts, and triangle counts in canonical JSON.
+- Replay regression tests verify stable perception fingerprints, landmark consistency, mesh validity, and runtime below the 15-second target on synthetic `.spcapture` packages.
+- Model training, model export, glTF/GLB packaging, multi-category classification, and learned landmark detection remain planned.
 
 ### `SPF-006` Geometry and Surface Processing
 

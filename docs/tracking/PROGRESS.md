@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-07-30T18:16:18Z
+**Last Updated:** 2026-08-01T08:20:52Z
 **Timezone:** UTC
 **Language:** en
 
@@ -21,13 +21,13 @@
 |         0 | Development Environment Setup | `IN_PROGRESS` |      54 |      40 |      74% |
 |         1 | Project Foundation            | `IN_PROGRESS` |      51 |      48 |      94% |
 |         2 | Capture Station Core          | `IN_PROGRESS` |      43 |      37 |      86% |
-|         3 | Perception Pipeline           | `IN_PROGRESS` |      37 |      10 |      27% |
+|         3 | Perception Pipeline           | `IN_PROGRESS` |      37 |      24 |      65% |
 |         4 | Measurement Engine            | `NOT_STARTED` |      36 |       0 |       0% |
 |         5 | Platform and Trust Layer      | `NOT_STARTED` |      37 |       0 |       0% |
 |         6 | Web Application               | `NOT_STARTED` |      39 |       0 |       0% |
 |         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **360** | **135** |  **38%** |
+| **Total** |                               |               | **360** | **149** |  **41%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PASS    | Ruff, 66 files                       |
 | Python type checking          | PASS    | Pyright, zero errors                 |
-| Python tests and coverage     | PASS    | 58-test full baseline; 16 Phase 2/3 focused tests; 34 focused launcher/doctor tests |
+| Python tests and coverage     | PASS    | 58-test full baseline; 50 Phase 2/3 focused tests; 34 focused launcher/doctor tests |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 8 tests                              |
 | Frontend lint and type-check  | PASS    | Operator and admin applications      |
@@ -56,6 +56,12 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-01T08:20:52Z | 3     | Added replay regression and performance tests for canonical JSON stability, landmark consistency, mesh validity, and 15-second runtime target       |
+| 2026-08-01T08:09:33Z | 3     | Added lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and 4 unit tests              |
+| 2026-07-31T17:05:12Z | 3     | Added low-distortion UV surface parameterisation, pixel-to-3D-to-2D mapping preservation, pipeline result mapping export, and 4 unit tests          |
+| 2026-07-31T16:47:39Z | 3     | Added `.spcapture` perception orchestrator, versioned `PerceptionResult` JSON contract, canonical result writer, and 4 pipeline tests              |
+| 2026-07-31T16:29:53Z | 3     | Added surface confidence scoring, T-shirt landmark vocabulary, contour landmark heuristics, review flags, recall scoring, and 9 unit tests          |
+| 2026-07-31T16:16:10Z | 3     | Added deterministic RGB-depth segmentation baseline, boundary extraction, T-shirt category/orientation heuristics, and 9 unit tests                 |
 | 2026-07-30T18:16:18Z | 2     | Verified local Docker MinIO synchronization integration test passed with one test and updated Phase 2 runtime evidence                              |
 | 2026-07-30T17:59:35Z | 2/3   | Added synthetic calibration, framing, replay validation, perception preprocessing, point-cloud utilities, and 16 focused passing tests                 |
 | 2026-07-30T17:19:06Z | 0-8   | Updated phase roadmap for software-first development before hardware arrives; hardware gates are deferred acceptance items, not coding blockers        |
