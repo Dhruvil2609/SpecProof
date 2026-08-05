@@ -66,6 +66,7 @@ include-package-data = true
 specproof_capture_service = ["py.typed", "generated/*.pyi"]
 specproof_doctor = ["py.typed"]
 specproof_geometry = ["py.typed"]
+specproof_measurement_service = ["py.typed"]
 
 [tool.setuptools.package-dir]
 specproof_capture_service = "apps/capture-service/src/specproof_capture_service"
@@ -133,6 +134,7 @@ exclude = [
 branch = true
 source = [
   "apps/capture-service/src/specproof_capture_service",
+  "apps/measurement-service/src/specproof_measurement_service",
   "packages/geometry/src/specproof_geometry",
   "tools/specproof-doctor/src/specproof_doctor",
 ]

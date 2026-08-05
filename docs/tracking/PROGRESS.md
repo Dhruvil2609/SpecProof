@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-01T08:20:52Z
+**Last Updated:** 2026-08-05T17:16:30Z
 **Timezone:** UTC
 **Language:** en
 
@@ -22,12 +22,12 @@
 |         1 | Project Foundation            | `IN_PROGRESS` |      51 |      48 |      94% |
 |         2 | Capture Station Core          | `IN_PROGRESS` |      43 |      37 |      86% |
 |         3 | Perception Pipeline           | `IN_PROGRESS` |      37 |      24 |      65% |
-|         4 | Measurement Engine            | `NOT_STARTED` |      36 |       0 |       0% |
+|         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `NOT_STARTED` |      37 |       0 |       0% |
 |         6 | Web Application               | `NOT_STARTED` |      39 |       0 |       0% |
 |         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **360** | **149** |  **41%** |
+| **Total** |                               |               | **360** | **185** |  **51%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PASS    | Ruff, 66 files                       |
 | Python type checking          | PASS    | Pyright, zero errors                 |
-| Python tests and coverage     | PASS    | 58-test full baseline; 50 Phase 2/3 focused tests; 34 focused launcher/doctor tests |
+| Python tests and coverage     | PASS    | 7 focused Phase 4 tests; 76 non-gRPC unit/regression tests |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 8 tests                              |
 | Frontend lint and type-check  | PASS    | Operator and admin applications      |
@@ -56,6 +56,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-05T17:16:30Z | 4     | Added deterministic POM ontology, tech-pack import, compiler, executor, decision engine, evidence hashing, .NET contracts/data, and passing Phase 4 tests |
 | 2026-08-01T08:20:52Z | 3     | Added replay regression and performance tests for canonical JSON stability, landmark consistency, mesh validity, and 15-second runtime target       |
 | 2026-08-01T08:09:33Z | 3     | Added lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and 4 unit tests              |
 | 2026-07-31T17:05:12Z | 3     | Added low-distortion UV surface parameterisation, pixel-to-3D-to-2D mapping preservation, pipeline result mapping export, and 4 unit tests          |

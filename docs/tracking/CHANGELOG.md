@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-05T17:16:30Z - Added Phase 4 deterministic measurement engine with POM ontology, tech-pack import, compiler, executor, decision routing, evidence hashing, .NET contracts/data persistence, and tests.
 - 2026-08-01T08:20:52Z - Added Phase 3 replay regression and performance tests for canonical perception JSON stability, landmark consistency, mesh validity, and the 15-second runtime target.
 - 2026-08-01T08:09:33Z - Added Phase 3 lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and unit tests.
 - 2026-07-31T17:05:12Z - Added Phase 3 low-distortion UV surface parameterisation, pixel-to-3D-to-2D mapping preservation, perception-result mapping export, and unit tests.

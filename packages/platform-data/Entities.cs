@@ -120,6 +120,42 @@ public sealed class Size : TenantEntity
     public required string SizeCode { get; init; }
 }
 
+public sealed class TechPackVersion : TenantEntity
+{
+    public Guid TechPackId { get; init; }
+
+    public int Version { get; init; }
+
+    public required string Brand { get; init; }
+
+    public required string StyleCode { get; init; }
+
+    public required string GarmentCategory { get; init; }
+
+    public required string DataJson { get; init; }
+
+    public required string VersionHashSha256 { get; init; }
+
+    public bool Approved { get; init; }
+
+    public DateTimeOffset? ReferencedAtUtc { get; init; }
+}
+
+public sealed class EvidenceRecord : TenantEntity
+{
+    public Guid InspectionId { get; init; }
+
+    public Guid CaptureId { get; init; }
+
+    public required string CaptureHashSha256 { get; init; }
+
+    public required string EvidenceJson { get; init; }
+
+    public string? PreviousHashSha256 { get; init; }
+
+    public required string RecordHashSha256 { get; init; }
+}
+
 public sealed class AuditEvent
 {
     public Guid Id { get; init; }

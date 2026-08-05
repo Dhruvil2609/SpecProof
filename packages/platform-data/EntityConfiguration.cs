@@ -255,6 +255,73 @@ internal sealed class SizeConfiguration : IEntityTypeConfiguration<Size>
     }
 }
 
+internal sealed class TechPackVersionConfiguration : IEntityTypeConfiguration<TechPackVersion>
+{
+    public void Configure(EntityTypeBuilder<TechPackVersion> builder)
+    {
+        builder.ToTable("tech_pack_versions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.TechPackId).HasColumnName("tech_pack_id").IsRequired();
+        builder.Property(entity => entity.Version).HasColumnName("version").IsRequired();
+        builder.Property(entity => entity.Brand).HasColumnName("brand").HasMaxLength(200).IsRequired();
+        builder.Property(entity => entity.StyleCode)
+            .HasColumnName("style_code")
+            .HasMaxLength(100)
+            .IsRequired();
+        builder.Property(entity => entity.GarmentCategory)
+            .HasColumnName("garment_category")
+            .HasMaxLength(100)
+            .IsRequired();
+        builder.Property(entity => entity.DataJson)
+            .HasColumnName("data")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.VersionHashSha256)
+            .HasColumnName("version_hash_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.Approved).HasColumnName("approved").IsRequired();
+        builder.Property(entity => entity.ReferencedAtUtc)
+            .HasColumnName("referenced_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.TechPackId, entity.Version })
+            .IsUnique()
+            .HasDatabaseName("uq_tech_pack_versions_tenant_id_tech_pack_id_version");
+    }
+}
+
+internal sealed class EvidenceRecordConfiguration : IEntityTypeConfiguration<EvidenceRecord>
+{
+    public void Configure(EntityTypeBuilder<EvidenceRecord> builder)
+    {
+        builder.ToTable("evidence_records");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.InspectionId).HasColumnName("inspection_id").IsRequired();
+        builder.Property(entity => entity.CaptureId).HasColumnName("capture_id").IsRequired();
+        builder.Property(entity => entity.CaptureHashSha256)
+            .HasColumnName("capture_hash_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.EvidenceJson)
+            .HasColumnName("evidence")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.PreviousHashSha256)
+            .HasColumnName("previous_hash_sha256")
+            .HasMaxLength(64);
+        builder.Property(entity => entity.RecordHashSha256)
+            .HasColumnName("record_hash_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.InspectionId })
+            .IsUnique()
+            .HasDatabaseName("uq_evidence_records_tenant_id_inspection_id");
+        builder.HasIndex(entity => entity.RecordHashSha256)
+            .IsUnique()
+            .HasDatabaseName("uq_evidence_records_record_hash_sha256");
+    }
+}
+
 internal sealed class AuditEventConfiguration : IEntityTypeConfiguration<AuditEvent>
 {
     public void Configure(EntityTypeBuilder<AuditEvent> builder)

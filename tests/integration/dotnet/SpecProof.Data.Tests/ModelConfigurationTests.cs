@@ -77,8 +77,42 @@ public sealed class ModelConfigurationTests
         var migrationIds = context.GetService<IMigrationsAssembly>().Migrations.Keys.ToArray();
 
         Assert.Equal(
-            ["20260726103000_InitialFoundation", "20260727170000_CaptureStationCore"],
+            [
+                "20260726103000_InitialFoundation",
+                "20260727170000_CaptureStationCore",
+                "20260805000000_MeasurementEngine",
+            ],
             migrationIds);
+    }
+
+    [Fact]
+    public void MeasurementEngine_Migration_ContainsReferencedTechPackTriggerSql()
+    {
+        var migration = new MeasurementEngine();
+        var operations = migration.UpOperations.OfType<SqlOperation>().Select(operation => operation.Sql);
+
+        Assert.Contains(
+            operations,
+            sql => sql.Contains("prevent_tech_pack_referenced_modification", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SpecProofDbContext_Model_MapsMeasurementEngineJsonAsJsonb()
+    {
+        var options = new DbContextOptionsBuilder<SpecProofDbContext>()
+            .UseNpgsql("Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123")
+            .Options;
+
+        using var context = new SpecProofDbContext(options);
+        var techPackData = context.Model.FindEntityType(typeof(TechPackVersion))
+            ?.FindProperty(nameof(TechPackVersion.DataJson))
+            ?.GetColumnType();
+        var evidence = context.Model.FindEntityType(typeof(EvidenceRecord))
+            ?.FindProperty(nameof(EvidenceRecord.EvidenceJson))
+            ?.GetColumnType();
+
+        Assert.Equal("jsonb", techPackData);
+        Assert.Equal("jsonb", evidence);
     }
 
     [Fact]

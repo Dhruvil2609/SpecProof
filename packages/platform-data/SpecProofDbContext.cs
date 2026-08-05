@@ -28,6 +28,10 @@ public sealed class SpecProofDbContext(DbContextOptions<SpecProofDbContext> opti
 
     public DbSet<Size> Sizes => Set<Size>();
 
+    public DbSet<TechPackVersion> TechPackVersions => Set<TechPackVersion>();
+
+    public DbSet<EvidenceRecord> EvidenceRecords => Set<EvidenceRecord>();
+
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -22,3 +22,22 @@ def euclidean_distance_mm(first: Point3D, second: Point3D) -> float:
     delta_y = second.y_mm - first.y_mm
     delta_z = second.z_mm - first.z_mm
     return sqrt((delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z))
+
+
+def projected_distance_mm(first: Point3D, second: Point3D) -> float:
+    """Return distance projected onto the flattened XY garment plane."""
+
+    delta_x = second.x_mm - first.x_mm
+    delta_y = second.y_mm - first.y_mm
+    return sqrt((delta_x * delta_x) + (delta_y * delta_y))
+
+
+def polyline_distance_mm(points: tuple[Point3D, ...]) -> float:
+    """Return total distance along an ordered polyline."""
+
+    if len(points) < 2:
+        return 0.0
+    return sum(
+        euclidean_distance_mm(first, second)
+        for first, second in zip(points, points[1:], strict=True)
+    )

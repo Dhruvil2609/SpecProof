@@ -39,6 +39,34 @@ public sealed record InspectionResultDto(
     InspectionStatus Status,
     string EvidenceRecordHash);
 
+public sealed record EvidenceVersionsDto(
+    string CalibrationRecordId,
+    string ModelVersion,
+    string OntologyVersion,
+    string CompilerVersion);
+
+public sealed record EvidenceRecordDto(
+    string EvidenceId,
+    Guid TenantId,
+    Guid InspectionId,
+    Guid CaptureId,
+    string CaptureHashSha256,
+    DateTimeOffset ProducedAtUtc,
+    EvidenceVersionsDto Versions,
+    IReadOnlyList<MeasurementDto> Measurements,
+    InspectionStatus Status,
+    string? PreviousHashSha256,
+    string RecordHashSha256);
+
+public sealed record TechPackVersionDto(
+    Guid TechPackId,
+    int Version,
+    string Brand,
+    string StyleCode,
+    string GarmentCategory,
+    bool Approved,
+    string VersionHashSha256);
+
 public sealed record CaptureCompletedEvent(
     Guid CaptureId,
     Guid TenantId,
@@ -49,6 +77,8 @@ public sealed record CaptureCompletedEvent(
     string ChecksumSha256);
 
 [JsonSerializable(typeof(InspectionResultDto))]
+[JsonSerializable(typeof(EvidenceRecordDto))]
+[JsonSerializable(typeof(TechPackVersionDto))]
 [JsonSerializable(typeof(CaptureCompletedEvent))]
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
