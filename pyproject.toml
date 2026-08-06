@@ -36,7 +36,9 @@ runtime = [
 ml = [
   "torch>=2.7",
   "trimesh>=4.4",
+  "onnxscript>=0.1",
 ]
+
 station = [
   "pyrealsense2>=2.56; sys_platform == 'win32'",
 ]
@@ -78,6 +80,7 @@ specproof_measurement_service = "apps/measurement-service/src/specproof_measurem
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = [
+  ".",
   "tools/specproof-doctor/src",
   "packages/geometry/src",
   "apps/capture-service/src",

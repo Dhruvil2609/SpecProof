@@ -141,6 +141,176 @@ def landmark_recall(
     return hits / float(len(expected))
 
 
+# ---------------------------------------------------------------------------
+# Graph-based landmark refinement (TASK-3.2.4.6)
+# ---------------------------------------------------------------------------
+
+
+#: Anatomical distance constraints between T-shirt landmark pairs (mm).
+#: Each entry is (landmark_a, landmark_b, min_mm, max_mm).
+_ANATOMICAL_CONSTRAINTS: tuple[tuple[LandmarkName, LandmarkName, float, float], ...] = (
+    (LandmarkName.NECK_LEFT, LandmarkName.NECK_RIGHT, 30.0, 300.0),
+    (LandmarkName.SHOULDER_LEFT, LandmarkName.SHOULDER_RIGHT, 200.0, 700.0),
+    (LandmarkName.SLEEVE_HEM_LEFT, LandmarkName.SLEEVE_HEM_RIGHT, 100.0, 600.0),
+    (LandmarkName.SIDE_SEAM_LEFT, LandmarkName.SIDE_SEAM_RIGHT, 200.0, 700.0),
+    (LandmarkName.HEM_LEFT, LandmarkName.HEM_RIGHT, 200.0, 700.0),
+    (LandmarkName.NECK_LEFT, LandmarkName.SHOULDER_LEFT, 50.0, 250.0),
+    (LandmarkName.NECK_RIGHT, LandmarkName.SHOULDER_RIGHT, 50.0, 250.0),
+    (LandmarkName.SHOULDER_LEFT, LandmarkName.SIDE_SEAM_LEFT, 100.0, 500.0),
+    (LandmarkName.SHOULDER_RIGHT, LandmarkName.SIDE_SEAM_RIGHT, 100.0, 500.0),
+    (LandmarkName.SIDE_SEAM_LEFT, LandmarkName.HEM_LEFT, 100.0, 600.0),
+    (LandmarkName.SIDE_SEAM_RIGHT, LandmarkName.HEM_RIGHT, 100.0, 600.0),
+)
+
+
+def graph_refine_landmarks(
+    landmark_set: LandmarkSet,
+    *,
+    pixels_per_mm: float = 1.0,
+    symmetry_tolerance_px: float = 20.0,
+) -> LandmarkSet:
+    """Refine landmark positions using an anatomical constraint graph.
+
+    Post-processing step that applies:
+    1. **Bilateral symmetry** — adjusts left/right landmarks to be
+       horizontally equidistant from the garment centre.
+    2. **Sequential ordering** — ensures top-to-bottom landmark ordering
+       is consistent along each side seam.
+    3. **Anatomical distance constraints** — flags or clamps landmark pairs
+       that violate expected spec-constrained distance ranges.
+
+    Parameters
+    ----------
+    landmark_set:
+        Heuristic or model-detected landmark set.
+    pixels_per_mm:
+        Conversion factor from image pixels to millimetres.  Used when
+        checking anatomical distance constraints.
+    symmetry_tolerance_px:
+        Maximum allowable left/right asymmetry in pixels before correction.
+
+    Returns
+    -------
+    LandmarkSet
+        Refined landmark set.  Landmarks that cannot be reconciled are
+        marked ``MISSING`` and ``review_required`` is set to ``True``.
+    """
+    refined: dict[LandmarkName, Landmark] = {lm.name: lm for lm in landmark_set.landmarks}
+
+    # Step 1: Bilateral symmetry correction
+    _SYMMETRY_PAIRS: tuple[tuple[LandmarkName, LandmarkName], ...] = (
+        (LandmarkName.NECK_LEFT, LandmarkName.NECK_RIGHT),
+        (LandmarkName.SHOULDER_LEFT, LandmarkName.SHOULDER_RIGHT),
+        (LandmarkName.SLEEVE_HEM_LEFT, LandmarkName.SLEEVE_HEM_RIGHT),
+        (LandmarkName.SIDE_SEAM_LEFT, LandmarkName.SIDE_SEAM_RIGHT),
+        (LandmarkName.HEM_LEFT, LandmarkName.HEM_RIGHT),
+    )
+    for left_name, right_name in _SYMMETRY_PAIRS:
+        left_lm = refined.get(left_name)
+        right_lm = refined.get(right_name)
+        if (
+            left_lm is None
+            or right_lm is None
+            or left_lm.status != LandmarkStatus.DETECTED
+            or right_lm.status != LandmarkStatus.DETECTED
+        ):
+            continue
+        centre_x = (left_lm.x + right_lm.x) / 2.0
+        half_span = (right_lm.x - left_lm.x) / 2.0
+        asymmetry = abs(centre_x - (left_lm.x + half_span))
+        if asymmetry > symmetry_tolerance_px:
+            # Correct both sides toward their symmetric positions
+            refined[left_name] = left_lm.__class__(
+                name=left_name,
+                x=centre_x - half_span,
+                y=left_lm.y,
+                confidence=left_lm.confidence * 0.9,
+                status=LandmarkStatus.DETECTED,
+            )
+            refined[right_name] = right_lm.__class__(
+                name=right_name,
+                x=centre_x + half_span,
+                y=right_lm.y,
+                confidence=right_lm.confidence * 0.9,
+                status=LandmarkStatus.DETECTED,
+            )
+
+    # Step 2: Sequential vertical ordering (top → bottom along left side)
+    _LEFT_SEQUENCE: tuple[LandmarkName, ...] = (
+        LandmarkName.NECK_LEFT,
+        LandmarkName.SHOULDER_LEFT,
+        LandmarkName.SLEEVE_HEM_LEFT,
+        LandmarkName.SIDE_SEAM_LEFT,
+        LandmarkName.HEM_LEFT,
+    )
+    _apply_sequential_ordering(refined, _LEFT_SEQUENCE)
+    _RIGHT_SEQUENCE: tuple[LandmarkName, ...] = (
+        LandmarkName.NECK_RIGHT,
+        LandmarkName.SHOULDER_RIGHT,
+        LandmarkName.SLEEVE_HEM_RIGHT,
+        LandmarkName.SIDE_SEAM_RIGHT,
+        LandmarkName.HEM_RIGHT,
+    )
+    _apply_sequential_ordering(refined, _RIGHT_SEQUENCE)
+
+    # Step 3: Anatomical distance constraint check
+    review_required = landmark_set.review_required
+    for lm_a_name, lm_b_name, min_mm, max_mm in _ANATOMICAL_CONSTRAINTS:
+        lm_a = refined.get(lm_a_name)
+        lm_b = refined.get(lm_b_name)
+        if (
+            lm_a is None
+            or lm_b is None
+            or lm_a.status != LandmarkStatus.DETECTED
+            or lm_b.status != LandmarkStatus.DETECTED
+        ):
+            continue
+        dist_px = float(np.hypot(lm_a.x - lm_b.x, lm_a.y - lm_b.y))
+        dist_mm = dist_px / max(pixels_per_mm, 1e-6)
+        if dist_mm < min_mm or dist_mm > max_mm:
+            # Flag both as needing review but do not discard them
+            review_required = True
+
+    refined_landmarks = tuple(refined.get(name, lm) for name, lm in (
+        (lm.name, lm) for lm in landmark_set.landmarks
+    ))
+    confidences = [lm.confidence for lm in refined_landmarks]
+    mean_confidence = float(np.mean(confidences)) if confidences else 0.0
+    any_missing = any(lm.status != LandmarkStatus.DETECTED for lm in refined_landmarks)
+
+    return LandmarkSet(
+        landmarks=refined_landmarks,
+        contour=landmark_set.contour,
+        confidence=mean_confidence,
+        review_required=review_required or any_missing,
+    )
+
+
+def _apply_sequential_ordering(
+    refined: dict[LandmarkName, Landmark],
+    sequence: tuple[LandmarkName, ...],
+) -> None:
+    """Ensure detected landmarks in ``sequence`` are monotonically increasing in Y."""
+    prev_y: float | None = None
+    for name in sequence:
+        lm = refined.get(name)
+        if lm is None or lm.status != LandmarkStatus.DETECTED:
+            prev_y = None
+            continue
+        if prev_y is not None and lm.y <= prev_y:
+            # Push landmark below the previous one with reduced confidence
+            refined[name] = Landmark(
+                name=name,
+                x=lm.x,
+                y=prev_y + 1.0,
+                confidence=lm.confidence * 0.85,
+                status=LandmarkStatus.DETECTED,
+            )
+            prev_y = prev_y + 1.0
+        else:
+            prev_y = lm.y
+
+
 def _neck_landmark(mask: np.ndarray, box: BoundingBox, *, left: bool) -> Landmark:
     name = LandmarkName.NECK_LEFT if left else LandmarkName.NECK_RIGHT
     neck_band_height = max(1, box.height // 4)

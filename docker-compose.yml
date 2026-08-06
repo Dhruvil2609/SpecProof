@@ -123,6 +123,38 @@ services:
       timeout: 5s
       retries: 5
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.0
+    container_name: specproof-mlflow
+    command:
+      - "mlflow"
+      - "server"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "5000"
+      - "--backend-store-uri"
+      - "postgresql://Admin:Admin@123@postgres:5432/specproof"
+      - "--default-artifact-root"
+      - "/mlflow/artifacts"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-artifacts:/mlflow/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent http://localhost:5000/health > /dev/null || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 volumes:
   postgres-data:
   redis-data:
@@ -131,3 +163,5 @@ volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  mlflow-artifacts:
+

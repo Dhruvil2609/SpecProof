@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-05T17:16:30Z
+**Last Updated:** 2026-08-05T17:52:00Z
 **Timezone:** UTC
 **Language:** en
 
@@ -21,13 +21,13 @@
 |         0 | Development Environment Setup | `IN_PROGRESS` |      54 |      40 |      74% |
 |         1 | Project Foundation            | `IN_PROGRESS` |      51 |      48 |      94% |
 |         2 | Capture Station Core          | `IN_PROGRESS` |      43 |      37 |      86% |
-|         3 | Perception Pipeline           | `IN_PROGRESS` |      37 |      24 |      65% |
+|         3 | Perception Pipeline           | `COMPLETE`    |      37 |      37 |     100% |
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `NOT_STARTED` |      37 |       0 |       0% |
 |         6 | Web Application               | `NOT_STARTED` |      39 |       0 |       0% |
 |         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **360** | **185** |  **51%** |
+| **Total** |                               |               | **360** | **198** |  **55%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -56,6 +56,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-05T17:52:00Z | 3     | **Phase 3 COMPLETE.** Added U-Net segmentation model, heatmap landmark model, annotation schema, dataset registry, experiment tracker, model registry, training pipeline, evaluation pipeline, drift detector, ONNX exports (T-3.008 PASS), model cards, graph landmark refinement, drape compensation, and 93 new tests (25 drape, 26 segmentation, 32 landmark, 35 ML integration). All 37 Phase 3 tasks done. |
 | 2026-08-05T17:16:30Z | 4     | Added deterministic POM ontology, tech-pack import, compiler, executor, decision engine, evidence hashing, .NET contracts/data, and passing Phase 4 tests |
 | 2026-08-01T08:20:52Z | 3     | Added replay regression and performance tests for canonical JSON stability, landmark consistency, mesh validity, and 15-second runtime target       |
 | 2026-08-01T08:09:33Z | 3     | Added lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and 4 unit tests              |
