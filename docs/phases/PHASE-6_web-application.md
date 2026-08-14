@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-6  
 **Status:** `IN_PROGRESS`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-12T16:56:51Z
+**Last Updated:** 2026-08-14T18:25:20Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 5  
 **Language:** en  
@@ -29,7 +29,7 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 - [x] **TASK-6.2.1.3** — Application shell with responsive sidebar navigation
 - [x] **TASK-6.2.1.4** — Dark mode support
 - [x] **TASK-6.2.1.5** — Loading and error states
-- [ ] **TASK-6.2.1.6** — Write component Storybook stories or visual tests
+- [x] **TASK-6.2.1.6** — Write component Storybook stories or visual tests
 
 ### 6.2.2 i18n Integration
 
@@ -47,7 +47,7 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 - [x] **TASK-6.2.3.3** — Capture zone framing guide
 - [x] **TASK-6.2.3.4** — Capture trigger and progress indicator
 - [x] **TASK-6.2.3.5** — Recapture instruction screen
-- [ ] **TASK-6.2.3.6** — Write capture workflow E2E tests
+- [x] **TASK-6.2.3.6** — Write capture workflow E2E tests
 
 ### 6.2.4 Operator UI — Results and Review
 
@@ -96,7 +96,7 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 - [x] **TASK-6.2.9.1** — Auto-generate TypeScript API client from OpenAPI spec
 - [x] **TASK-6.2.9.2** — Type-safe API hooks/services
 - [x] **TASK-6.2.9.3** — Error handling and retry logic
-- [ ] **TASK-6.2.9.4** — Write API client integration tests
+- [x] **TASK-6.2.9.4** — Write API client integration tests
 
 ---
 
@@ -128,7 +128,7 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 - [x] i18n framework works with English; new languages addable
 - [x] Reporting dashboards display accurate data
 - [ ] All test cases pass on Chrome and Edge
-- [ ] No accessibility violations (WCAG 2.1 AA basic checks)
+- [x] No accessibility violations (WCAG 2.1 AA basic checks)
 
 When hardware becomes available, the same UI workflows must be rerun against a live
 station. That hardware pass is acceptance evidence, not a blocker for UI development.

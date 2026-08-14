@@ -24,10 +24,10 @@
 |         3 | Perception Pipeline           | `COMPLETE`    |      37 |      37 |     100% |
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
-|         6 | Web Application               | `IN_PROGRESS` |      49 |      46 |      94% |
+|         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
 |         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **379** | **282** |  **74%** |
+| **Total** |                               |               | **379** | **285** |  **75%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -41,9 +41,10 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 45 tests: 23 platform API/station/storage, 6 contracts, 16 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
-| Frontend tests                | PASS    | 26 tests: 11 operator, 15 admin       |
+| Frontend tests                | PASS    | 28 unit/integration tests plus 8 Edge E2E/axe/visual tests |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
 | Frontend production build     | PASS    | Operator and admin applications      |
+| Frontend browser acceptance   | PARTIAL | 8/8 Edge E2E/axe/visual tests pass; Chromium CI run outstanding |
 | Docker Compose definition     | PASS    | `docker compose config --quiet`      |
 | Docker daemon                 | PASS    | Doctor host verification             |
 | PostgreSQL protocol runtime   | PASS    | Doctor `SELECT 1` on Docker port 55432 |
@@ -58,7 +59,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-14T18:58:15Z | 5     | Implemented client-certificate device authentication, least-privilege station permissions, same-station enforcement, globally conflict-safe certificate registration, and audited certificate rotation; 23 focused platform API tests pass. |
 | 2026-08-14T18:41:43Z | 5     | Closed the tenant write-path vulnerability: JWT tenant claims are authoritative, conflicting headers and request tenants return 403, station registration requires authorisation, and 16 focused platform API tests pass. |
-| 2026-08-12T16:56:51Z | 6     | Implemented industrial React operator/admin apps, shared UI and generated client, development JWT/RBAC flows, station browser API, authorised evidence assets, tech-pack FastAPI facade/gateway, web contracts/endpoints, tenant persistence, immutable review/draft migration, and 41 new frontend/Python/.NET tests. Phase 6 is 46/49 tasks done. |
+| 2026-08-14T18:25:20Z | 6     | Implemented all 49 Phase 6 tasks, including industrial React apps, shared UI/generated client, JWT/RBAC flows, station browser API, authorised evidence assets, tech-pack facade/gateway, tenant persistence, immutable migration, API retry tests, and Edge E2E/axe/visual coverage. Phase remains in progress until Chromium CI and database runtime acceptance execute. |
 | 2026-08-06T17:32:54Z | 5     | Added Phase 5 platform/trust backbone: versioned API groups, validation, rate limiting, tenant query filters, RBAC/JWT, station/device management, evidence signing, sync envelopes, reporting/export, webhook/job persistence, reversible migration, and 11 new tests. Phase 5 is 37/46 tasks done. |
 | 2026-08-05T17:52:00Z | 3     | **Phase 3 COMPLETE.** Added U-Net segmentation model, heatmap landmark model, annotation schema, dataset registry, experiment tracker, model registry, training pipeline, evaluation pipeline, drift detector, ONNX exports (T-3.008 PASS), model cards, graph landmark refinement, drape compensation, and 93 new tests (25 drape, 26 segmentation, 32 landmark, 35 ML integration). All 37 Phase 3 tasks done. |
 | 2026-08-05T17:16:30Z | 4     | Added deterministic POM ontology, tech-pack import, compiler, executor, decision engine, evidence hashing, .NET contracts/data, and passing Phase 4 tests |
@@ -92,7 +93,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Phase 1 repository enforcement    | GitHub administrative state unavailable                             | Enable branch protection and required workflows                     |
 | Phase 2 cross-platform acceptance | Linux runner not executed                                           | Run replay and package tests on Linux                               |
 | Hardware acceptance gates         | RealSense camera, USB 3 fixture, artefact, and garments unavailable | Deferred until hardware arrives; continue software-first development |
-| Phase 6 browser acceptance         | Playwright Chrome/Edge, axe, and visual snapshots are not implemented | Add the E2E/visual harness and execute both browser matrices           |
+| Phase 6 browser acceptance         | Edge E2E/axe/visual suite passes; Chromium browser download/CI run is outstanding | Execute the configured Chromium job on Linux CI                        |
 | Phase 6 database runtime           | Docker daemon and PostgreSQL port 55432 are stopped                  | Start Docker Desktop and rerun migration integration tests            |
 
 ## Update Rules

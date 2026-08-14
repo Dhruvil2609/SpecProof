@@ -45,6 +45,8 @@ apps/*/dist/
 coverage/
 .vite/
 *.tsbuildinfo
+apps/web-e2e/playwright-report/
+apps/web-e2e/test-results/
 
 # Docker and local data
 docker-data/
@@ -56,4 +58,3 @@ artifacts/
 reports/
 tmp/
 tests/_tmp/
-

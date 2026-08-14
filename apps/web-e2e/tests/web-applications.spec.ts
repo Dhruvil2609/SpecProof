@@ -61,7 +61,8 @@ test('reports export CSV and primary pages pass axe', async ({ page }) => {
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 900 }]) {
   for (const theme of ['dark', 'light'] as const) {
-    test(`operator visual ${viewport.width}x${viewport.height} ${theme}`, async ({ page }) => {
+    test(`operator visual ${viewport.width}x${viewport.height} ${theme}`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== 'edge', 'Windows Edge owns the visual baseline matrix.');
       await page.setViewportSize(viewport);
       await authenticate(page, 'operator');
       await page.addInitScript((selectedTheme) => localStorage.setItem('specproof-theme', selectedTheme), theme);

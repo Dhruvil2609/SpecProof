@@ -71,3 +71,17 @@ def test_development_launcher_supports_infrastructure_only_mode() -> None:
     assert "[switch]$InfrastructureOnly" in launcher
     assert "SpecProof Docker infrastructure is running." in launcher
     assert "-InfrastructureOnly" in launcher
+
+
+def test_mlflow_image_includes_pinned_postgresql_driver() -> None:
+    repository_root = Path(__file__).parents[3]
+    compose = (repository_root / "docker-compose.yml").read_text(encoding="utf-8")
+    dockerfile_path = repository_root / "infra/docker/mlflow/Dockerfile"
+    dockerfile = dockerfile_path.read_text(encoding="utf-8")
+
+    assert "dockerfile: infra/docker/mlflow/Dockerfile" in compose
+    assert "postgresql+psycopg2://Admin:Admin%40123@postgres:5432/specproof" in compose
+    assert '"/opt/mlflow/healthcheck.py"' in compose
+    assert "FROM ghcr.io/mlflow/mlflow:v2.22.0" in dockerfile
+    assert "psycopg2-binary==2.9.10" in dockerfile
+    assert "COPY infra/docker/mlflow/healthcheck.py /opt/mlflow/healthcheck.py" in dockerfile

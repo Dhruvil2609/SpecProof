@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ApiError, HttpSpecProofClient } from './client';
+import { HttpSpecProofClient } from './client';
 
 describe('HttpSpecProofClient', () => {
   afterEach(() => {
@@ -36,7 +36,7 @@ describe('HttpSpecProofClient', () => {
     );
     const client = new HttpSpecProofClient('https://platform.test', () => null);
 
-    await expect(client.reviewInspection('inspection-1', '', '')).rejects.toMatchObject<ApiError>({
+    await expect(client.reviewInspection('inspection-1', '', '')).rejects.toMatchObject({
       problem: { status: 422, title: 'Validation failed', detail: 'Outcome is required' },
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
