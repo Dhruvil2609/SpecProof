@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
@@ -42,6 +43,8 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<TenantScopeAccessor>();
 builder.Services.AddScoped<ITenantScope>(provider => provider.GetRequiredService<TenantScopeAccessor>());
 builder.Services.AddSingleton<SpecProofJwtValidator>();
+builder.Services.AddSingleton<IDeviceCertificateAuthenticator, DeviceCertificateAuthenticator>();
+builder.Services.AddSingleton<DeviceCertificateRotationService>();
 builder.Services.AddSingleton<EvidenceSignatureService>();
 builder.Services.AddSingleton<SyncProtocolService>();
 builder.Services.AddSingleton<ReportingExportService>();
@@ -50,6 +53,7 @@ builder.Services.AddHttpClient<ITechPackImportGateway, TechPackImportGateway>(cl
     client.BaseAddress = new Uri(
         builder.Configuration["MeasurementService:BaseUrl"] ?? "http://127.0.0.1:8010/"));
 builder.Services.AddScoped<IValidator<RegisterStationRequest>, RegisterStationRequestValidator>();
+builder.Services.AddScoped<IValidator<RotateDeviceCertificateRequest>, RotateDeviceCertificateRequestValidator>();
 builder.Services.AddScoped<IValidator<SyncEnvelopeRequest>, SyncEnvelopeRequestValidator>();
 builder.Services.AddDbContext<SpecProofDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SpecProof")));
@@ -83,6 +87,7 @@ app.UseRequestLocalization();
 app.UseExceptionHandler();
 app.UseRateLimiter();
 app.UseMiddleware<JwtAuthenticationMiddleware>();
+app.UseMiddleware<DeviceCertificateAuthenticationMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.MapOpenApi("/api/v1/openapi.json");
@@ -169,6 +174,7 @@ api.MapPost(
         })
     .WithName("CreateInspection")
     .RequireTenantMatch<CreateInspectionRequest>()
+    .RequireDeviceStationMatch<CreateInspectionRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapGet(
@@ -242,6 +248,8 @@ api.MapPost(
             SpecProofDbContext database,
             CancellationToken cancellationToken) =>
         {
+            var certificateThumbprint = DeviceCertificateThumbprint.Normalize(
+                request.CertificateThumbprintSha256);
             var station = await database.Stations.SingleOrDefaultAsync(
                 candidate =>
                     candidate.TenantId == request.TenantId
@@ -259,12 +267,20 @@ api.MapPost(
                 database.Stations.Add(station);
             }
 
-            var identityExists = await database.DeviceIdentities.AnyAsync(
-                identity =>
-                    identity.TenantId == request.TenantId
-                    && identity.CertificateThumbprintSha256 == request.CertificateThumbprintSha256,
-                cancellationToken);
-            if (!identityExists)
+            var existingIdentities = await database.DeviceIdentities
+                .IgnoreQueryFilters()
+                .Where(identity => identity.CertificateThumbprintSha256 == certificateThumbprint)
+                .Take(2)
+                .ToArrayAsync(cancellationToken);
+            if (existingIdentities.Length > 1
+                || (existingIdentities.Length == 1
+                    && (existingIdentities[0].TenantId != request.TenantId
+                        || existingIdentities[0].StationId != station.Id)))
+            {
+                return Results.Conflict();
+            }
+
+            if (existingIdentities.Length == 0)
             {
                 database.DeviceIdentities.Add(
                     new DeviceIdentity
@@ -272,7 +288,7 @@ api.MapPost(
                         Id = Guid.NewGuid(),
                         TenantId = request.TenantId,
                         StationId = station.Id,
-                        CertificateThumbprintSha256 = request.CertificateThumbprintSha256,
+                        CertificateThumbprintSha256 = certificateThumbprint,
                         PublicKeyPem = request.PublicKeyPem,
                         NotBeforeUtc = DateTimeOffset.UtcNow,
                         ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(90),
@@ -287,12 +303,71 @@ api.MapPost(
                     station.TenantId,
                     station.FactoryId,
                     station.StationCode,
-                    request.CertificateThumbprintSha256,
+                    certificateThumbprint,
                     DateTimeOffset.UtcNow));
         })
     .WithName("RegisterStation")
     .AddEndpointFilter<ValidationFilter<RegisterStationRequest>>()
     .RequireTenantMatch<RegisterStationRequest>()
+    .RequireSpecProofPermission(PlatformPermissions.ManageStations);
+
+api.MapPost(
+        "/stations/{stationId:guid}/certificate/rotate",
+        async (
+            Guid stationId,
+            RotateDeviceCertificateRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            DeviceCertificateRotationService rotationService,
+            CancellationToken cancellationToken) =>
+        {
+            if (tenantScope.TenantId is not Guid tenantId)
+            {
+                return Results.Forbid();
+            }
+
+            var stationExists = await database.Stations.AnyAsync(
+                station => station.Id == stationId,
+                cancellationToken);
+            if (!stationExists)
+            {
+                return Results.NotFound();
+            }
+
+            var certificateThumbprint = DeviceCertificateThumbprint.Normalize(
+                request.CertificateThumbprintSha256);
+            var duplicateExists = await database.DeviceIdentities
+                .IgnoreQueryFilters()
+                .AnyAsync(
+                    identity => identity.CertificateThumbprintSha256 == certificateThumbprint,
+                    cancellationToken);
+            if (duplicateExists)
+            {
+                return Results.Conflict();
+            }
+
+            var activeIdentities = await database.DeviceIdentities
+                .Where(identity => identity.StationId == stationId && identity.Active)
+                .ToArrayAsync(cancellationToken);
+            var rotation = rotationService.Rotate(
+                tenantId,
+                stationId,
+                request,
+                activeIdentities,
+                DateTimeOffset.UtcNow);
+            database.DeviceIdentities.Add(rotation.Replacement);
+            database.AuditEvents.Add(rotation.AuditEvent);
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Ok(
+                new DeviceCertificateRotationResponse(
+                    rotation.Replacement.Id,
+                    stationId,
+                    rotation.Replacement.CertificateThumbprintSha256,
+                    rotation.Replacement.NotBeforeUtc,
+                    rotation.Replacement.ExpiresAtUtc));
+        })
+    .WithName("RotateStationCertificate")
+    .AddEndpointFilter<ValidationFilter<RotateDeviceCertificateRequest>>()
     .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPut(
@@ -340,6 +415,7 @@ api.MapPut(
         })
     .WithName("ReportStationHealth")
     .RequireTenantMatch<StationHealthRequest>()
+    .RequireDeviceStationRouteMatch()
     .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
 
 api.MapPost(
@@ -365,6 +441,8 @@ api.MapPost(
         })
     .WithName("SubmitStationDiagnostics")
     .RequireTenantMatch<StationDiagnosticsRequest>()
+    .RequireDeviceStationMatch<StationDiagnosticsRequest>()
+    .RequireDeviceStationRouteMatch()
     .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPost(
@@ -390,6 +468,8 @@ api.MapPost(
         })
     .WithName("PushStationConfiguration")
     .RequireTenantMatch<StationConfigurationPushRequest>()
+    .RequireDeviceStationMatch<StationConfigurationPushRequest>()
+    .RequireDeviceStationRouteMatch()
     .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPut(
@@ -416,6 +496,8 @@ api.MapPut(
         })
     .WithName("ReportStationVersion")
     .RequireTenantMatch<StationVersionRequest>()
+    .RequireDeviceStationMatch<StationVersionRequest>()
+    .RequireDeviceStationRouteMatch()
     .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
 
 api.MapPost(
@@ -468,6 +550,7 @@ api.MapPost(
         })
     .WithName("InitiateCaptureUpload")
     .RequireTenantMatch<InitiateCaptureUploadRequest>()
+    .RequireDeviceStationMatch<InitiateCaptureUploadRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapPost(
@@ -476,6 +559,7 @@ api.MapPost(
             Guid assetId,
             CompleteCaptureUploadRequest request,
             SpecProofDbContext database,
+            ClaimsPrincipal principal,
             CancellationToken cancellationToken) =>
         {
             var asset = await database.CaptureAssets.SingleOrDefaultAsync(
@@ -486,6 +570,11 @@ api.MapPost(
             if (asset is null)
             {
                 return Results.NotFound();
+            }
+
+            if (!DeviceStationAccess.Matches(principal, asset.StationId))
+            {
+                return Results.Forbid();
             }
 
             if (!string.Equals(
@@ -539,6 +628,7 @@ api.MapPost(
         })
     .WithName("AcceptSyncEnvelope")
     .AddEndpointFilter<ValidationFilter<SyncEnvelopeRequest>>()
+    .RequireDeviceStationMatch<SyncEnvelopeRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapPost(
@@ -648,12 +738,25 @@ public sealed record StationHealthRequest(
     long OfflineQueueDepth,
     DateTimeOffset CheckedAtUtc) : ITenantBoundRequest;
 
+public sealed record RotateDeviceCertificateRequest(
+    string CertificateThumbprintSha256,
+    string PublicKeyPem,
+    DateTimeOffset NotBeforeUtc,
+    DateTimeOffset ExpiresAtUtc);
+
+public sealed record DeviceCertificateRotationResponse(
+    Guid DeviceIdentityId,
+    Guid StationId,
+    string CertificateThumbprintSha256,
+    DateTimeOffset NotBeforeUtc,
+    DateTimeOffset ExpiresAtUtc);
+
 public sealed record InitiateCaptureUploadRequest(
     Guid TenantId,
     Guid StationId,
     Guid CaptureId,
     long SizeBytes,
-    string ChecksumSha256) : ITenantBoundRequest;
+    string ChecksumSha256) : ITenantBoundRequest, IStationBoundRequest;
 
 public sealed record InitiateCaptureUploadResponse(Guid AssetId, string ObjectKey);
 

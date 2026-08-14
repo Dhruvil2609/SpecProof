@@ -1,15 +1,187 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SpecProof.Contracts;
 using SpecProof.Platform.Api;
+using SpecProof.Platform.Data;
 using Xunit;
 
 namespace SpecProof.Platform.Api.Tests;
 
 public sealed class PlatformTrustLayerTests
 {
+    [Fact]
+    public void DeviceCertificateThumbprint_Compute_ReturnsCanonicalSha256()
+    {
+        using var certificate = CreateCertificate();
+
+        var thumbprint = DeviceCertificateThumbprint.Compute(certificate);
+
+        Assert.Equal(64, thumbprint.Length);
+        Assert.Equal(thumbprint.ToLowerInvariant(), thumbprint);
+        Assert.Equal(
+            Convert.ToHexString(SHA256.HashData(certificate.RawData)).ToLowerInvariant(),
+            thumbprint);
+    }
+
+    [Fact]
+    public async Task DeviceCertificateAuthenticationMiddleware_ValidCertificate_CreatesStationPrincipal()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var stationId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var certificate = CreateCertificate();
+        var context = new DefaultHttpContext();
+        context.Connection.ClientCertificate = certificate;
+        var authenticator = new StubDeviceCertificateAuthenticator(
+            new DeviceAuthenticationResult(Guid.NewGuid(), tenantId, stationId));
+        var nextCalled = false;
+        var middleware = new DeviceCertificateAuthenticationMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+        await using var database = CreateDatabase();
+
+        await middleware.InvokeAsync(context, authenticator, database);
+
+        Assert.True(nextCalled);
+        Assert.True(context.User.Identity?.IsAuthenticated);
+        Assert.Contains(context.User.Claims, claim => claim.Type == "tenant_id" && claim.Value == tenantId.ToString());
+        Assert.Contains(context.User.Claims, claim => claim.Type == "station_id" && claim.Value == stationId.ToString());
+        Assert.Contains(
+            context.User.Claims,
+            claim => claim.Type == "permission" && claim.Value == PlatformPermissions.SyncWrite);
+    }
+
+    [Fact]
+    public async Task DeviceCertificateAuthenticationMiddleware_UnknownCertificate_ReturnsUnauthorized()
+    {
+        using var certificate = CreateCertificate();
+        var context = new DefaultHttpContext();
+        context.Connection.ClientCertificate = certificate;
+        var authenticator = new StubDeviceCertificateAuthenticator(null);
+        var nextCalled = false;
+        var middleware = new DeviceCertificateAuthenticationMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+        await using var database = CreateDatabase();
+
+        await middleware.InvokeAsync(context, authenticator, database);
+
+        Assert.False(nextCalled);
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeviceStationRequestFilter_MismatchedStation_ReturnsForbidden()
+    {
+        var context = new DefaultHttpContext
+        {
+            User = CreateStationPrincipal("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        };
+        var request = new SyncEnvelopeRequest(
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            "key",
+            "inspection",
+            Guid.NewGuid(),
+            "{}",
+            new string('a', 64));
+        var invocation = new DefaultEndpointFilterInvocationContext(context, request);
+        var nextCalled = false;
+        var filter = new DeviceStationRequestFilter<SyncEnvelopeRequest>();
+
+        var result = await filter.InvokeAsync(
+            invocation,
+            _ =>
+            {
+                nextCalled = true;
+                return ValueTask.FromResult<object?>(Results.Ok());
+            });
+
+        Assert.False(nextCalled);
+        Assert.IsType<ForbidHttpResult>(result);
+    }
+
+    [Fact]
+    public async Task DeviceStationRouteFilter_MismatchedStation_ReturnsForbidden()
+    {
+        var context = new DefaultHttpContext
+        {
+            User = CreateStationPrincipal("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        };
+        context.Request.RouteValues["stationId"] = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+        var invocation = new DefaultEndpointFilterInvocationContext(context);
+        var nextCalled = false;
+        var filter = new DeviceStationRouteFilter();
+
+        var result = await filter.InvokeAsync(
+            invocation,
+            _ =>
+            {
+                nextCalled = true;
+                return ValueTask.FromResult<object?>(Results.Ok());
+            });
+
+        Assert.False(nextCalled);
+        Assert.IsType<ForbidHttpResult>(result);
+    }
+
+    [Fact]
+    public void RotateDeviceCertificateRequestValidator_InvalidWindowAndThumbprint_ReturnsErrors()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var request = new RotateDeviceCertificateRequest("not-a-thumbprint", "public-key", now, now.AddMinutes(-1));
+        var validator = new RotateDeviceCertificateRequestValidator();
+
+        var result = validator.Validate(request);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.PropertyName == nameof(request.CertificateThumbprintSha256));
+        Assert.Contains(result.Errors, error => error.PropertyName == nameof(request.NotBeforeUtc));
+    }
+
+    [Fact]
+    public void DeviceCertificateRotationService_Rotate_RetiresOldIdentityAndCreatesAuditEvent()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var stationId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var oldIdentity = new DeviceIdentity
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            StationId = stationId,
+            CertificateThumbprintSha256 = new string('a', 64),
+            PublicKeyPem = "old-public-key",
+            NotBeforeUtc = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            ExpiresAtUtc = DateTimeOffset.Parse("2026-12-31T00:00:00Z"),
+            Active = true,
+        };
+        var rotatedAtUtc = DateTimeOffset.Parse("2026-08-14T18:50:00Z");
+        var request = new RotateDeviceCertificateRequest(
+            new string('B', 64),
+            "new-public-key",
+            rotatedAtUtc,
+            rotatedAtUtc.AddDays(90));
+        var service = new DeviceCertificateRotationService();
+
+        var rotation = service.Rotate(tenantId, stationId, request, [oldIdentity], rotatedAtUtc);
+
+        Assert.False(oldIdentity.Active);
+        Assert.Equal(rotatedAtUtc, oldIdentity.RotatedAtUtc);
+        Assert.True(rotation.Replacement.Active);
+        Assert.Equal(new string('b', 64), rotation.Replacement.CertificateThumbprintSha256);
+        Assert.Equal("station.certificate_rotated", rotation.AuditEvent.EventType);
+        Assert.Contains(oldIdentity.Id.ToString(), rotation.AuditEvent.PayloadJson, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TenantResolutionMiddleware_AuthenticatedClaim_SetsTenantScope()
     {
@@ -329,6 +501,28 @@ public sealed class PlatformTrustLayerTests
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "UnitTest"));
     }
 
+    private static ClaimsPrincipal CreateStationPrincipal(string stationId) =>
+        new(
+            new ClaimsIdentity(
+                [new Claim("station_id", stationId)],
+                "SpecProofDeviceCertificate"));
+
+    private static SpecProofDbContext CreateDatabase() =>
+        new(new DbContextOptionsBuilder<SpecProofDbContext>().Options);
+
+    private static X509Certificate2 CreateCertificate()
+    {
+        using var key = RSA.Create(2048);
+        var request = new CertificateRequest(
+            "CN=SpecProof Unit Test Station",
+            key,
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+        return request.CreateSelfSigned(
+            DateTimeOffset.UtcNow.AddMinutes(-1),
+            DateTimeOffset.UtcNow.AddMinutes(5));
+    }
+
     private sealed class RecordingHandler : HttpMessageHandler
     {
         public List<string> RequestPaths { get; } = [];
@@ -346,5 +540,15 @@ public sealed class PlatformTrustLayerTests
                 Content = new StringContent("{\"approved\":true}"),
             };
         }
+    }
+
+    private sealed class StubDeviceCertificateAuthenticator(DeviceAuthenticationResult? result)
+        : IDeviceCertificateAuthenticator
+    {
+        public Task<DeviceAuthenticationResult?> AuthenticateAsync(
+            X509Certificate2 certificate,
+            SpecProofDbContext database,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(result);
     }
 }

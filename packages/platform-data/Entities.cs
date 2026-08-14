@@ -94,9 +94,9 @@ public sealed class DeviceIdentity : TenantEntity
 
     public DateTimeOffset ExpiresAtUtc { get; init; }
 
-    public bool Active { get; init; }
+    public bool Active { get; set; }
 
-    public DateTimeOffset? RotatedAtUtc { get; init; }
+    public DateTimeOffset? RotatedAtUtc { get; set; }
 }
 
 public sealed class StationHealthReport : TenantEntity

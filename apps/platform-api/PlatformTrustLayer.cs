@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -48,6 +49,12 @@ public static class PlatformPermissions
             ["operator"] =
             [
                 ReadInspections,
+                ReportStationHealth,
+                SyncWrite,
+                CaptureInspections,
+            ],
+            ["station"] =
+            [
                 ReportStationHealth,
                 SyncWrite,
                 CaptureInspections,
@@ -122,6 +129,143 @@ public sealed class JwtAuthenticationMiddleware(RequestDelegate next)
     }
 }
 
+public sealed record DeviceAuthenticationResult(Guid IdentityId, Guid TenantId, Guid StationId);
+
+public interface IDeviceCertificateAuthenticator
+{
+    Task<DeviceAuthenticationResult?> AuthenticateAsync(
+        X509Certificate2 certificate,
+        SpecProofDbContext database,
+        CancellationToken cancellationToken);
+}
+
+public sealed class DeviceCertificateAuthenticator : IDeviceCertificateAuthenticator
+{
+    public async Task<DeviceAuthenticationResult?> AuthenticateAsync(
+        X509Certificate2 certificate,
+        SpecProofDbContext database,
+        CancellationToken cancellationToken)
+    {
+        var thumbprint = DeviceCertificateThumbprint.Compute(certificate);
+        var now = DateTimeOffset.UtcNow;
+        var matches = await database.DeviceIdentities
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(identity =>
+                identity.Active
+                && identity.NotBeforeUtc <= now
+                && identity.ExpiresAtUtc > now
+                && identity.CertificateThumbprintSha256.ToLower() == thumbprint)
+            .Select(identity => new DeviceAuthenticationResult(identity.Id, identity.TenantId, identity.StationId))
+            .Take(2)
+            .ToArrayAsync(cancellationToken);
+        return matches.Length == 1 ? matches[0] : null;
+    }
+}
+
+public sealed class DeviceCertificateAuthenticationMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(
+        HttpContext context,
+        IDeviceCertificateAuthenticator authenticator,
+        SpecProofDbContext database)
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            await next(context);
+            return;
+        }
+
+        var certificate = await context.Connection.GetClientCertificateAsync(context.RequestAborted);
+        if (certificate is null)
+        {
+            await next(context);
+            return;
+        }
+
+        var identity = await authenticator.AuthenticateAsync(certificate, database, context.RequestAborted);
+        if (identity is null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, identity.IdentityId.ToString("D", CultureInfo.InvariantCulture)),
+            new("tenant_id", identity.TenantId.ToString("D", CultureInfo.InvariantCulture)),
+            new("station_id", identity.StationId.ToString("D", CultureInfo.InvariantCulture)),
+            new(ClaimTypes.Role, "station"),
+        };
+        claims.AddRange(
+            PlatformPermissions.RolePermissions["station"]
+                .Select(permission => new Claim("permission", permission)));
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "SpecProofDeviceCertificate"));
+        await next(context);
+    }
+}
+
+public static class DeviceCertificateThumbprint
+{
+    public static string Compute(X509Certificate2 certificate) =>
+        Convert.ToHexString(SHA256.HashData(certificate.RawData)).ToLowerInvariant();
+
+    public static string Normalize(string thumbprint) => thumbprint.Trim().ToLowerInvariant();
+}
+
+public sealed record DeviceCertificateRotation(DeviceIdentity Replacement, AuditEvent AuditEvent);
+
+public sealed class DeviceCertificateRotationService
+{
+    public DeviceCertificateRotation Rotate(
+        Guid tenantId,
+        Guid stationId,
+        RotateDeviceCertificateRequest request,
+        IReadOnlyCollection<DeviceIdentity> activeIdentities,
+        DateTimeOffset rotatedAtUtc)
+    {
+        foreach (var identity in activeIdentities)
+        {
+            identity.Active = false;
+            identity.RotatedAtUtc = rotatedAtUtc;
+            identity.UpdatedAtUtc = rotatedAtUtc;
+        }
+
+        var replacement = new DeviceIdentity
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            StationId = stationId,
+            CertificateThumbprintSha256 = DeviceCertificateThumbprint.Normalize(
+                request.CertificateThumbprintSha256),
+            PublicKeyPem = request.PublicKeyPem,
+            NotBeforeUtc = request.NotBeforeUtc,
+            ExpiresAtUtc = request.ExpiresAtUtc,
+            Active = true,
+        };
+        var auditEvent = new AuditEvent
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            EventType = "station.certificate_rotated",
+            EntityType = "station",
+            EntityId = stationId,
+            PayloadJson = JsonSerializer.Serialize(
+                new
+                {
+                    replacement.Id,
+                    replacement.CertificateThumbprintSha256,
+                    replacement.NotBeforeUtc,
+                    replacement.ExpiresAtUtc,
+                    RetiredIdentityIds = activeIdentities.Select(identity => identity.Id),
+                },
+                SpecProofJsonOptions.Canonical),
+            OccurredAtUtc = rotatedAtUtc,
+        };
+        return new DeviceCertificateRotation(replacement, auditEvent);
+    }
+}
+
 public sealed class PermissionEndpointFilter(string permission) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
@@ -146,6 +290,11 @@ public interface ITenantBoundRequest
     Guid TenantId { get; }
 }
 
+public interface IStationBoundRequest
+{
+    Guid StationId { get; }
+}
+
 public sealed class TenantBoundRequestFilter<TRequest>(TenantScopeAccessor tenantScope) : IEndpointFilter
     where TRequest : class, ITenantBoundRequest
 {
@@ -161,6 +310,62 @@ public sealed class TenantBoundRequestFilter<TRequest>(TenantScopeAccessor tenan
     }
 }
 
+public sealed class DeviceStationRequestFilter<TRequest> : IEndpointFilter
+    where TRequest : class, IStationBoundRequest
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var stationClaim = context.HttpContext.User.FindFirstValue("station_id");
+        if (stationClaim is null)
+        {
+            return await next(context);
+        }
+
+        var request = context.Arguments.OfType<TRequest>().FirstOrDefault();
+        if (!Guid.TryParse(stationClaim, out var stationId)
+            || request is null
+            || request.StationId != stationId)
+        {
+            return Results.Forbid();
+        }
+
+        return await next(context);
+    }
+}
+
+public sealed class DeviceStationRouteFilter : IEndpointFilter
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var stationClaim = context.HttpContext.User.FindFirstValue("station_id");
+        if (stationClaim is null)
+        {
+            return await next(context);
+        }
+
+        var routeStationId = context.HttpContext.Request.RouteValues["stationId"]?.ToString();
+        if (!Guid.TryParse(stationClaim, out var authenticatedStationId)
+            || !Guid.TryParse(routeStationId, out var requestedStationId)
+            || authenticatedStationId != requestedStationId)
+        {
+            return Results.Forbid();
+        }
+
+        return await next(context);
+    }
+}
+
+public static class DeviceStationAccess
+{
+    public static bool Matches(ClaimsPrincipal principal, Guid stationId)
+    {
+        var stationClaim = principal.FindFirstValue("station_id");
+        return stationClaim is null
+            || (Guid.TryParse(stationClaim, out var authenticatedStationId)
+                && authenticatedStationId == stationId);
+    }
+}
+
 public static class EndpointRouteBuilderExtensions
 {
     public static RouteHandlerBuilder RequireSpecProofPermission(
@@ -171,6 +376,13 @@ public static class EndpointRouteBuilderExtensions
     public static RouteHandlerBuilder RequireTenantMatch<TRequest>(this RouteHandlerBuilder builder)
         where TRequest : class, ITenantBoundRequest =>
         builder.AddEndpointFilter<TenantBoundRequestFilter<TRequest>>();
+
+    public static RouteHandlerBuilder RequireDeviceStationMatch<TRequest>(this RouteHandlerBuilder builder)
+        where TRequest : class, IStationBoundRequest =>
+        builder.AddEndpointFilter<DeviceStationRequestFilter<TRequest>>();
+
+    public static RouteHandlerBuilder RequireDeviceStationRouteMatch(this RouteHandlerBuilder builder) =>
+        builder.AddEndpointFilter<DeviceStationRouteFilter>();
 }
 
 public sealed class SpecProofJwtValidator(IConfiguration configuration)
@@ -392,8 +604,21 @@ public sealed class RegisterStationRequestValidator : AbstractValidator<Register
         RuleFor(request => request.TenantId).NotEmpty();
         RuleFor(request => request.FactoryId).NotEmpty();
         RuleFor(request => request.StationCode).NotEmpty().MaximumLength(100);
-        RuleFor(request => request.CertificateThumbprintSha256).Length(64);
+        RuleFor(request => request.CertificateThumbprintSha256)
+            .Matches("^[0-9a-fA-F]{64}$");
         RuleFor(request => request.PublicKeyPem).NotEmpty();
+    }
+}
+
+public sealed class RotateDeviceCertificateRequestValidator : AbstractValidator<RotateDeviceCertificateRequest>
+{
+    public RotateDeviceCertificateRequestValidator()
+    {
+        RuleFor(request => request.CertificateThumbprintSha256)
+            .Matches("^[0-9a-fA-F]{64}$");
+        RuleFor(request => request.PublicKeyPem).NotEmpty();
+        RuleFor(request => request.NotBeforeUtc)
+            .LessThan(request => request.ExpiresAtUtc);
     }
 }
 
@@ -455,7 +680,7 @@ public sealed record SyncEnvelopeRequest(
     string EntityType,
     Guid EntityId,
     string PayloadJson,
-    string PayloadHashSha256);
+    string PayloadHashSha256) : IStationBoundRequest;
 
 public sealed record CreateInspectionRequest(
     Guid TenantId,
@@ -467,7 +692,7 @@ public sealed record CreateInspectionRequest(
     string OrderCode,
     string StyleCode,
     string SizeCode,
-    InspectionResultDto Result) : ITenantBoundRequest;
+    InspectionResultDto Result) : ITenantBoundRequest, IStationBoundRequest;
 
 public sealed record ReviewInspectionRequest(string Outcome, string Note);
 
@@ -475,11 +700,11 @@ public sealed record ApproveTechPackImportRequest(int Version, string SizeCode);
 
 public sealed record EvidenceVerifyRequest(string EvidenceJson, string SignatureValueBase64);
 
-public sealed record StationDiagnosticsRequest(Guid TenantId, Guid StationId, string DiagnosticsJson) : ITenantBoundRequest;
+public sealed record StationDiagnosticsRequest(Guid TenantId, Guid StationId, string DiagnosticsJson) : ITenantBoundRequest, IStationBoundRequest;
 
-public sealed record StationConfigurationPushRequest(Guid TenantId, Guid StationId, int Version, string ConfigurationJson) : ITenantBoundRequest;
+public sealed record StationConfigurationPushRequest(Guid TenantId, Guid StationId, int Version, string ConfigurationJson) : ITenantBoundRequest, IStationBoundRequest;
 
-public sealed record StationVersionRequest(Guid TenantId, Guid StationId, string ComponentName, string Version) : ITenantBoundRequest;
+public sealed record StationVersionRequest(Guid TenantId, Guid StationId, string ComponentName, string Version) : ITenantBoundRequest, IStationBoundRequest;
 
 public sealed record WebhookSubscriptionRequest(Guid TenantId, string Url, string[] EventTypes, string Secret) : ITenantBoundRequest;
 

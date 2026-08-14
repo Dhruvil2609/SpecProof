@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-5  
 **Status:** `IN_PROGRESS`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-14T18:41:43Z
+**Last Updated:** 2026-08-14T18:58:15Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 4  
 **Language:** en  
@@ -46,7 +46,7 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 - [x] **TASK-5.2.3.2** — Role-based access control (RBAC) ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.3.3** — User, Role, Permission entities ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.3.4** — Device identity and certificate authentication ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.3.5** — Certificate rotation mechanism
+- [x] **TASK-5.2.3.5** — Certificate rotation mechanism ✅ (2026-08-14T18:58:15Z)
 - [x] **TASK-5.2.3.6** — Write auth/authz tests ✅ (2026-08-06T17:32:54Z)
 
 ### 5.2.4 Station and Device Management
@@ -114,11 +114,16 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 | T-5.014 | OpenAPI spec is valid | Build | Spec validates |
 | T-5.015 | Authenticated tenant header differs from JWT tenant claim | Security | 403 Forbidden |
 | T-5.016 | Tenant-bound write request differs from authenticated tenant | Security | 403 Forbidden |
+| T-5.017 | Valid active station certificate authenticates device | Unit | Tenant/station principal created |
+| T-5.018 | Unknown or inactive station certificate is presented | Security | 401 Unauthorized |
+| T-5.019 | Authenticated station targets another station | Security | 403 Forbidden |
+| T-5.020 | Station certificate rotates | Unit | Previous identity retired and audit event created |
 
 ### 5.3.1 Security Remediation Evidence
 
 - 2026-08-14T18:41:43Z — Made the authenticated JWT `tenant_id` claim authoritative, rejected missing or conflicting tenant context, guarded every tenant-bearing platform write request, and protected station registration with station-management permission.
 - 2026-08-14T18:41:43Z — Passed 16 focused platform API unit tests, including six tenant-boundary regression tests.
+- 2026-08-14T18:58:15Z — Added active-window client-certificate authentication, least-privilege station claims, same-station request enforcement, globally conflict-safe certificate registration, audited certificate rotation, and seven focused regressions; 23 platform API tests pass.
 
 ---
 
