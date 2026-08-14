@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Configuration;
 using SpecProof.Contracts;
 using SpecProof.Platform.Api;
@@ -7,6 +10,152 @@ namespace SpecProof.Platform.Api.Tests;
 
 public sealed class PlatformTrustLayerTests
 {
+    [Fact]
+    public async Task TenantResolutionMiddleware_AuthenticatedClaim_SetsTenantScope()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var context = new DefaultHttpContext
+        {
+            User = CreatePrincipal(tenantId.ToString()),
+        };
+        var tenantScope = new TenantScopeAccessor();
+        var nextCalled = false;
+        var middleware = new TenantResolutionMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+        await middleware.InvokeAsync(context, tenantScope);
+
+        Assert.True(nextCalled);
+        Assert.Equal(tenantId, tenantScope.TenantId);
+    }
+
+    [Fact]
+    public async Task TenantResolutionMiddleware_MismatchedTenantHeader_ReturnsForbidden()
+    {
+        var context = new DefaultHttpContext
+        {
+            User = CreatePrincipal("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        };
+        context.Request.Headers[TenantResolutionMiddleware.TenantHeaderName] =
+            "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+        var tenantScope = new TenantScopeAccessor();
+        var nextCalled = false;
+        var middleware = new TenantResolutionMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+        await middleware.InvokeAsync(context, tenantScope);
+
+        Assert.False(nextCalled);
+        Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+        Assert.Null(tenantScope.TenantId);
+    }
+
+    [Fact]
+    public async Task TenantResolutionMiddleware_MissingTenantClaim_ReturnsForbidden()
+    {
+        var context = new DefaultHttpContext
+        {
+            User = CreatePrincipal(null),
+        };
+        var tenantScope = new TenantScopeAccessor();
+        var nextCalled = false;
+        var middleware = new TenantResolutionMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+        await middleware.InvokeAsync(context, tenantScope);
+
+        Assert.False(nextCalled);
+        Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+        Assert.Null(tenantScope.TenantId);
+    }
+
+    [Fact]
+    public async Task TenantResolutionMiddleware_AnonymousTenantHeader_DoesNotEstablishTenantScope()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers[TenantResolutionMiddleware.TenantHeaderName] =
+            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+        var tenantScope = new TenantScopeAccessor();
+        var nextCalled = false;
+        var middleware = new TenantResolutionMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+        await middleware.InvokeAsync(context, tenantScope);
+
+        Assert.True(nextCalled);
+        Assert.Null(tenantScope.TenantId);
+    }
+
+    [Fact]
+    public async Task TenantBoundRequestFilter_MismatchedRequestTenant_ReturnsForbidden()
+    {
+        var tenantScope = new TenantScopeAccessor
+        {
+            TenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        };
+        var request = new WebhookSubscriptionRequest(
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            "https://example.test/webhook",
+            ["inspection.completed"],
+            "secret");
+        var context = new DefaultEndpointFilterInvocationContext(new DefaultHttpContext(), request);
+        var nextCalled = false;
+        var filter = new TenantBoundRequestFilter<WebhookSubscriptionRequest>(tenantScope);
+
+        var result = await filter.InvokeAsync(
+            context,
+            _ =>
+            {
+                nextCalled = true;
+                return ValueTask.FromResult<object?>(Results.Accepted());
+            });
+
+        Assert.False(nextCalled);
+        Assert.IsType<ForbidHttpResult>(result);
+    }
+
+    [Fact]
+    public async Task TenantBoundRequestFilter_MatchingRequestTenant_InvokesEndpoint()
+    {
+        var tenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var tenantScope = new TenantScopeAccessor { TenantId = tenantId };
+        var request = new WebhookSubscriptionRequest(
+            tenantId,
+            "https://example.test/webhook",
+            ["inspection.completed"],
+            "secret");
+        var context = new DefaultEndpointFilterInvocationContext(new DefaultHttpContext(), request);
+        var nextCalled = false;
+        var filter = new TenantBoundRequestFilter<WebhookSubscriptionRequest>(tenantScope);
+
+        var result = await filter.InvokeAsync(
+            context,
+            _ =>
+            {
+                nextCalled = true;
+                return ValueTask.FromResult<object?>(Results.Accepted());
+            });
+
+        Assert.True(nextCalled);
+        Assert.IsType<Accepted>(result);
+    }
+
     [Fact]
     public void SpecProofJwtValidator_ValidToken_ReturnsClaimsWithRolePermissions()
     {
@@ -173,6 +322,12 @@ public sealed class PlatformTrustLayerTests
                     ["Trust:SigningSecret"] = "unit-test-evidence-secret",
                 })
             .Build();
+
+    private static ClaimsPrincipal CreatePrincipal(string? tenantId)
+    {
+        var claims = tenantId is null ? [] : new[] { new Claim("tenant_id", tenantId) };
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, "UnitTest"));
+    }
 
     private sealed class RecordingHandler : HttpMessageHandler
     {

@@ -133,10 +133,8 @@ api.MapPost(
         async (
             CreateInspectionRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var json = JsonSerializer.Serialize(request.Result, SpecProofJsonContext.Default.InspectionResultDto);
             var record = new InspectionRecord
             {
@@ -170,6 +168,7 @@ api.MapPost(
             return Results.Created($"/api/v1/inspections/{record.Id}", request.Result);
         })
     .WithName("CreateInspection")
+    .RequireTenantMatch<CreateInspectionRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapGet(
@@ -241,10 +240,8 @@ api.MapPost(
         async (
             RegisterStationRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var station = await database.Stations.SingleOrDefaultAsync(
                 candidate =>
                     candidate.TenantId == request.TenantId
@@ -294,7 +291,9 @@ api.MapPost(
                     DateTimeOffset.UtcNow));
         })
     .WithName("RegisterStation")
-    .AddEndpointFilter<ValidationFilter<RegisterStationRequest>>();
+    .AddEndpointFilter<ValidationFilter<RegisterStationRequest>>()
+    .RequireTenantMatch<RegisterStationRequest>()
+    .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPut(
         "/stations/{stationId:guid}/health",
@@ -302,10 +301,8 @@ api.MapPut(
             Guid stationId,
             StationHealthRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var stationExists = await database.Stations.AnyAsync(
                 station => station.Id == stationId && station.TenantId == request.TenantId,
                 cancellationToken);
@@ -342,6 +339,7 @@ api.MapPut(
             return Results.NoContent();
         })
     .WithName("ReportStationHealth")
+    .RequireTenantMatch<StationHealthRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
 
 api.MapPost(
@@ -350,10 +348,8 @@ api.MapPost(
             Guid stationId,
             StationDiagnosticsRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             database.StationDiagnosticReports.Add(
                 new StationDiagnosticReport
                 {
@@ -368,6 +364,7 @@ api.MapPost(
             return Results.Accepted();
         })
     .WithName("SubmitStationDiagnostics")
+    .RequireTenantMatch<StationDiagnosticsRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPost(
@@ -376,10 +373,8 @@ api.MapPost(
             Guid stationId,
             StationConfigurationPushRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             database.StationConfigurationVersions.Add(
                 new StationConfigurationVersion
                 {
@@ -394,6 +389,7 @@ api.MapPost(
             return Results.Accepted();
         })
     .WithName("PushStationConfiguration")
+    .RequireTenantMatch<StationConfigurationPushRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ManageStations);
 
 api.MapPut(
@@ -403,10 +399,8 @@ api.MapPut(
             string componentName,
             StationVersionRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             database.StationSoftwareVersions.Add(
                 new StationSoftwareVersion
                 {
@@ -421,6 +415,7 @@ api.MapPut(
             return Results.NoContent();
         })
     .WithName("ReportStationVersion")
+    .RequireTenantMatch<StationVersionRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
 
 api.MapPost(
@@ -428,10 +423,8 @@ api.MapPost(
         async (
             InitiateCaptureUploadRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var stationExists = await database.Stations.AnyAsync(
                 station => station.Id == request.StationId && station.TenantId == request.TenantId,
                 cancellationToken);
@@ -474,6 +467,7 @@ api.MapPost(
                 new InitiateCaptureUploadResponse(asset.Id, asset.ObjectKey));
         })
     .WithName("InitiateCaptureUpload")
+    .RequireTenantMatch<InitiateCaptureUploadRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapPost(
@@ -482,10 +476,8 @@ api.MapPost(
             Guid assetId,
             CompleteCaptureUploadRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var asset = await database.CaptureAssets.SingleOrDefaultAsync(
                 candidate =>
                     candidate.Id == assetId
@@ -515,6 +507,7 @@ api.MapPost(
             return Results.NoContent();
         })
     .WithName("CompleteCaptureUpload")
+    .RequireTenantMatch<CompleteCaptureUploadRequest>()
     .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
 api.MapPost(
@@ -527,7 +520,11 @@ api.MapPost(
             TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= tenantId;
+            if (!tenantScope.Matches(tenantId))
+            {
+                return Results.Forbid();
+            }
+
             var envelope = await syncProtocol.AcceptAsync(database, tenantId, request, cancellationToken);
             return Results.Ok(
                 new SyncEnvelopeDto(
@@ -586,10 +583,8 @@ api.MapPost(
         async (
             WebhookSubscriptionRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             database.WebhookSubscriptions.Add(
                 new WebhookSubscription
                 {
@@ -605,6 +600,7 @@ api.MapPost(
             return Results.Accepted();
         })
     .WithName("CreateWebhookSubscription")
+    .RequireTenantMatch<WebhookSubscriptionRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ExportReports);
 
 api.MapPost(
@@ -612,10 +608,8 @@ api.MapPost(
         async (
             BackgroundJobRequest request,
             SpecProofDbContext database,
-            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            tenantScope.TenantId ??= request.TenantId;
             var job = new BackgroundJobRecord
             {
                 Id = Guid.NewGuid(),
@@ -631,6 +625,7 @@ api.MapPost(
             return Results.Accepted($"/api/v1/jobs/{job.Id}");
         })
     .WithName("CreateBackgroundJob")
+    .RequireTenantMatch<BackgroundJobRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ManageBackgroundJobs);
 
 api.MapWebApplicationEndpoints();
@@ -642,7 +637,7 @@ public sealed record RegisterStationRequest(
     Guid FactoryId,
     string StationCode,
     string CertificateThumbprintSha256,
-    string PublicKeyPem);
+    string PublicKeyPem) : ITenantBoundRequest;
 
 public sealed record StationHealthRequest(
     Guid TenantId,
@@ -651,17 +646,17 @@ public sealed record StationHealthRequest(
     string StorageStatus,
     string ClockStatus,
     long OfflineQueueDepth,
-    DateTimeOffset CheckedAtUtc);
+    DateTimeOffset CheckedAtUtc) : ITenantBoundRequest;
 
 public sealed record InitiateCaptureUploadRequest(
     Guid TenantId,
     Guid StationId,
     Guid CaptureId,
     long SizeBytes,
-    string ChecksumSha256);
+    string ChecksumSha256) : ITenantBoundRequest;
 
 public sealed record InitiateCaptureUploadResponse(Guid AssetId, string ObjectKey);
 
-public sealed record CompleteCaptureUploadRequest(Guid TenantId, string ChecksumSha256);
+public sealed record CompleteCaptureUploadRequest(Guid TenantId, string ChecksumSha256) : ITenantBoundRequest;
 
 public partial class Program;

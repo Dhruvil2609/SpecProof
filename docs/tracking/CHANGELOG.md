@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- 2026-08-14T18:41:43Z - Fixed the Phase 5 tenant boundary so authenticated JWT claims are authoritative, conflicting tenant headers and tenant-bearing write requests are rejected, and station registration requires station-management authorisation; added six regression tests.
 - 2026-07-29T17:43:19Z - Resolved .NET Application Control test execution blocker and passed 7 real PostgreSQL migration/audit integration tests.
 - 2026-07-29T17:22:46Z - Resolved the Python 3.11 native module blocker and verified `specproof-doctor` exits with zero required failures.
 - 2026-07-28T18:14:56Z - Improved the launcher Python policy failure message with the Docker-only startup workaround.

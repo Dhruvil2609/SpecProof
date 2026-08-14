@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-12T16:56:51Z
+**Last Updated:** 2026-08-14T18:41:43Z
 **Timezone:** UTC
 **Language:** en
 
@@ -39,7 +39,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
 | Python tests and coverage     | PASS    | 160 unit/regression tests, including 3 measurement API tests |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
-| .NET tests                    | PASS    | 32 tests: 10 platform API/station/storage, 6 contracts, 16 data |
+| .NET tests                    | PASS    | 38 tests: 16 platform API/station/storage, 6 contracts, 16 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
 | Frontend tests                | PASS    | 26 tests: 11 operator, 15 admin       |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
@@ -56,6 +56,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-14T18:41:43Z | 5     | Closed the tenant write-path vulnerability: JWT tenant claims are authoritative, conflicting headers and request tenants return 403, station registration requires authorisation, and 16 focused platform API tests pass. |
 | 2026-08-12T16:56:51Z | 6     | Implemented industrial React operator/admin apps, shared UI and generated client, development JWT/RBAC flows, station browser API, authorised evidence assets, tech-pack FastAPI facade/gateway, web contracts/endpoints, tenant persistence, immutable review/draft migration, and 41 new frontend/Python/.NET tests. Phase 6 is 46/49 tasks done. |
 | 2026-08-06T17:32:54Z | 5     | Added Phase 5 platform/trust backbone: versioned API groups, validation, rate limiting, tenant query filters, RBAC/JWT, station/device management, evidence signing, sync envelopes, reporting/export, webhook/job persistence, reversible migration, and 11 new tests. Phase 5 is 37/46 tasks done. |
 | 2026-08-05T17:52:00Z | 3     | **Phase 3 COMPLETE.** Added U-Net segmentation model, heatmap landmark model, annotation schema, dataset registry, experiment tracker, model registry, training pipeline, evaluation pipeline, drift detector, ONNX exports (T-3.008 PASS), model cards, graph landmark refinement, drape compensation, and 93 new tests (25 drape, 26 segmentation, 32 landmark, 35 ML integration). All 37 Phase 3 tasks done. |

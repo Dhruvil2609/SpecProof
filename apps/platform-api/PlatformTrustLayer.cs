@@ -66,22 +66,37 @@ public static class PlatformPermissions
 public sealed class TenantScopeAccessor : ITenantScope
 {
     public Guid? TenantId { get; set; }
+
+    public bool Matches(Guid tenantId) => TenantId == tenantId;
 }
 
 public sealed class TenantResolutionMiddleware(RequestDelegate next)
 {
+    public const string TenantHeaderName = "X-SpecProof-Tenant-Id";
+
     public async Task InvokeAsync(HttpContext context, TenantScopeAccessor tenantScope)
     {
-        if (context.Request.Headers.TryGetValue("X-SpecProof-Tenant-Id", out var tenantHeader)
-            && Guid.TryParse(tenantHeader.ToString(), out var tenantId))
+        if (context.User.Identity?.IsAuthenticated != true)
         {
-            tenantScope.TenantId = tenantId;
-        }
-        else if (Guid.TryParse(context.User.FindFirstValue("tenant_id"), out var claimTenantId))
-        {
-            tenantScope.TenantId = claimTenantId;
+            await next(context);
+            return;
         }
 
+        if (!Guid.TryParse(context.User.FindFirstValue("tenant_id"), out var claimTenantId))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        if (context.Request.Headers.TryGetValue(TenantHeaderName, out var tenantHeader)
+            && (!Guid.TryParse(tenantHeader.ToString(), out var headerTenantId)
+                || headerTenantId != claimTenantId))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        tenantScope.TenantId = claimTenantId;
         await next(context);
     }
 }
@@ -126,12 +141,36 @@ public sealed class PermissionEndpointFilter(string permission) : IEndpointFilte
     }
 }
 
+public interface ITenantBoundRequest
+{
+    Guid TenantId { get; }
+}
+
+public sealed class TenantBoundRequestFilter<TRequest>(TenantScopeAccessor tenantScope) : IEndpointFilter
+    where TRequest : class, ITenantBoundRequest
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var request = context.Arguments.OfType<TRequest>().FirstOrDefault();
+        if (request is null || !tenantScope.Matches(request.TenantId))
+        {
+            return Results.Forbid();
+        }
+
+        return await next(context);
+    }
+}
+
 public static class EndpointRouteBuilderExtensions
 {
     public static RouteHandlerBuilder RequireSpecProofPermission(
         this RouteHandlerBuilder builder,
         string permission) =>
         builder.AddEndpointFilter(new PermissionEndpointFilter(permission));
+
+    public static RouteHandlerBuilder RequireTenantMatch<TRequest>(this RouteHandlerBuilder builder)
+        where TRequest : class, ITenantBoundRequest =>
+        builder.AddEndpointFilter<TenantBoundRequestFilter<TRequest>>();
 }
 
 public sealed class SpecProofJwtValidator(IConfiguration configuration)
@@ -428,7 +467,7 @@ public sealed record CreateInspectionRequest(
     string OrderCode,
     string StyleCode,
     string SizeCode,
-    InspectionResultDto Result);
+    InspectionResultDto Result) : ITenantBoundRequest;
 
 public sealed record ReviewInspectionRequest(string Outcome, string Note);
 
@@ -436,12 +475,12 @@ public sealed record ApproveTechPackImportRequest(int Version, string SizeCode);
 
 public sealed record EvidenceVerifyRequest(string EvidenceJson, string SignatureValueBase64);
 
-public sealed record StationDiagnosticsRequest(Guid TenantId, Guid StationId, string DiagnosticsJson);
+public sealed record StationDiagnosticsRequest(Guid TenantId, Guid StationId, string DiagnosticsJson) : ITenantBoundRequest;
 
-public sealed record StationConfigurationPushRequest(Guid TenantId, Guid StationId, int Version, string ConfigurationJson);
+public sealed record StationConfigurationPushRequest(Guid TenantId, Guid StationId, int Version, string ConfigurationJson) : ITenantBoundRequest;
 
-public sealed record StationVersionRequest(Guid TenantId, Guid StationId, string ComponentName, string Version);
+public sealed record StationVersionRequest(Guid TenantId, Guid StationId, string ComponentName, string Version) : ITenantBoundRequest;
 
-public sealed record WebhookSubscriptionRequest(Guid TenantId, string Url, string[] EventTypes, string Secret);
+public sealed record WebhookSubscriptionRequest(Guid TenantId, string Url, string[] EventTypes, string Secret) : ITenantBoundRequest;
 
-public sealed record BackgroundJobRequest(Guid TenantId, string QueueName, string JobType, string PayloadJson);
+public sealed record BackgroundJobRequest(Guid TenantId, string QueueName, string JobType, string PayloadJson) : ITenantBoundRequest;

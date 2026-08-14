@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-5  
 **Status:** `IN_PROGRESS`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-06T17:32:54Z
+**Last Updated:** 2026-08-14T18:41:43Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 4  
 **Language:** en  
@@ -112,6 +112,13 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 | T-5.012 | Rate limiting returns 429 | Integration | 429 Too Many Requests |
 | T-5.013 | Audit events are append-only | Integration | DELETE/UPDATE fails |
 | T-5.014 | OpenAPI spec is valid | Build | Spec validates |
+| T-5.015 | Authenticated tenant header differs from JWT tenant claim | Security | 403 Forbidden |
+| T-5.016 | Tenant-bound write request differs from authenticated tenant | Security | 403 Forbidden |
+
+### 5.3.1 Security Remediation Evidence
+
+- 2026-08-14T18:41:43Z — Made the authenticated JWT `tenant_id` claim authoritative, rejected missing or conflicting tenant context, guarded every tenant-bearing platform write request, and protected station registration with station-management permission.
+- 2026-08-14T18:41:43Z — Passed 16 focused platform API unit tests, including six tenant-boundary regression tests.
 
 ---
 
