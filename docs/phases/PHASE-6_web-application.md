@@ -1,9 +1,9 @@
 # Phase 6 — Web Application
 
 **Phase ID:** PHASE-6  
-**Status:** `NOT_STARTED`  
+**Status:** `IN_PROGRESS`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-08-12T16:56:51Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 5  
 **Language:** en  
@@ -24,78 +24,78 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 
 ### 6.2.1 Design System and Shell
 
-- [ ] **TASK-6.2.1.1** — Design token system (colours, typography, spacing, breakpoints)
-- [ ] **TASK-6.2.1.2** — Component library (buttons, forms, tables, modals, toasts, cards)
-- [ ] **TASK-6.2.1.3** — Application shell with responsive sidebar navigation
-- [ ] **TASK-6.2.1.4** — Dark mode support
-- [ ] **TASK-6.2.1.5** — Loading and error states
+- [x] **TASK-6.2.1.1** — Design token system (colours, typography, spacing, breakpoints)
+- [x] **TASK-6.2.1.2** — Component library (buttons, forms, tables, modals, toasts, cards)
+- [x] **TASK-6.2.1.3** — Application shell with responsive sidebar navigation
+- [x] **TASK-6.2.1.4** — Dark mode support
+- [x] **TASK-6.2.1.5** — Loading and error states
 - [ ] **TASK-6.2.1.6** — Write component Storybook stories or visual tests
 
 ### 6.2.2 i18n Integration
 
-- [ ] **TASK-6.2.2.1** — react-i18next (or Angular i18n) setup
-- [ ] **TASK-6.2.2.2** — English (en) base translation file
-- [ ] **TASK-6.2.2.3** — Language switcher component
-- [ ] **TASK-6.2.2.4** — Date/time formatting (UTC display + local conversion)
-- [ ] **TASK-6.2.2.5** — Number and unit formatting (metric/imperial)
-- [ ] **TASK-6.2.2.6** — Write i18n completeness tests
+- [x] **TASK-6.2.2.1** — react-i18next (or Angular i18n) setup
+- [x] **TASK-6.2.2.2** — English (en) base translation file
+- [x] **TASK-6.2.2.3** — Language switcher component
+- [x] **TASK-6.2.2.4** — Date/time formatting (UTC display + local conversion)
+- [x] **TASK-6.2.2.5** — Number and unit formatting (metric/imperial)
+- [x] **TASK-6.2.2.6** — Write i18n completeness tests
 
 ### 6.2.3 Operator UI — Capture Workflow
 
-- [ ] **TASK-6.2.3.1** — Order/style/size selection screen
-- [ ] **TASK-6.2.3.2** — Live camera preview with depth overlay
-- [ ] **TASK-6.2.3.3** — Capture zone framing guide
-- [ ] **TASK-6.2.3.4** — Capture trigger and progress indicator
-- [ ] **TASK-6.2.3.5** — Recapture instruction screen
+- [x] **TASK-6.2.3.1** — Order/style/size selection screen
+- [x] **TASK-6.2.3.2** — Live camera preview with depth overlay
+- [x] **TASK-6.2.3.3** — Capture zone framing guide
+- [x] **TASK-6.2.3.4** — Capture trigger and progress indicator
+- [x] **TASK-6.2.3.5** — Recapture instruction screen
 - [ ] **TASK-6.2.3.6** — Write capture workflow E2E tests
 
 ### 6.2.4 Operator UI — Results and Review
 
-- [ ] **TASK-6.2.4.1** — Pass/fail result display with colour coding
-- [ ] **TASK-6.2.4.2** — Measurement overlay on garment image
-- [ ] **TASK-6.2.4.3** — Deviation details per POM
-- [ ] **TASK-6.2.4.4** — Review workflow for REVIEW-status items
-- [ ] **TASK-6.2.4.5** — Inspection history view
-- [ ] **TASK-6.2.4.6** — Write results display tests
+- [x] **TASK-6.2.4.1** — Pass/fail result display with colour coding
+- [x] **TASK-6.2.4.2** — Measurement overlay on garment image
+- [x] **TASK-6.2.4.3** — Deviation details per POM
+- [x] **TASK-6.2.4.4** — Review workflow for REVIEW-status items
+- [x] **TASK-6.2.4.5** — Inspection history view
+- [x] **TASK-6.2.4.6** — Write results display tests
 
 ### 6.2.5 Admin UI — Station Management
 
-- [ ] **TASK-6.2.5.1** — Station list and status dashboard
-- [ ] **TASK-6.2.5.2** — Device health details
-- [ ] **TASK-6.2.5.3** — Calibration status and history
-- [ ] **TASK-6.2.5.4** — Station configuration editor
-- [ ] **TASK-6.2.5.5** — Write station management UI tests
+- [x] **TASK-6.2.5.1** — Station list and status dashboard
+- [x] **TASK-6.2.5.2** — Device health details
+- [x] **TASK-6.2.5.3** — Calibration status and history
+- [x] **TASK-6.2.5.4** — Station configuration editor
+- [x] **TASK-6.2.5.5** — Write station management UI tests
 
 ### 6.2.6 Admin UI — Spec and Brand Management
 
-- [ ] **TASK-6.2.6.1** — Tech-pack upload and mapping interface
-- [ ] **TASK-6.2.6.2** — POM mapping approval workflow UI
-- [ ] **TASK-6.2.6.3** — Garment category management
-- [ ] **TASK-6.2.6.4** — Spec version history
-- [ ] **TASK-6.2.6.5** — Write spec management tests
+- [x] **TASK-6.2.6.1** — Tech-pack upload and mapping interface
+- [x] **TASK-6.2.6.2** — POM mapping approval workflow UI
+- [x] **TASK-6.2.6.3** — Garment category management
+- [x] **TASK-6.2.6.4** — Spec version history
+- [x] **TASK-6.2.6.5** — Write spec management tests
 
 ### 6.2.7 Admin UI — User and Permissions
 
-- [ ] **TASK-6.2.7.1** — User management CRUD
-- [ ] **TASK-6.2.7.2** — Role management and assignment
-- [ ] **TASK-6.2.7.3** — Permission matrix display
-- [ ] **TASK-6.2.7.4** — Tenant/organisation switching
-- [ ] **TASK-6.2.7.5** — Write user management tests
+- [x] **TASK-6.2.7.1** — User management CRUD
+- [x] **TASK-6.2.7.2** — Role management and assignment
+- [x] **TASK-6.2.7.3** — Permission matrix display
+- [x] **TASK-6.2.7.4** — Tenant/organisation switching
+- [x] **TASK-6.2.7.5** — Write user management tests
 
 ### 6.2.8 Reporting Dashboard
 
-- [ ] **TASK-6.2.8.1** — Batch/order summary view
-- [ ] **TASK-6.2.8.2** — Defect Pareto analysis charts
-- [ ] **TASK-6.2.8.3** — Supplier/style/size trend charts
-- [ ] **TASK-6.2.8.4** — Export to CSV/PDF
-- [ ] **TASK-6.2.8.5** — Evidence-record inspection viewer
-- [ ] **TASK-6.2.8.6** — Write reporting dashboard tests
+- [x] **TASK-6.2.8.1** — Batch/order summary view
+- [x] **TASK-6.2.8.2** — Defect Pareto analysis charts
+- [x] **TASK-6.2.8.3** — Supplier/style/size trend charts
+- [x] **TASK-6.2.8.4** — Export to CSV/PDF
+- [x] **TASK-6.2.8.5** — Evidence-record inspection viewer
+- [x] **TASK-6.2.8.6** — Write reporting dashboard tests
 
 ### 6.2.9 API Client Generation
 
-- [ ] **TASK-6.2.9.1** — Auto-generate TypeScript API client from OpenAPI spec
-- [ ] **TASK-6.2.9.2** — Type-safe API hooks/services
-- [ ] **TASK-6.2.9.3** — Error handling and retry logic
+- [x] **TASK-6.2.9.1** — Auto-generate TypeScript API client from OpenAPI spec
+- [x] **TASK-6.2.9.2** — Type-safe API hooks/services
+- [x] **TASK-6.2.9.3** — Error handling and retry logic
 - [ ] **TASK-6.2.9.4** — Write API client integration tests
 
 ---
@@ -123,10 +123,10 @@ station APIs, mock gRPC/web adapters, replay packages, and seeded platform data.
 
 ## 6.4 Exit Criteria
 
-- [ ] Operator capture workflow runs end-to-end
-- [ ] Admin UI manages stations, specs, users, and permissions
-- [ ] i18n framework works with English; new languages addable
-- [ ] Reporting dashboards display accurate data
+- [x] Operator capture workflow runs end-to-end
+- [x] Admin UI manages stations, specs, users, and permissions
+- [x] i18n framework works with English; new languages addable
+- [x] Reporting dashboards display accurate data
 - [ ] All test cases pass on Chrome and Edge
 - [ ] No accessibility violations (WCAG 2.1 AA basic checks)
 

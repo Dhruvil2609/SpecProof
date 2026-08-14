@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "SpecProof Platform API", "version": "1.0.0" },
+  "paths": {
+    "/api/v1/web/dashboard": {
+      "get": {
+        "operationId": "getWebDashboard",
+        "responses": { "200": { "description": "Web dashboard data" } }
+      }
+    },
+    "/api/v1/web/inspections/{id}": {
+      "get": {
+        "operationId": "getWebInspection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Inspection detail" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/v1/web/inspections/{id}/reviews": {
+      "post": {
+        "operationId": "reviewWebInspection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": { "204": { "description": "Review recorded" } }
+      }
+    }
+  }
+}

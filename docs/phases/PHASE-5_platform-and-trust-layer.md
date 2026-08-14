@@ -1,9 +1,9 @@
 # Phase 5 — Platform and Trust Layer
 
 **Phase ID:** PHASE-5  
-**Status:** `NOT_STARTED`  
+**Status:** `IN_PROGRESS`  
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-08-06T17:32:54Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 4  
 **Language:** en  
@@ -24,71 +24,71 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 
 ### 5.2.1 Platform API (ASP.NET Core)
 
-- [ ] **TASK-5.2.1.1** — API structure with Minimal APIs or Controllers
-- [ ] **TASK-5.2.1.2** — OpenAPI 3.x auto-generation
-- [ ] **TASK-5.2.1.3** — Request validation (FluentValidation)
-- [ ] **TASK-5.2.1.4** — Global error handling with RFC 7807 Problem Details
-- [ ] **TASK-5.2.1.5** — API versioning strategy
-- [ ] **TASK-5.2.1.6** — Rate limiting
+- [x] **TASK-5.2.1.1** — API structure with Minimal APIs or Controllers ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.1.2** — OpenAPI 3.x auto-generation ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.1.3** — Request validation (FluentValidation) ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.1.4** — Global error handling with RFC 7807 Problem Details ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.1.5** — API versioning strategy ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.1.6** — Rate limiting ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.1.7** — Write API endpoint tests
 
 ### 5.2.2 Multi-Tenancy
 
-- [ ] **TASK-5.2.2.1** — Tenant resolution middleware
-- [ ] **TASK-5.2.2.2** — Tenant-scoped data access (EF Core query filters)
-- [ ] **TASK-5.2.2.3** — Tenant-scoped object storage buckets
-- [ ] **TASK-5.2.2.4** — Tenant configuration management
-- [ ] **TASK-5.2.2.5** — Write tenant isolation tests
+- [x] **TASK-5.2.2.1** — Tenant resolution middleware ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.2.2** — Tenant-scoped data access (EF Core query filters) ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.2.3** — Tenant-scoped object storage buckets ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.2.4** — Tenant configuration management ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.2.5** — Write tenant isolation tests ✅ (2026-08-06T17:32:54Z)
 
 ### 5.2.3 Authentication and Authorisation
 
-- [ ] **TASK-5.2.3.1** — JWT or OIDC authentication
-- [ ] **TASK-5.2.3.2** — Role-based access control (RBAC)
-- [ ] **TASK-5.2.3.3** — User, Role, Permission entities
-- [ ] **TASK-5.2.3.4** — Device identity and certificate authentication
+- [x] **TASK-5.2.3.1** — JWT or OIDC authentication ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.3.2** — Role-based access control (RBAC) ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.3.3** — User, Role, Permission entities ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.3.4** — Device identity and certificate authentication ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.3.5** — Certificate rotation mechanism
-- [ ] **TASK-5.2.3.6** — Write auth/authz tests
+- [x] **TASK-5.2.3.6** — Write auth/authz tests ✅ (2026-08-06T17:32:54Z)
 
 ### 5.2.4 Station and Device Management
 
-- [ ] **TASK-5.2.4.1** — Station registration API
-- [ ] **TASK-5.2.4.2** — Device health reporting API
-- [ ] **TASK-5.2.4.3** — Remote diagnostics endpoint
-- [ ] **TASK-5.2.4.4** — Station configuration push
-- [ ] **TASK-5.2.4.5** — Firmware and software version tracking
+- [x] **TASK-5.2.4.1** — Station registration API ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.4.2** — Device health reporting API ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.4.3** — Remote diagnostics endpoint ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.4.4** — Station configuration push ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.4.5** — Firmware and software version tracking ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.4.6** — Write station management tests
 
 ### 5.2.5 Trust and Signing Layer
 
-- [ ] **TASK-5.2.5.1** — Evidence record digital signature (service-side)
+- [x] **TASK-5.2.5.1** — Evidence record digital signature (service-side) ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.5.2** — Secure key storage (Windows CNG/DPAPI/TPM abstraction)
-- [ ] **TASK-5.2.5.3** — Signature verification API
-- [ ] **TASK-5.2.5.4** — Append-only audit event stream
-- [ ] **TASK-5.2.5.5** — Tamper-evident hash chain
-- [ ] **TASK-5.2.5.6** — Write signature and verification tests
+- [x] **TASK-5.2.5.3** — Signature verification API ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.5.4** — Append-only audit event stream ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.5.5** — Tamper-evident hash chain ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.5.6** — Write signature and verification tests ✅ (2026-08-06T17:32:54Z)
 
 ### 5.2.6 Data Synchronisation
 
-- [ ] **TASK-5.2.6.1** — Offline queue → central platform sync
-- [ ] **TASK-5.2.6.2** — Idempotent sync protocol
-- [ ] **TASK-5.2.6.3** — Conflict detection and resolution
-- [ ] **TASK-5.2.6.4** — Retry and dead-letter handling
+- [x] **TASK-5.2.6.1** — Offline queue → central platform sync ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.6.2** — Idempotent sync protocol ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.6.3** — Conflict detection and resolution ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.6.4** — Retry and dead-letter handling ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.6.5** — Write sync integration tests
 
 ### 5.2.7 Reporting and Export
 
-- [ ] **TASK-5.2.7.1** — Inspection result API
-- [ ] **TASK-5.2.7.2** — Batch/order summary API
+- [x] **TASK-5.2.7.1** — Inspection result API ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.7.2** — Batch/order summary API ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.7.3** — CSV and PDF export
-- [ ] **TASK-5.2.7.4** — Webhook/event output
-- [ ] **TASK-5.2.7.5** — Data retention and deletion API
-- [ ] **TASK-5.2.7.6** — Write export tests
+- [x] **TASK-5.2.7.4** — Webhook/event output ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.7.5** — Data retention and deletion API ✅ (2026-08-06T17:32:54Z)
+- [x] **TASK-5.2.7.6** — Write export tests ✅ (2026-08-06T17:32:54Z)
 
 ### 5.2.8 Background Processing
 
-- [ ] **TASK-5.2.8.1** — Background job infrastructure (Hangfire or custom)
+- [x] **TASK-5.2.8.1** — Background job infrastructure (Hangfire or custom) ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.8.2** — Measurement processing queue
-- [ ] **TASK-5.2.8.3** — Report generation queue
+- [x] **TASK-5.2.8.3** — Report generation queue ✅ (2026-08-06T17:32:54Z)
 - [ ] **TASK-5.2.8.4** — Notification dispatch
 - [ ] **TASK-5.2.8.5** — Write background job tests
 

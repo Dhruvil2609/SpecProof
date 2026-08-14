@@ -1,3 +1,5 @@
+using System.Net.WebSockets;
+using System.Text.Json;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +10,7 @@ using OpenTelemetry.Trace;
 using SpecProof.Camera.Abstractions;
 using SpecProof.Station.Contracts.V1;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 var captureServiceAddress =
     builder.Configuration["CaptureService:Address"] ?? "http://127.0.0.1:50051";
 
@@ -27,7 +29,79 @@ builder.Services.AddOpenTelemetry()
         }
     });
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+app.UseWebSockets();
+
+app.MapGet(
+    "/api/v1/health",
+    async (ICameraProvider cameraProvider, CancellationToken cancellationToken) =>
+        Results.Ok(await cameraProvider.GetHealthAsync(cancellationToken)));
+app.MapGet(
+    "/api/v1/cameras",
+    async (ICameraProvider cameraProvider, CancellationToken cancellationToken) =>
+        Results.Ok(await cameraProvider.ListCamerasAsync(cancellationToken)));
+app.MapPost(
+    "/api/v1/captures",
+    async (
+        StationCaptureRequest request,
+        ICameraProvider cameraProvider,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            var captured = await cameraProvider.CaptureAsync(
+                new CameraCaptureRequest(
+                    request.StationId,
+                    request.CameraSerial,
+                    request.FrameCount,
+                    request.Profile),
+                cancellationToken);
+            return Results.Ok(
+                new StationCaptureResponse(
+                    captured.CaptureId,
+                    captured.PackageSha256,
+                    captured.CalibrationId,
+                    captured.CapturedAtUtc));
+        }
+        catch (CameraNotFoundException exception)
+        {
+            return Results.Problem(exception.Message, statusCode: StatusCodes.Status404NotFound);
+        }
+        catch (CalibrationRequiredException exception)
+        {
+            return Results.Problem(exception.Message, statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CameraUnavailableException exception)
+        {
+            return Results.Problem(exception.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+    });
+app.Map(
+    "/api/v1/preview",
+    async context =>
+    {
+        if (!context.WebSockets.IsWebSocketRequest)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        using var socket = await context.WebSockets.AcceptWebSocketAsync();
+        var sequence = 0L;
+        while (socket.State == WebSocketState.Open && !context.RequestAborted.IsCancellationRequested)
+        {
+            var frame = StationPreviewFrame.Create(sequence++, DateTimeOffset.UtcNow);
+            var payload = JsonSerializer.SerializeToUtf8Bytes(frame, StationBrowserJsonContext.Default.StationPreviewFrame);
+            await socket.SendAsync(
+                payload,
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                context.RequestAborted);
+            await Task.Delay(TimeSpan.FromMilliseconds(250), context.RequestAborted);
+        }
+    });
+
+await app.RunAsync();
 
 public sealed class GrpcCameraProvider(CaptureStation.CaptureStationClient client) : ICameraProvider
 {
@@ -163,3 +237,39 @@ public sealed class StationSupervisor(
         while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 }
+
+public sealed record StationCaptureRequest(
+    string StationId,
+    string CameraSerial,
+    int FrameCount = 5,
+    CameraStreamProfile? Profile = null);
+
+public sealed record StationCaptureResponse(
+    Guid CaptureId,
+    string ChecksumSha256,
+    string CalibrationId,
+    DateTimeOffset CapturedAtUtc);
+
+public sealed record StationPreviewFrame(
+    long Sequence,
+    DateTimeOffset CapturedAtUtc,
+    string ColorJpegBase64,
+    string DepthPngBase64,
+    int ColorWidth,
+    int ColorHeight,
+    int DepthWidth,
+    int DepthHeight)
+{
+    private const string OnePixelJpeg =
+        "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAF//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABBQJ//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAwEBPwF//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAgEBPwF//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQAGPwJ//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPyF//9oADAMBAAIAAwAAABD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/EH//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/EH//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/EH//2Q==";
+    private const string OnePixelPng =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+    public static StationPreviewFrame Create(long sequence, DateTimeOffset capturedAtUtc) =>
+        new(sequence, capturedAtUtc, OnePixelJpeg, OnePixelPng, 1, 1, 1, 1);
+}
+
+[System.Text.Json.Serialization.JsonSerializable(typeof(StationPreviewFrame))]
+internal sealed partial class StationBrowserJsonContext : System.Text.Json.Serialization.JsonSerializerContext;
+
+public partial class Program;

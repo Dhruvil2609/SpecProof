@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>SpecProof.Platform.Api.Tests</AssemblyName>
+    <RootNamespace>SpecProof.Platform.Api.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <ProjectReference Include="..\..\..\..\apps\platform-api\SpecProof.Platform.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\apps\station-host\SpecProof.Station.Host.csproj" />
+  </ItemGroup>
+</Project>

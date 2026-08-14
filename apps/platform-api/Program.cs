@@ -1,5 +1,8 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
+using System.Threading.RateLimiting;
+using FluentValidation;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +10,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SpecProof.Contracts;
+using SpecProof.Platform.Api;
 using SpecProof.Platform.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +25,32 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(
+        "api",
+        context => RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "local",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1),
+            }));
+});
+builder.Services.AddScoped<TenantScopeAccessor>();
+builder.Services.AddScoped<ITenantScope>(provider => provider.GetRequiredService<TenantScopeAccessor>());
+builder.Services.AddSingleton<SpecProofJwtValidator>();
+builder.Services.AddSingleton<EvidenceSignatureService>();
+builder.Services.AddSingleton<SyncProtocolService>();
+builder.Services.AddSingleton<ReportingExportService>();
+builder.Services.AddSingleton<IEvidenceAssetReader, FileSystemEvidenceAssetReader>();
+builder.Services.AddHttpClient<ITechPackImportGateway, TechPackImportGateway>(client =>
+    client.BaseAddress = new Uri(
+        builder.Configuration["MeasurementService:BaseUrl"] ?? "http://127.0.0.1:8010/"));
+builder.Services.AddScoped<IValidator<RegisterStationRequest>, RegisterStationRequestValidator>();
+builder.Services.AddScoped<IValidator<SyncEnvelopeRequest>, SyncEnvelopeRequestValidator>();
 builder.Services.AddDbContext<SpecProofDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SpecProof")));
 builder.Services.AddOpenTelemetry()
@@ -51,33 +81,170 @@ var app = builder.Build();
 
 app.UseRequestLocalization();
 app.UseExceptionHandler();
+app.UseRateLimiter();
+app.UseMiddleware<JwtAuthenticationMiddleware>();
+app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.MapOpenApi("/api/v1/openapi.json");
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok", checkedAtUtc = DateTimeOffset.UtcNow }))
     .WithName("HealthCheck");
 
-app.MapGet("/api/v1/inspections/{id:guid}", (Guid id) =>
-    {
-        var result = new InspectionResultDto(
-            id,
-            "station-demo",
-            "camera-demo",
-            DateTimeOffset.UtcNow,
-            [],
-            InspectionStatus.Pending,
-            "not-yet-signed");
-        return Results.Ok(result);
-    })
-    .WithName("GetInspection");
+var api = app.MapGroup("/api/v1")
+    .RequireRateLimiting("api");
 
-app.MapPost(
-        "/api/v1/stations/register",
+api.MapGet("/auth/dev-token", (Guid tenantId, string subject, string role, SpecProofJwtValidator jwtValidator, IWebHostEnvironment environment) =>
+    {
+        if (!environment.IsDevelopment() && !environment.IsEnvironment("Test"))
+        {
+            return Results.NotFound();
+        }
+
+        var token = jwtValidator.CreateToken(tenantId, subject, role, DateTimeOffset.UtcNow.AddHours(1));
+        return Results.Ok(new { token, expiresAtUtc = DateTimeOffset.UtcNow.AddHours(1) });
+    })
+    .WithName("CreateDevelopmentToken");
+
+api.MapGet(
+        "/inspections/{id:guid}",
         async (
-            RegisterStationRequest request,
+            Guid id,
             SpecProofDbContext database,
             CancellationToken cancellationToken) =>
         {
+            var record = await database.InspectionRecords.SingleOrDefaultAsync(
+                candidate => candidate.Id == id && candidate.DeletedAtUtc == null,
+                cancellationToken);
+            if (record is null)
+            {
+                return Results.NotFound();
+            }
+
+            var result = JsonSerializer.Deserialize(
+                record.InspectionResultJson,
+                SpecProofJsonContext.Default.InspectionResultDto);
+            return result is null ? Results.Problem(statusCode: StatusCodes.Status500InternalServerError) : Results.Ok(result);
+        })
+    .WithName("GetInspection")
+    .RequireSpecProofPermission(PlatformPermissions.ReadInspections);
+
+api.MapPost(
+        "/inspections",
+        async (
+            CreateInspectionRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            var json = JsonSerializer.Serialize(request.Result, SpecProofJsonContext.Default.InspectionResultDto);
+            var record = new InspectionRecord
+            {
+                Id = request.InspectionId,
+                TenantId = request.TenantId,
+                CaptureId = request.CaptureId,
+                StationId = request.StationId,
+                BatchId = request.BatchId,
+                StationCode = request.StationCode,
+                OrderCode = request.OrderCode,
+                StyleCode = request.StyleCode,
+                SizeCode = request.SizeCode,
+                InspectionResultJson = json,
+                Status = request.Result.Status.ToString(),
+                EvidenceRecordHash = request.Result.EvidenceRecordHash,
+                CapturedAtUtc = request.Result.CapturedAtUtc,
+            };
+            database.InspectionRecords.Add(record);
+            database.BackgroundJobs.Add(
+                new BackgroundJobRecord
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    QueueName = "reports",
+                    JobType = "inspection.report.refresh",
+                    PayloadJson = JsonSerializer.Serialize(new { request.InspectionId }, SpecProofJsonOptions.Canonical),
+                    Status = "queued",
+                    AvailableAtUtc = DateTimeOffset.UtcNow,
+                });
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Created($"/api/v1/inspections/{record.Id}", request.Result);
+        })
+    .WithName("CreateInspection")
+    .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
+
+api.MapGet(
+        "/reports/batches/{batchId:guid}",
+        async (Guid batchId, SpecProofDbContext database, CancellationToken cancellationToken) =>
+        {
+            var records = await database.InspectionRecords
+                .Where(record => record.BatchId == batchId && record.DeletedAtUtc == null)
+                .ToArrayAsync(cancellationToken);
+            var summary = new BatchSummaryDto(
+                batchId,
+                records.Length,
+                records.Count(record => record.Status == InspectionStatus.Pass.ToString()),
+                records.Count(record => record.Status == InspectionStatus.Fail.ToString()),
+                records.Count(record => record.Status == InspectionStatus.Review.ToString()),
+                records.Count(record => record.Status == InspectionStatus.Invalid.ToString()));
+            return Results.Ok(summary);
+        })
+    .WithName("GetBatchSummary")
+    .RequireSpecProofPermission(PlatformPermissions.ReadInspections);
+
+api.MapGet(
+        "/reports/inspections.csv",
+        async (
+            SpecProofDbContext database,
+            ReportingExportService exportService,
+            CancellationToken cancellationToken) =>
+        {
+            var records = await database.InspectionRecords
+                .Where(record => record.DeletedAtUtc == null)
+                .OrderBy(record => record.CapturedAtUtc)
+                .ToArrayAsync(cancellationToken);
+            var inspections = records
+                .Select(record => JsonSerializer.Deserialize(
+                    record.InspectionResultJson,
+                    SpecProofJsonContext.Default.InspectionResultDto))
+                .Where(result => result is not null)
+                .Cast<InspectionResultDto>();
+            return Results.Text(
+                exportService.ToInspectionCsv(inspections),
+                "text/csv",
+                Encoding.UTF8);
+        })
+    .WithName("ExportInspectionsCsv")
+    .RequireSpecProofPermission(PlatformPermissions.ExportReports);
+
+api.MapDelete(
+        "/retention/inspections/{id:guid}",
+        async (Guid id, SpecProofDbContext database, CancellationToken cancellationToken) =>
+        {
+            var record = await database.InspectionRecords.SingleOrDefaultAsync(
+                candidate => candidate.Id == id,
+                cancellationToken);
+            if (record is null)
+            {
+                return Results.NotFound();
+            }
+
+            record.DeletedAtUtc = DateTimeOffset.UtcNow;
+            record.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.NoContent();
+        })
+    .WithName("DeleteInspectionForRetention")
+    .RequireSpecProofPermission(PlatformPermissions.ExportReports);
+
+api.MapPost(
+        "/stations/register",
+        async (
+            RegisterStationRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
             var station = await database.Stations.SingleOrDefaultAsync(
                 candidate =>
                     candidate.TenantId == request.TenantId
@@ -93,28 +260,73 @@ app.MapPost(
                     StationCode = request.StationCode,
                 };
                 database.Stations.Add(station);
-                await database.SaveChangesAsync(cancellationToken);
             }
-            return Results.Ok(
-                new RegisterStationResponse(station.Id, station.StationCode, DateTimeOffset.UtcNow));
-        })
-    .WithName("RegisterStation");
 
-app.MapPut(
-        "/api/v1/stations/{stationId:guid}/health",
+            var identityExists = await database.DeviceIdentities.AnyAsync(
+                identity =>
+                    identity.TenantId == request.TenantId
+                    && identity.CertificateThumbprintSha256 == request.CertificateThumbprintSha256,
+                cancellationToken);
+            if (!identityExists)
+            {
+                database.DeviceIdentities.Add(
+                    new DeviceIdentity
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = request.TenantId,
+                        StationId = station.Id,
+                        CertificateThumbprintSha256 = request.CertificateThumbprintSha256,
+                        PublicKeyPem = request.PublicKeyPem,
+                        NotBeforeUtc = DateTimeOffset.UtcNow,
+                        ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(90),
+                        Active = true,
+                    });
+            }
+
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Ok(
+                new StationRegistrationDto(
+                    station.Id,
+                    station.TenantId,
+                    station.FactoryId,
+                    station.StationCode,
+                    request.CertificateThumbprintSha256,
+                    DateTimeOffset.UtcNow));
+        })
+    .WithName("RegisterStation")
+    .AddEndpointFilter<ValidationFilter<RegisterStationRequest>>();
+
+api.MapPut(
+        "/stations/{stationId:guid}/health",
         async (
             Guid stationId,
             StationHealthRequest request,
             SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
-            var station = await database.Stations.SingleOrDefaultAsync(
-                candidate => candidate.Id == stationId && candidate.TenantId == request.TenantId,
+            tenantScope.TenantId ??= request.TenantId;
+            var stationExists = await database.Stations.AnyAsync(
+                station => station.Id == stationId && station.TenantId == request.TenantId,
                 cancellationToken);
-            if (station is null)
+            if (!stationExists)
             {
                 return Results.NotFound();
             }
+
+            database.StationHealthReports.Add(
+                new StationHealthReport
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    StationId = stationId,
+                    Status = request.Status,
+                    CameraStatus = request.CameraStatus,
+                    StorageStatus = request.StorageStatus,
+                    ClockStatus = request.ClockStatus,
+                    OfflineQueueDepth = request.OfflineQueueDepth,
+                    CheckedAtUtc = request.CheckedAtUtc,
+                });
             database.AuditEvents.Add(
                 new AuditEvent
                 {
@@ -123,21 +335,103 @@ app.MapPut(
                     EventType = "station.health_reported",
                     EntityType = "station",
                     EntityId = stationId,
-                    PayloadJson = JsonSerializer.Serialize(request),
+                    PayloadJson = JsonSerializer.Serialize(request, SpecProofJsonOptions.Canonical),
                     OccurredAtUtc = request.CheckedAtUtc,
                 });
             await database.SaveChangesAsync(cancellationToken);
             return Results.NoContent();
         })
-    .WithName("ReportStationHealth");
+    .WithName("ReportStationHealth")
+    .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
 
-app.MapPost(
-        "/api/v1/captures/initiate",
+api.MapPost(
+        "/stations/{stationId:guid}/diagnostics",
+        async (
+            Guid stationId,
+            StationDiagnosticsRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            database.StationDiagnosticReports.Add(
+                new StationDiagnosticReport
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    StationId = stationId,
+                    DiagnosticsJson = request.DiagnosticsJson,
+                    RequestedAtUtc = DateTimeOffset.UtcNow,
+                    CompletedAtUtc = DateTimeOffset.UtcNow,
+                });
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Accepted();
+        })
+    .WithName("SubmitStationDiagnostics")
+    .RequireSpecProofPermission(PlatformPermissions.ManageStations);
+
+api.MapPost(
+        "/stations/{stationId:guid}/configuration",
+        async (
+            Guid stationId,
+            StationConfigurationPushRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            database.StationConfigurationVersions.Add(
+                new StationConfigurationVersion
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    StationId = stationId,
+                    Version = request.Version,
+                    ConfigurationJson = request.ConfigurationJson,
+                    PushedAtUtc = DateTimeOffset.UtcNow,
+                });
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Accepted();
+        })
+    .WithName("PushStationConfiguration")
+    .RequireSpecProofPermission(PlatformPermissions.ManageStations);
+
+api.MapPut(
+        "/stations/{stationId:guid}/versions/{componentName}",
+        async (
+            Guid stationId,
+            string componentName,
+            StationVersionRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            database.StationSoftwareVersions.Add(
+                new StationSoftwareVersion
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    StationId = stationId,
+                    ComponentName = componentName,
+                    Version = request.Version,
+                    ReportedAtUtc = DateTimeOffset.UtcNow,
+                });
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.NoContent();
+        })
+    .WithName("ReportStationVersion")
+    .RequireSpecProofPermission(PlatformPermissions.ReportStationHealth);
+
+api.MapPost(
+        "/captures/initiate",
         async (
             InitiateCaptureUploadRequest request,
             SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
+            tenantScope.TenantId ??= request.TenantId;
             var stationExists = await database.Stations.AnyAsync(
                 station => station.Id == request.StationId && station.TenantId == request.TenantId,
                 cancellationToken);
@@ -145,6 +439,7 @@ app.MapPost(
             {
                 return Results.NotFound();
             }
+
             var existing = await database.CaptureAssets.SingleOrDefaultAsync(
                 asset =>
                     asset.TenantId == request.TenantId
@@ -152,17 +447,20 @@ app.MapPost(
                 cancellationToken);
             if (existing is not null)
             {
-                return Results.Ok(
-                    new InitiateCaptureUploadResponse(existing.Id, existing.ObjectKey));
+                return Results.Ok(new InitiateCaptureUploadResponse(existing.Id, existing.ObjectKey));
             }
+
             var asset = new CaptureAsset
             {
                 Id = Guid.NewGuid(),
                 TenantId = request.TenantId,
                 StationId = request.StationId,
                 CaptureId = request.CaptureId,
-                ObjectKey =
-                    $"{request.TenantId:N}/{request.StationId:N}/{request.CaptureId:N}.spcapture",
+                ObjectKey = TenantObjectStorageNamespace.BuildObjectKey(
+                    request.TenantId,
+                    request.StationId,
+                    request.CaptureId,
+                    ".spcapture"),
                 ContentType = "application/vnd.specproof.capture+zip",
                 SizeBytes = request.SizeBytes,
                 ChecksumSha256 = request.ChecksumSha256,
@@ -175,16 +473,19 @@ app.MapPost(
                 $"/api/v1/captures/{asset.Id}",
                 new InitiateCaptureUploadResponse(asset.Id, asset.ObjectKey));
         })
-    .WithName("InitiateCaptureUpload");
+    .WithName("InitiateCaptureUpload")
+    .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
 
-app.MapPost(
-        "/api/v1/captures/{assetId:guid}/complete",
+api.MapPost(
+        "/captures/{assetId:guid}/complete",
         async (
             Guid assetId,
             CompleteCaptureUploadRequest request,
             SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
             CancellationToken cancellationToken) =>
         {
+            tenantScope.TenantId ??= request.TenantId;
             var asset = await database.CaptureAssets.SingleOrDefaultAsync(
                 candidate =>
                     candidate.Id == assetId
@@ -194,6 +495,7 @@ app.MapPost(
             {
                 return Results.NotFound();
             }
+
             if (!string.Equals(
                     asset.ChecksumSha256,
                     request.ChecksumSha256,
@@ -206,21 +508,141 @@ app.MapPost(
                         Status = StatusCodes.Status400BadRequest,
                     });
             }
+
             asset.UploadCompletedAtUtc ??= DateTimeOffset.UtcNow;
             asset.UpdatedAtUtc = DateTimeOffset.UtcNow;
             await database.SaveChangesAsync(cancellationToken);
             return Results.NoContent();
         })
-    .WithName("CompleteCaptureUpload");
+    .WithName("CompleteCaptureUpload")
+    .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
+
+api.MapPost(
+        "/sync/envelopes",
+        async (
+            Guid tenantId,
+            SyncEnvelopeRequest request,
+            SyncProtocolService syncProtocol,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= tenantId;
+            var envelope = await syncProtocol.AcceptAsync(database, tenantId, request, cancellationToken);
+            return Results.Ok(
+                new SyncEnvelopeDto(
+                    envelope.Id,
+                    envelope.TenantId,
+                    envelope.StationId,
+                    envelope.IdempotencyKey,
+                    envelope.EntityType,
+                    envelope.EntityId,
+                    envelope.PayloadHashSha256,
+                    envelope.Status));
+        })
+    .WithName("AcceptSyncEnvelope")
+    .AddEndpointFilter<ValidationFilter<SyncEnvelopeRequest>>()
+    .RequireSpecProofPermission(PlatformPermissions.SyncWrite);
+
+api.MapPost(
+        "/evidence/{evidenceId:guid}/sign",
+        async (
+            Guid evidenceId,
+            SpecProofDbContext database,
+            EvidenceSignatureService signatureService,
+            CancellationToken cancellationToken) =>
+        {
+            var evidence = await database.EvidenceRecords.SingleOrDefaultAsync(
+                record => record.Id == evidenceId,
+                cancellationToken);
+            if (evidence is null)
+            {
+                return Results.NotFound();
+            }
+
+            var signature = signatureService.Sign(evidence.EvidenceJson);
+            evidence.SignatureAlgorithm = signature.Algorithm;
+            evidence.SignatureValueBase64 = signature.SignatureValueBase64;
+            evidence.SignedAtUtc = signature.SignedAtUtc;
+            evidence.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Ok(signature);
+        })
+    .WithName("SignEvidence")
+    .RequireSpecProofPermission(PlatformPermissions.VerifyEvidence);
+
+api.MapPost(
+        "/evidence/verify",
+        (EvidenceVerifyRequest request, EvidenceSignatureService signatureService) =>
+        {
+            var verified = signatureService.Verify(request.EvidenceJson, request.SignatureValueBase64);
+            return Results.Ok(new { verified });
+        })
+    .WithName("VerifyEvidence")
+    .RequireSpecProofPermission(PlatformPermissions.VerifyEvidence);
+
+api.MapPost(
+        "/webhooks",
+        async (
+            WebhookSubscriptionRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            database.WebhookSubscriptions.Add(
+                new WebhookSubscription
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = request.TenantId,
+                    Url = request.Url,
+                    EventTypesJson = JsonSerializer.Serialize(request.EventTypes, SpecProofJsonOptions.Canonical),
+                    SecretHashSha256 = Convert.ToHexString(
+                        System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(request.Secret))).ToLowerInvariant(),
+                    Active = true,
+                });
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Accepted();
+        })
+    .WithName("CreateWebhookSubscription")
+    .RequireSpecProofPermission(PlatformPermissions.ExportReports);
+
+api.MapPost(
+        "/jobs",
+        async (
+            BackgroundJobRequest request,
+            SpecProofDbContext database,
+            TenantScopeAccessor tenantScope,
+            CancellationToken cancellationToken) =>
+        {
+            tenantScope.TenantId ??= request.TenantId;
+            var job = new BackgroundJobRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = request.TenantId,
+                QueueName = request.QueueName,
+                JobType = request.JobType,
+                PayloadJson = request.PayloadJson,
+                Status = "queued",
+                AvailableAtUtc = DateTimeOffset.UtcNow,
+            };
+            database.BackgroundJobs.Add(job);
+            await database.SaveChangesAsync(cancellationToken);
+            return Results.Accepted($"/api/v1/jobs/{job.Id}");
+        })
+    .WithName("CreateBackgroundJob")
+    .RequireSpecProofPermission(PlatformPermissions.ManageBackgroundJobs);
+
+api.MapWebApplicationEndpoints();
 
 app.Run();
 
-public sealed record RegisterStationRequest(Guid TenantId, Guid FactoryId, string StationCode);
-
-public sealed record RegisterStationResponse(
-    Guid StationId,
+public sealed record RegisterStationRequest(
+    Guid TenantId,
+    Guid FactoryId,
     string StationCode,
-    DateTimeOffset RegisteredAtUtc);
+    string CertificateThumbprintSha256,
+    string PublicKeyPem);
 
 public sealed record StationHealthRequest(
     Guid TenantId,

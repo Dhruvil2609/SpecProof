@@ -32,7 +32,7 @@ internal static class EntityConfiguration
     }
 }
 
-internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
+internal sealed class TenantEntityConfiguration : IEntityTypeConfiguration<Tenant>
 {
     public void Configure(EntityTypeBuilder<Tenant> builder)
     {
@@ -81,9 +81,19 @@ internal sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Ap
             .HasColumnName("display_name")
             .HasMaxLength(200)
             .IsRequired();
+        builder.Property(entity => entity.ExternalSubject)
+            .HasColumnName("external_subject")
+            .HasMaxLength(300);
+        builder.Property(entity => entity.IsActive)
+            .HasColumnName("is_active")
+            .HasDefaultValue(true)
+            .IsRequired();
         builder.HasIndex(entity => new { entity.TenantId, entity.Email })
             .IsUnique()
             .HasDatabaseName("uq_users_tenant_id_email");
+        builder.HasIndex(entity => new { entity.TenantId, entity.ExternalSubject })
+            .IsUnique()
+            .HasDatabaseName("uq_users_tenant_id_external_subject");
     }
 }
 
@@ -97,6 +107,61 @@ internal sealed class ApplicationRoleConfiguration : IEntityTypeConfiguration<Ap
         builder.HasIndex(entity => new { entity.TenantId, entity.Name })
             .IsUnique()
             .HasDatabaseName("uq_roles_tenant_id_name");
+    }
+}
+
+internal sealed class ApplicationUserRoleConfiguration : IEntityTypeConfiguration<ApplicationUserRole>
+{
+    public void Configure(EntityTypeBuilder<ApplicationUserRole> builder)
+    {
+        builder.ToTable("user_roles");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.UserId).HasColumnName("user_id").IsRequired();
+        builder.Property(entity => entity.RoleId).HasColumnName("role_id").IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.UserId, entity.RoleId })
+            .IsUnique()
+            .HasDatabaseName("uq_user_roles_tenant_id_user_id_role_id");
+    }
+}
+
+internal sealed class ApplicationRolePermissionConfiguration : IEntityTypeConfiguration<ApplicationRolePermission>
+{
+    public void Configure(EntityTypeBuilder<ApplicationRolePermission> builder)
+    {
+        builder.ToTable("role_permissions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.RoleId).HasColumnName("role_id").IsRequired();
+        builder.Property(entity => entity.Permission)
+            .HasColumnName("permission")
+            .HasMaxLength(200)
+            .IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.RoleId, entity.Permission })
+            .IsUnique()
+            .HasDatabaseName("uq_role_permissions_tenant_id_role_id_permission");
+    }
+}
+
+internal sealed class TenantConfigurationConfiguration : IEntityTypeConfiguration<TenantConfiguration>
+{
+    public void Configure(EntityTypeBuilder<TenantConfiguration> builder)
+    {
+        builder.ToTable("tenant_configurations");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.ConfigurationJson)
+            .HasColumnName("configuration")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.ObjectStorageBucket)
+            .HasColumnName("object_storage_bucket")
+            .HasMaxLength(200)
+            .IsRequired();
+        builder.Property(entity => entity.RetentionDays)
+            .HasColumnName("retention_days")
+            .HasDefaultValue(365)
+            .IsRequired();
+        builder.HasIndex(entity => entity.TenantId)
+            .IsUnique()
+            .HasDatabaseName("uq_tenant_configurations_tenant_id");
     }
 }
 
@@ -114,6 +179,126 @@ internal sealed class StationConfiguration : IEntityTypeConfiguration<Station>
         builder.HasIndex(entity => new { entity.TenantId, entity.StationCode })
             .IsUnique()
             .HasDatabaseName("uq_stations_tenant_id_station_code");
+    }
+}
+
+internal sealed class DeviceIdentityConfiguration : IEntityTypeConfiguration<DeviceIdentity>
+{
+    public void Configure(EntityTypeBuilder<DeviceIdentity> builder)
+    {
+        builder.ToTable("device_identities");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.CertificateThumbprintSha256)
+            .HasColumnName("certificate_thumbprint_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.PublicKeyPem).HasColumnName("public_key_pem").IsRequired();
+        builder.Property(entity => entity.NotBeforeUtc)
+            .HasColumnName("not_before_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.ExpiresAtUtc)
+            .HasColumnName("expires_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.Active).HasColumnName("active").HasDefaultValue(true).IsRequired();
+        builder.Property(entity => entity.RotatedAtUtc)
+            .HasColumnName("rotated_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.CertificateThumbprintSha256 })
+            .IsUnique()
+            .HasDatabaseName("uq_device_identities_tenant_id_certificate_thumbprint_sha256");
+    }
+}
+
+internal sealed class StationHealthReportConfiguration : IEntityTypeConfiguration<StationHealthReport>
+{
+    public void Configure(EntityTypeBuilder<StationHealthReport> builder)
+    {
+        builder.ToTable("station_health_reports");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.CameraStatus).HasColumnName("camera_status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.StorageStatus).HasColumnName("storage_status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.ClockStatus).HasColumnName("clock_status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.OfflineQueueDepth).HasColumnName("offline_queue_depth").IsRequired();
+        builder.Property(entity => entity.CheckedAtUtc)
+            .HasColumnName("checked_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.StationId, entity.CheckedAtUtc })
+            .HasDatabaseName("ix_station_health_reports_tenant_id_station_id_checked_at_utc");
+    }
+}
+
+internal sealed class StationDiagnosticReportConfiguration : IEntityTypeConfiguration<StationDiagnosticReport>
+{
+    public void Configure(EntityTypeBuilder<StationDiagnosticReport> builder)
+    {
+        builder.ToTable("station_diagnostic_reports");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.DiagnosticsJson)
+            .HasColumnName("diagnostics")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.RequestedAtUtc)
+            .HasColumnName("requested_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.CompletedAtUtc)
+            .HasColumnName("completed_at_utc")
+            .HasColumnType("timestamptz");
+    }
+}
+
+internal sealed class StationConfigurationVersionConfiguration
+    : IEntityTypeConfiguration<StationConfigurationVersion>
+{
+    public void Configure(EntityTypeBuilder<StationConfigurationVersion> builder)
+    {
+        builder.ToTable("station_configuration_versions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.Version).HasColumnName("version").IsRequired();
+        builder.Property(entity => entity.ConfigurationJson)
+            .HasColumnName("configuration")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.PushedAtUtc)
+            .HasColumnName("pushed_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.AppliedAtUtc)
+            .HasColumnName("applied_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.StationId, entity.Version })
+            .IsUnique()
+            .HasDatabaseName("uq_station_configuration_versions_tenant_id_station_id_version");
+    }
+}
+
+internal sealed class StationSoftwareVersionConfiguration : IEntityTypeConfiguration<StationSoftwareVersion>
+{
+    public void Configure(EntityTypeBuilder<StationSoftwareVersion> builder)
+    {
+        builder.ToTable("station_software_versions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.ComponentName)
+            .HasColumnName("component_name")
+            .HasMaxLength(100)
+            .IsRequired();
+        builder.Property(entity => entity.Version).HasColumnName("version").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.ReportedAtUtc)
+            .HasColumnName("reported_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.StationId, entity.ComponentName })
+            .IsUnique()
+            .HasDatabaseName("uq_station_software_versions_tenant_id_station_id_component_name");
     }
 }
 
@@ -290,6 +475,84 @@ internal sealed class TechPackVersionConfiguration : IEntityTypeConfiguration<Te
     }
 }
 
+internal sealed class BrandConfiguration : IEntityTypeConfiguration<Brand>
+{
+    public void Configure(EntityTypeBuilder<Brand> builder)
+    {
+        builder.ToTable("brands");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.Name })
+            .IsUnique()
+            .HasDatabaseName("uq_brands_tenant_id_name");
+    }
+}
+
+internal sealed class ProductionOrderConfiguration : IEntityTypeConfiguration<ProductionOrder>
+{
+    public void Configure(EntityTypeBuilder<ProductionOrder> builder)
+    {
+        builder.ToTable("production_orders");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.BrandId).HasColumnName("brand_id").IsRequired();
+        builder.Property(entity => entity.OrderCode).HasColumnName("order_code").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.SupplierName).HasColumnName("supplier_name").HasMaxLength(200).IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.OrderCode })
+            .IsUnique()
+            .HasDatabaseName("uq_production_orders_tenant_id_order_code");
+    }
+}
+
+internal sealed class ProductionOrderLineConfiguration : IEntityTypeConfiguration<ProductionOrderLine>
+{
+    public void Configure(EntityTypeBuilder<ProductionOrderLine> builder)
+    {
+        builder.ToTable("production_order_lines");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.ProductionOrderId).HasColumnName("production_order_id").IsRequired();
+        builder.Property(entity => entity.StyleId).HasColumnName("style_id").IsRequired();
+        builder.Property(entity => entity.SizeId).HasColumnName("size_id").IsRequired();
+        builder.Property(entity => entity.PlannedQuantity).HasColumnName("planned_quantity").IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.ProductionOrderId })
+            .HasDatabaseName("ix_production_order_lines_tenant_id_production_order_id");
+    }
+}
+
+internal sealed class InspectionBatchConfiguration : IEntityTypeConfiguration<InspectionBatch>
+{
+    public void Configure(EntityTypeBuilder<InspectionBatch> builder)
+    {
+        builder.ToTable("inspection_batches");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.ProductionOrderLineId).HasColumnName("production_order_line_id").IsRequired();
+        builder.Property(entity => entity.BatchCode).HasColumnName("batch_code").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.BatchCode })
+            .IsUnique()
+            .HasDatabaseName("uq_inspection_batches_tenant_id_batch_code");
+    }
+}
+
+internal sealed class TechPackImportDraftConfiguration : IEntityTypeConfiguration<TechPackImportDraft>
+{
+    public void Configure(EntityTypeBuilder<TechPackImportDraft> builder)
+    {
+        builder.ToTable("tech_pack_import_drafts");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.TechPackId).HasColumnName("tech_pack_id").IsRequired();
+        builder.Property(entity => entity.OriginalFileName).HasColumnName("original_file_name").HasMaxLength(260).IsRequired();
+        builder.Property(entity => entity.ContentType).HasColumnName("content_type").HasMaxLength(200).IsRequired();
+        builder.Property(entity => entity.DraftJson).HasColumnName("draft").HasColumnType("jsonb").IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.SourceHashSha256).HasColumnName("source_hash_sha256").HasMaxLength(64).IsRequired();
+        builder.Property(entity => entity.ApprovedAtUtc).HasColumnName("approved_at_utc").HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.TechPackId, entity.SourceHashSha256 })
+            .IsUnique()
+            .HasDatabaseName("uq_tech_pack_import_drafts_tenant_id_tech_pack_id_source_hash");
+    }
+}
+
 internal sealed class EvidenceRecordConfiguration : IEntityTypeConfiguration<EvidenceRecord>
 {
     public void Configure(EntityTypeBuilder<EvidenceRecord> builder)
@@ -313,12 +576,180 @@ internal sealed class EvidenceRecordConfiguration : IEntityTypeConfiguration<Evi
             .HasColumnName("record_hash_sha256")
             .HasMaxLength(64)
             .IsRequired();
+        builder.Property(entity => entity.SigningKeyId).HasColumnName("signing_key_id");
+        builder.Property(entity => entity.SignatureAlgorithm)
+            .HasColumnName("signature_algorithm")
+            .HasMaxLength(100);
+        builder.Property(entity => entity.SignatureValueBase64).HasColumnName("signature_value_base64");
+        builder.Property(entity => entity.SignedAtUtc)
+            .HasColumnName("signed_at_utc")
+            .HasColumnType("timestamptz");
         builder.HasIndex(entity => new { entity.TenantId, entity.InspectionId })
             .IsUnique()
             .HasDatabaseName("uq_evidence_records_tenant_id_inspection_id");
         builder.HasIndex(entity => entity.RecordHashSha256)
             .IsUnique()
             .HasDatabaseName("uq_evidence_records_record_hash_sha256");
+    }
+}
+
+internal sealed class EvidenceSigningKeyConfiguration : IEntityTypeConfiguration<EvidenceSigningKey>
+{
+    public void Configure(EntityTypeBuilder<EvidenceSigningKey> builder)
+    {
+        builder.ToTable("evidence_signing_keys");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.KeyId).HasColumnName("key_id").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.Algorithm).HasColumnName("algorithm").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.PublicKeyPem).HasColumnName("public_key_pem").IsRequired();
+        builder.Property(entity => entity.EncryptedPrivateKeyPem).HasColumnName("encrypted_private_key_pem");
+        builder.Property(entity => entity.Active).HasColumnName("active").HasDefaultValue(true).IsRequired();
+        builder.Property(entity => entity.RetiredAtUtc)
+            .HasColumnName("retired_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.KeyId })
+            .IsUnique()
+            .HasDatabaseName("uq_evidence_signing_keys_tenant_id_key_id");
+    }
+}
+
+internal sealed class InspectionRecordConfiguration : IEntityTypeConfiguration<InspectionRecord>
+{
+    public void Configure(EntityTypeBuilder<InspectionRecord> builder)
+    {
+        builder.ToTable("inspection_records");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.CaptureId).HasColumnName("capture_id").IsRequired();
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.BatchId).HasColumnName("batch_id");
+        builder.Property(entity => entity.StationCode)
+            .HasColumnName("station_code")
+            .HasMaxLength(100)
+            .IsRequired();
+        builder.Property(entity => entity.OrderCode).HasColumnName("order_code").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.StyleCode).HasColumnName("style_code").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.SizeCode).HasColumnName("size_code").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.InspectionResultJson)
+            .HasColumnName("inspection_result")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.EvidenceRecordHash)
+            .HasColumnName("evidence_record_hash")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.CapturedAtUtc)
+            .HasColumnName("captured_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.DeletedAtUtc)
+            .HasColumnName("deleted_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.CapturedAtUtc })
+            .HasDatabaseName("ix_inspection_records_tenant_id_captured_at_utc");
+        builder.HasIndex(entity => new { entity.TenantId, entity.BatchId })
+            .HasDatabaseName("ix_inspection_records_tenant_id_batch_id");
+        builder.HasIndex(entity => new { entity.TenantId, entity.OrderCode, entity.StyleCode, entity.SizeCode })
+            .HasDatabaseName("ix_inspection_records_tenant_id_order_style_size");
+    }
+}
+
+internal sealed class ReviewActionConfiguration : IEntityTypeConfiguration<ReviewAction>
+{
+    public void Configure(EntityTypeBuilder<ReviewAction> builder)
+    {
+        builder.ToTable("review_actions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.InspectionId).HasColumnName("inspection_id").IsRequired();
+        builder.Property(entity => entity.ActorId).HasColumnName("actor_id");
+        builder.Property(entity => entity.Outcome).HasColumnName("outcome").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.Note).HasColumnName("note").HasMaxLength(4000).IsRequired();
+        builder.HasIndex(entity => new { entity.TenantId, entity.InspectionId, entity.CreatedAtUtc })
+            .HasDatabaseName("ix_review_actions_tenant_id_inspection_id_created_at_utc");
+    }
+}
+
+internal sealed class SyncEnvelopeConfiguration : IEntityTypeConfiguration<SyncEnvelope>
+{
+    public void Configure(EntityTypeBuilder<SyncEnvelope> builder)
+    {
+        builder.ToTable("sync_envelopes");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.StationId).HasColumnName("station_id").IsRequired();
+        builder.Property(entity => entity.IdempotencyKey)
+            .HasColumnName("idempotency_key")
+            .HasMaxLength(200)
+            .IsRequired();
+        builder.Property(entity => entity.EntityType)
+            .HasColumnName("entity_type")
+            .HasMaxLength(200)
+            .IsRequired();
+        builder.Property(entity => entity.EntityId).HasColumnName("entity_id").IsRequired();
+        builder.Property(entity => entity.PayloadJson)
+            .HasColumnName("payload")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.PayloadHashSha256)
+            .HasColumnName("payload_hash_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.Attempts).HasColumnName("attempts").HasDefaultValue(0).IsRequired();
+        builder.Property(entity => entity.ConflictJson).HasColumnName("conflict").HasColumnType("jsonb");
+        builder.Property(entity => entity.LastAttemptAtUtc)
+            .HasColumnName("last_attempt_at_utc")
+            .HasColumnType("timestamptz");
+        builder.Property(entity => entity.DeadLetteredAtUtc)
+            .HasColumnName("dead_lettered_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.StationId, entity.IdempotencyKey })
+            .IsUnique()
+            .HasDatabaseName("uq_sync_envelopes_tenant_id_station_id_idempotency_key");
+    }
+}
+
+internal sealed class WebhookSubscriptionConfiguration : IEntityTypeConfiguration<WebhookSubscription>
+{
+    public void Configure(EntityTypeBuilder<WebhookSubscription> builder)
+    {
+        builder.ToTable("webhook_subscriptions");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.Url).HasColumnName("url").HasMaxLength(2048).IsRequired();
+        builder.Property(entity => entity.EventTypesJson)
+            .HasColumnName("event_types")
+            .HasColumnType("jsonb")
+            .IsRequired();
+        builder.Property(entity => entity.SecretHashSha256)
+            .HasColumnName("secret_hash_sha256")
+            .HasMaxLength(64)
+            .IsRequired();
+        builder.Property(entity => entity.Active).HasColumnName("active").HasDefaultValue(true).IsRequired();
+    }
+}
+
+internal sealed class BackgroundJobRecordConfiguration : IEntityTypeConfiguration<BackgroundJobRecord>
+{
+    public void Configure(EntityTypeBuilder<BackgroundJobRecord> builder)
+    {
+        builder.ToTable("background_jobs");
+        EntityConfiguration.ConfigureTenantEntity(builder);
+        builder.Property(entity => entity.QueueName).HasColumnName("queue_name").HasMaxLength(100).IsRequired();
+        builder.Property(entity => entity.JobType).HasColumnName("job_type").HasMaxLength(200).IsRequired();
+        builder.Property(entity => entity.PayloadJson).HasColumnName("payload").HasColumnType("jsonb").IsRequired();
+        builder.Property(entity => entity.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+        builder.Property(entity => entity.Attempts).HasColumnName("attempts").HasDefaultValue(0).IsRequired();
+        builder.Property(entity => entity.AvailableAtUtc)
+            .HasColumnName("available_at_utc")
+            .HasColumnType("timestamptz")
+            .IsRequired();
+        builder.Property(entity => entity.StartedAtUtc)
+            .HasColumnName("started_at_utc")
+            .HasColumnType("timestamptz");
+        builder.Property(entity => entity.CompletedAtUtc)
+            .HasColumnName("completed_at_utc")
+            .HasColumnType("timestamptz");
+        builder.HasIndex(entity => new { entity.TenantId, entity.QueueName, entity.Status, entity.AvailableAtUtc })
+            .HasDatabaseName("ix_background_jobs_tenant_id_queue_name_status_available_at_utc");
     }
 }
 

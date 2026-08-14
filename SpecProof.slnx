@@ -24,5 +24,6 @@
   <Folder Name="/tests/unit/" />
   <Folder Name="/tests/unit/dotnet/">
     <Project Path="tests/unit/dotnet/SpecProof.Contracts.Tests/SpecProof.Contracts.Tests.csproj" />
+    <Project Path="tests/unit/dotnet/SpecProof.Platform.Api.Tests/SpecProof.Platform.Api.Tests.csproj" />
   </Folder>
 </Solution>
