@@ -79,6 +79,7 @@ message InspectionContext {
   string batch_id = 6;
   string tech_pack_id = 7;
   uint32 tech_pack_version = 8;
+  string station_code = 9;
 }
 
 enum CaptureProcessingStatus {

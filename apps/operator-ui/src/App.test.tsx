@@ -57,6 +57,18 @@ describe('Operator application', () => {
   });
 
   it('should render the simulated station preview and trigger processing', async () => {
+    window.sessionStorage.setItem(
+      'specproof-capture-context',
+      JSON.stringify({
+        orderCode: 'PO-24081',
+        styleCode: 'SP-TEE-01',
+        sizeCode: 'M',
+        batchId: '44444444-4444-4444-4444-444444444441',
+        batchCode: 'B-0810-A',
+        techPackId: '55555555-5555-5555-5555-555555555555',
+        techPackVersion: 1,
+      }),
+    );
     renderApp('/capture/live', true);
 
     expect(await screen.findByRole('heading', { name: 'Place the garment inside the calibrated zone.' })).toBeDefined();
@@ -67,6 +79,17 @@ describe('Operator application', () => {
   });
 
   it('should render processing, review, and searchable history routes', async () => {
+    window.sessionStorage.setItem(
+      'specproof-capture-receipt',
+      JSON.stringify({
+        captureId: '00000000-0000-0000-0000-000000000601',
+        checksumSha256: 'a'.repeat(64),
+        calibrationId: 'CAL-2026-0810-04',
+        capturedAtUtc: '2026-08-12T10:00:05.000Z',
+        inspectionId: '00000000-0000-0000-0000-000000000601',
+        processingStatus: 'Completed',
+      }),
+    );
     const processing = renderApp('/capture/processing', true);
     expect(await screen.findByText('Capture synchronized')).toBeDefined();
     processing.unmount();

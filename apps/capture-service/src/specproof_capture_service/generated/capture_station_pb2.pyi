@@ -126,7 +126,7 @@ class CaptureRequest(_message.Message):
     def __init__(self, camera_serial: _Optional[str] = ..., station_id: _Optional[str] = ..., frame_count: _Optional[int] = ..., profile: _Optional[_Union[StreamProfile, _Mapping]] = ..., inspection_context: _Optional[_Union[InspectionContext, _Mapping]] = ...) -> None: ...
 
 class InspectionContext(_message.Message):
-    __slots__ = ("tenant_id", "inspection_id", "order_code", "style_code", "size_code", "batch_id", "tech_pack_id", "tech_pack_version")
+    __slots__ = ("tenant_id", "inspection_id", "order_code", "style_code", "size_code", "batch_id", "tech_pack_id", "tech_pack_version", "station_code")
     TENANT_ID_FIELD_NUMBER: _ClassVar[int]
     INSPECTION_ID_FIELD_NUMBER: _ClassVar[int]
     ORDER_CODE_FIELD_NUMBER: _ClassVar[int]
@@ -135,6 +135,7 @@ class InspectionContext(_message.Message):
     BATCH_ID_FIELD_NUMBER: _ClassVar[int]
     TECH_PACK_ID_FIELD_NUMBER: _ClassVar[int]
     TECH_PACK_VERSION_FIELD_NUMBER: _ClassVar[int]
+    STATION_CODE_FIELD_NUMBER: _ClassVar[int]
     tenant_id: str
     inspection_id: str
     order_code: str
@@ -143,7 +144,8 @@ class InspectionContext(_message.Message):
     batch_id: str
     tech_pack_id: str
     tech_pack_version: int
-    def __init__(self, tenant_id: _Optional[str] = ..., inspection_id: _Optional[str] = ..., order_code: _Optional[str] = ..., style_code: _Optional[str] = ..., size_code: _Optional[str] = ..., batch_id: _Optional[str] = ..., tech_pack_id: _Optional[str] = ..., tech_pack_version: _Optional[int] = ...) -> None: ...
+    station_code: str
+    def __init__(self, tenant_id: _Optional[str] = ..., inspection_id: _Optional[str] = ..., order_code: _Optional[str] = ..., style_code: _Optional[str] = ..., size_code: _Optional[str] = ..., batch_id: _Optional[str] = ..., tech_pack_id: _Optional[str] = ..., tech_pack_version: _Optional[int] = ..., station_code: _Optional[str] = ...) -> None: ...
 
 class CaptureResponse(_message.Message):
     __slots__ = ("capture_id", "package_path", "package_sha256", "captured_at_utc", "calibration_id", "inspection_id", "processing_status")

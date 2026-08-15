@@ -4,5 +4,9 @@
   "navigation.dashboard": "[Ðåšhɓöåřð]",
   "navigation.capture": "[Ñëŵ ïñšƥëçţïöñ]",
   "navigation.history": "[Ïñšƥëçţïöñ hïšţöřÿ]",
-  "navigation.results": "[Ļåţëšţ řëšüļţ]"
+  "navigation.results": "[Ļåţëšţ řëšüļţ]",
+  "processing.waiting": "[Ŵåĭţĭñğ ƒöŕ ţĥë šëåļëđ þļåţƒöŕɱ ŕëçöŕđ.]",
+  "processing.retrying": "[Þļåţƒöŕɱ ŕëçöŕđ ĭš ñöţ ŕëåđÿ. Ŕëţŕÿĭñğ šåƒëļÿ.]",
+  "processing.offline": "[Šţåţĭöñ ĭš öƒƒļĭñë. Ĭñšþëçţĭöñ ŕëɱåĭñš qµëµëđ.]",
+  "processing.timeout": "[Þŕöçëššĭñğ ĭš ţåķĭñğ ļöñğëŕ. Ŕëţŕÿ šţåţµš.]"
 }

@@ -7,12 +7,20 @@ import os
 from collections.abc import AsyncIterator
 from datetime import datetime
 from pathlib import Path
+from typing import Protocol
+from uuid import UUID, uuid4
 
 import cv2
 import grpc
 import numpy as np
 import structlog
 from google.protobuf import empty_pb2, timestamp_pb2
+from specproof_measurement_service.inspection import (
+    InspectionContext,
+    InspectionPipeline,
+    InspectionPipelineRequest,
+    InspectionPipelineResult,
+)
 
 from specproof_capture_service.calibration import (
     CalibrationEvaluator,
@@ -27,6 +35,7 @@ from specproof_capture_service.errors import (
     CameraUnavailableError,
 )
 from specproof_capture_service.generated import capture_station_pb2, capture_station_pb2_grpc
+from specproof_capture_service.inspection_queue import OfflineInspectionQueue
 from specproof_capture_service.mock_provider import MockCameraProvider
 from specproof_capture_service.models import (
     CalibrationMetrics,
@@ -42,8 +51,26 @@ from specproof_capture_service.offline_queue import OfflineCaptureQueue
 from specproof_capture_service.provider import CameraProvider
 from specproof_capture_service.realsense_provider import RealSenseCameraProvider
 from specproof_capture_service.replay_provider import CaptureReplayProvider
+from specproof_capture_service.storage import S3CaptureObjectStore
+from specproof_capture_service.synchronization import (
+    CaptureSynchronizer,
+    HttpPlatformStationClient,
+    InspectionResultSynchronizer,
+)
+from specproof_capture_service.tech_pack_repository import (
+    LocalTechPackRepository,
+    TechPackProvider,
+)
 
 logger = structlog.get_logger(__name__)
+
+
+class InspectionProcessor(Protocol):
+    """Inspection pipeline boundary used by the capture gRPC service."""
+
+    def run(self, request: InspectionPipelineRequest) -> InspectionPipelineResult:
+        """Process one captured package into sealed platform evidence."""
+        ...
 
 
 class CaptureStationService(capture_station_pb2_grpc.CaptureStationServicer):
@@ -57,12 +84,18 @@ class CaptureStationService(capture_station_pb2_grpc.CaptureStationServicer):
         calibration_store: CalibrationStore,
         calibration_evaluator: CalibrationEvaluator | None,
         thresholds: CalibrationThresholds | None = None,
+        inspection_processor: InspectionProcessor | None = None,
+        inspection_queue: OfflineInspectionQueue | None = None,
+        tech_pack_provider: TechPackProvider | None = None,
     ) -> None:
         self._provider = provider
         self._coordinator = coordinator
         self._calibration_store = calibration_store
         self._calibration_evaluator = calibration_evaluator
         self._thresholds = thresholds or CalibrationThresholds()
+        self._inspection_processor = inspection_processor
+        self._inspection_queue = inspection_queue
+        self._tech_pack_provider = tech_pack_provider
 
     async def ListDevices(
         self,
@@ -120,13 +153,64 @@ class CaptureStationService(capture_station_pb2_grpc.CaptureStationServicer):
                 profile=self._profile_model(request.profile),
                 frame_count=request.frame_count or 5,
             )
+            inspection_id = ""
+            processing_status = capture_station_pb2.CAPTURE_PROCESSING_STATUS_CAPTURED
+            if request.HasField("inspection_context"):
+                if (
+                    self._inspection_processor is None
+                    or self._inspection_queue is None
+                    or self._tech_pack_provider is None
+                ):
+                    await context.abort(
+                        grpc.StatusCode.FAILED_PRECONDITION,
+                        "Integrated inspection processing is not configured",
+                    )
+                selected = request.inspection_context
+                inspection_id = selected.inspection_id or str(uuid4())
+                tech_pack_id = UUID(selected.tech_pack_id)
+                tech_pack = self._tech_pack_provider.get(
+                    tech_pack_id,
+                    selected.tech_pack_version,
+                )
+                pipeline_request = InspectionPipelineRequest(
+                    context=InspectionContext(
+                        tenant_id=UUID(selected.tenant_id),
+                        station_id=UUID(request.station_id),
+                        inspection_id=UUID(inspection_id),
+                        capture_id=UUID(manifest.capture_id),
+                        calibration_id=UUID(manifest.calibration_id),
+                        station_code=selected.station_code,
+                        order_code=selected.order_code,
+                        style_code=selected.style_code,
+                        size_code=selected.size_code,
+                        batch_id=UUID(selected.batch_id) if selected.batch_id else None,
+                        tech_pack_id=tech_pack_id,
+                        tech_pack_version=selected.tech_pack_version,
+                    ),
+                    package_path=path,
+                    tech_pack=tech_pack,
+                )
+                pipeline_result = await asyncio.to_thread(
+                    self._inspection_processor.run,
+                    pipeline_request,
+                )
+                self._inspection_queue.enqueue(
+                    capture_id=manifest.capture_id,
+                    inspection_id=inspection_id,
+                    payload=pipeline_result.platform_submission.to_canonical_payload(),
+                )
+                processing_status = capture_station_pb2.CAPTURE_PROCESSING_STATUS_QUEUED
             return capture_station_pb2.CaptureResponse(
                 capture_id=manifest.capture_id,
                 package_path=str(path),
                 package_sha256=digest,
                 captured_at_utc=self._timestamp(manifest.captured_at_utc),
                 calibration_id=manifest.calibration_id,
+                inspection_id=inspection_id,
+                processing_status=processing_status,
             )
+        except (KeyError, ValueError) as error:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(error))
         except CameraNotFoundError as error:
             await context.abort(grpc.StatusCode.NOT_FOUND, str(error))
         except CalibrationExpiredError as error:
@@ -315,6 +399,7 @@ async def serve() -> None:
 
     calibration_store = CalibrationStore(data_root / "calibrations")
     queue = OfflineCaptureQueue(data_root / "queue" / "captures.sqlite3")
+    inspection_queue = OfflineInspectionQueue(data_root / "queue" / "inspection-results.sqlite3")
     coordinator = CaptureCoordinator(
         provider=provider,
         calibration_store=calibration_store,
@@ -326,6 +411,15 @@ async def serve() -> None:
         coordinator=coordinator,
         calibration_store=calibration_store,
         calibration_evaluator=calibration_evaluator,
+        inspection_processor=InspectionPipeline(),
+        inspection_queue=inspection_queue,
+        tech_pack_provider=LocalTechPackRepository(
+            Path(os.getenv("SPEC_PROOF_TECH_PACK_ROOT", "config/station/tech-packs"))
+        ),
+    )
+    synchronization_task = _start_synchronization(
+        capture_queue=queue,
+        inspection_queue=inspection_queue,
     )
     server = grpc.aio.server()
     capture_station_pb2_grpc.add_CaptureStationServicer_to_server(service, server)
@@ -336,8 +430,64 @@ async def serve() -> None:
     try:
         await server.wait_for_termination()
     finally:
+        if synchronization_task is not None:
+            synchronization_task.cancel()
+            await asyncio.gather(synchronization_task, return_exceptions=True)
         await provider.close()
         queue.close()
+        inspection_queue.close()
+
+
+def _start_synchronization(
+    *,
+    capture_queue: OfflineCaptureQueue,
+    inspection_queue: OfflineInspectionQueue,
+) -> asyncio.Task[None] | None:
+    platform_url = os.getenv("SPEC_PROOF_PLATFORM_URL")
+    bearer_token = os.getenv("SPEC_PROOF_STATION_TOKEN")
+    tenant_id = os.getenv("SPEC_PROOF_TENANT_ID")
+    station_id = os.getenv("SPEC_PROOF_STATION_ID")
+    bucket_name = os.getenv("SPEC_PROOF_CAPTURE_BUCKET")
+    if (
+        platform_url is None
+        or bearer_token is None
+        or tenant_id is None
+        or station_id is None
+        or bucket_name is None
+    ):
+        logger.warning("station_synchronization_disabled", reason="configuration_incomplete")
+        return None
+    client = HttpPlatformStationClient(
+        base_url=platform_url,
+        tenant_id=tenant_id,
+        station_id=station_id,
+        bearer_token=bearer_token,
+    )
+    capture_sync = CaptureSynchronizer(
+        queue=capture_queue,
+        platform_client=client,
+        object_store=S3CaptureObjectStore(
+            bucket_name=bucket_name,
+            endpoint_url=os.getenv("SPEC_PROOF_S3_ENDPOINT"),
+        ),
+    )
+    result_sync = InspectionResultSynchronizer(
+        capture_queue=capture_queue,
+        result_queue=inspection_queue,
+        platform_client=client,
+    )
+    return asyncio.create_task(_synchronization_loop(capture_sync, result_sync))
+
+
+async def _synchronization_loop(
+    capture_sync: CaptureSynchronizer,
+    result_sync: InspectionResultSynchronizer,
+) -> None:
+    while True:
+        capture_progress = await asyncio.to_thread(capture_sync.synchronize_once)
+        result_progress = await asyncio.to_thread(result_sync.synchronize_once)
+        if not capture_progress and not result_progress:
+            await asyncio.sleep(1)
 
 
 def _passing_metrics() -> CalibrationMetrics:

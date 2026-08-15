@@ -59,7 +59,7 @@ class OfflineInspectionQueue:
             raise ValueError("maximum_attempts must be at least one")
         database_path.parent.mkdir(parents=True, exist_ok=True)
         self._maximum_attempts = maximum_attempts
-        self._connection = sqlite3.connect(database_path)
+        self._connection = sqlite3.connect(database_path, check_same_thread=False)
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA journal_mode=WAL")
         self._create_schema()

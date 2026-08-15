@@ -33,6 +33,7 @@ class InspectionContext(BaseModel):
     inspection_id: UUID
     capture_id: UUID
     calibration_id: UUID
+    station_code: str = Field(min_length=1)
     order_code: str = Field(min_length=1)
     style_code: str = Field(min_length=1)
     size_code: str = Field(min_length=1)
@@ -298,7 +299,7 @@ class InspectionPipeline:
             capture_id=request.context.capture_id,
             station_id=request.context.station_id,
             batch_id=request.context.batch_id,
-            station_code=str(request.context.station_id),
+            station_code=request.context.station_code,
             order_code=request.context.order_code,
             style_code=request.context.style_code,
             size_code=request.context.size_code,

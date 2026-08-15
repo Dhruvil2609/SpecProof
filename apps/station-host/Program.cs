@@ -19,6 +19,12 @@ builder.Services.AddSingleton(serviceProvider =>
     new CaptureStation.CaptureStationClient(serviceProvider.GetRequiredService<GrpcChannel>()));
 builder.Services.AddSingleton<ICameraProvider, GrpcCameraProvider>();
 builder.Services.AddHostedService<StationSupervisor>();
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(
+                builder.Configuration["OperatorUi:Origin"] ?? "http://127.0.0.1:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("specproof-station-host"))
     .WithTracing(tracing =>
@@ -30,6 +36,7 @@ builder.Services.AddOpenTelemetry()
     });
 
 var app = builder.Build();
+app.UseCors();
 app.UseWebSockets();
 
 app.MapGet(
@@ -51,17 +58,29 @@ app.MapPost(
         {
             var captured = await cameraProvider.CaptureAsync(
                 new CameraCaptureRequest(
-                    request.StationId,
+                    request.StationId.ToString(),
                     request.CameraSerial,
                     request.FrameCount,
-                    request.Profile),
+                    request.Profile,
+                    new InspectionCaptureContext(
+                        request.TenantId,
+                        request.InspectionId ?? Guid.NewGuid(),
+                        request.StationCode,
+                        request.OrderCode,
+                        request.StyleCode,
+                        request.SizeCode,
+                        request.BatchId,
+                        request.TechPackId,
+                        request.TechPackVersion)),
                 cancellationToken);
             return Results.Ok(
                 new StationCaptureResponse(
                     captured.CaptureId,
                     captured.PackageSha256,
                     captured.CalibrationId,
-                    captured.CapturedAtUtc));
+                    captured.CapturedAtUtc,
+                    captured.InspectionId,
+                    captured.ProcessingStatus));
         }
         catch (CameraNotFoundException exception)
         {
@@ -150,8 +169,7 @@ public sealed class GrpcCameraProvider(CaptureStation.CaptureStationClient clien
         var profile = request.Profile ?? new CameraStreamProfile();
         try
         {
-            var response = await client.CaptureAsync(
-                new SpecProof.Station.Contracts.V1.CaptureRequest
+            var grpcRequest = new SpecProof.Station.Contracts.V1.CaptureRequest
                 {
                     StationId = request.StationId,
                     CameraSerial = request.CameraSerial,
@@ -164,14 +182,33 @@ public sealed class GrpcCameraProvider(CaptureStation.CaptureStationClient clien
                         DepthHeight = checked((uint)profile.DepthHeight),
                         FramesPerSecond = checked((uint)profile.FramesPerSecond),
                     },
-                },
+                };
+            if (request.InspectionContext is not null)
+            {
+                grpcRequest.InspectionContext = new SpecProof.Station.Contracts.V1.InspectionContext
+                {
+                    TenantId = request.InspectionContext.TenantId.ToString(),
+                    InspectionId = request.InspectionContext.InspectionId.ToString(),
+                    StationCode = request.InspectionContext.StationCode,
+                    OrderCode = request.InspectionContext.OrderCode,
+                    StyleCode = request.InspectionContext.StyleCode,
+                    SizeCode = request.InspectionContext.SizeCode,
+                    BatchId = request.InspectionContext.BatchId?.ToString() ?? string.Empty,
+                    TechPackId = request.InspectionContext.TechPackId.ToString(),
+                    TechPackVersion = checked((uint)request.InspectionContext.TechPackVersion),
+                };
+            }
+            var response = await client.CaptureAsync(
+                grpcRequest,
                 cancellationToken: cancellationToken);
             return new CameraCaptureResult(
                 Guid.Parse(response.CaptureId),
                 response.PackagePath,
                 response.PackageSha256,
                 response.CapturedAtUtc.ToDateTimeOffset(),
-                response.CalibrationId);
+                response.CalibrationId,
+                Guid.TryParse(response.InspectionId, out var inspectionId) ? inspectionId : null,
+                response.ProcessingStatus.ToString());
         }
         catch (RpcException exception)
         {
@@ -239,8 +276,17 @@ public sealed class StationSupervisor(
 }
 
 public sealed record StationCaptureRequest(
-    string StationId,
+    Guid TenantId,
+    Guid StationId,
     string CameraSerial,
+    string StationCode,
+    string OrderCode,
+    string StyleCode,
+    string SizeCode,
+    Guid? BatchId,
+    Guid TechPackId,
+    int TechPackVersion,
+    Guid? InspectionId = null,
     int FrameCount = 5,
     CameraStreamProfile? Profile = null);
 
@@ -248,7 +294,9 @@ public sealed record StationCaptureResponse(
     Guid CaptureId,
     string ChecksumSha256,
     string CalibrationId,
-    DateTimeOffset CapturedAtUtc);
+    DateTimeOffset CapturedAtUtc,
+    Guid? InspectionId,
+    string ProcessingStatus);
 
 public sealed record StationPreviewFrame(
     long Sequence,

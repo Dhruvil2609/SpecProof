@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import uuid4
 
 import grpc
 import pytest
@@ -12,9 +13,12 @@ from specproof_capture_service.calibration import (
 from specproof_capture_service.coordinator import CaptureCoordinator
 from specproof_capture_service.generated import capture_station_pb2
 from specproof_capture_service.grpc_server import CaptureStationService
+from specproof_capture_service.inspection_queue import OfflineInspectionQueue
 from specproof_capture_service.mock_provider import MockCameraProvider
 from specproof_capture_service.models import CalibrationMetrics
 from specproof_capture_service.offline_queue import OfflineCaptureQueue
+from specproof_capture_service.tech_pack_repository import LocalTechPackRepository
+from specproof_measurement_service import InspectionPipeline
 
 
 class FakeContext:
@@ -120,6 +124,85 @@ async def test_grpc_calibration_then_capture_returns_package(
 
     queue.close()
     assert calibration.valid is True and Path(response.package_path).exists()
+
+
+@pytest.mark.unit
+async def test_grpc_integrated_capture_persists_result_before_acknowledgement(
+    tmp_path: Path,
+) -> None:
+    provider = MockCameraProvider()
+    calibration_store = CalibrationStore(tmp_path / "calibrations")
+    capture_queue = OfflineCaptureQueue(tmp_path / "captures.sqlite3")
+    result_queue = OfflineInspectionQueue(tmp_path / "inspection-results.sqlite3")
+    coordinator = CaptureCoordinator(
+        provider=provider,
+        calibration_store=calibration_store,
+        queue=capture_queue,
+        capture_root=tmp_path / "captures",
+    )
+    service = CaptureStationService(
+        provider=provider,
+        coordinator=coordinator,
+        calibration_store=calibration_store,
+        calibration_evaluator=fixed_calibration_evaluator(
+            CalibrationMetrics(
+                scale_error_percent=0.01,
+                plane_rms_mm=0.5,
+                tilt_degrees=0.1,
+                lighting_variation_percent=2.0,
+                alignment_valid=True,
+            )
+        ),
+        inspection_processor=InspectionPipeline(),
+        inspection_queue=result_queue,
+        tech_pack_provider=LocalTechPackRepository(Path("config/station/tech-packs")),
+    )
+    station_id = uuid4()
+    inspection_id = uuid4()
+    await service.RunCalibration(
+        capture_station_pb2.CalibrationRequest(
+            camera_serial="MOCK-001",
+            station_id=str(station_id),
+            operator_id=str(uuid4()),
+            artefact_id="artefact-001",
+            mode=capture_station_pb2.CALIBRATION_MODE_FULL,
+        ),
+        FakeContext(),
+    )
+
+    response = await service.Capture(
+        capture_station_pb2.CaptureRequest(
+            camera_serial="MOCK-001",
+            station_id=str(station_id),
+            frame_count=3,
+            profile=capture_station_pb2.StreamProfile(
+                color_width=40,
+                color_height=32,
+                depth_width=40,
+                depth_height=32,
+                frames_per_second=30,
+            ),
+            inspection_context=capture_station_pb2.InspectionContext(
+                tenant_id=str(uuid4()),
+                inspection_id=str(inspection_id),
+                station_code="STATION-INTEGRATED-001",
+                order_code="PO-24081",
+                style_code="SP-TEE-01",
+                size_code="M",
+                batch_id=str(uuid4()),
+                tech_pack_id="55555555-5555-5555-5555-555555555555",
+                tech_pack_version=1,
+            ),
+        ),
+        FakeContext(),
+    )
+
+    persisted = result_queue.get_by_inspection_id(str(inspection_id))
+    capture_queue.close()
+    result_queue.close()
+    assert response.inspection_id == str(inspection_id)
+    assert response.processing_status == capture_station_pb2.CAPTURE_PROCESSING_STATUS_QUEUED
+    assert persisted is not None and persisted.verify_hash()
 
 
 @pytest.mark.unit

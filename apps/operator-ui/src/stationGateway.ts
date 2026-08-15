@@ -20,12 +20,28 @@ export interface CaptureReceipt {
   readonly checksumSha256: string;
   readonly calibrationId: string;
   readonly capturedAtUtc: string;
+  readonly inspectionId: string;
+  readonly processingStatus: string;
+}
+
+export interface CaptureRequestContext {
+  readonly tenantId: string;
+  readonly stationId: string;
+  readonly stationCode: string;
+  readonly cameraSerial: string;
+  readonly inspectionId: string;
+  readonly orderCode: string;
+  readonly styleCode: string;
+  readonly sizeCode: string;
+  readonly batchId: string | null;
+  readonly techPackId: string;
+  readonly techPackVersion: number;
 }
 
 export interface StationGateway {
   getReadiness(signal?: AbortSignal): Promise<StationReadiness>;
   subscribePreview(onFrame: (frame: PreviewFrame) => void, onError: () => void): () => void;
-  capture(signal?: AbortSignal): Promise<CaptureReceipt>;
+  capture(context: CaptureRequestContext, signal?: AbortSignal): Promise<CaptureReceipt>;
 }
 
 const colorPixel = '/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==';
@@ -54,12 +70,15 @@ export class SimulatedStationGateway implements StationGateway {
     return () => window.clearInterval(timer);
   }
 
-  async capture(): Promise<CaptureReceipt> {
+  async capture(context: CaptureRequestContext): Promise<CaptureReceipt> {
+    void context;
     return {
       captureId: '00000000-0000-0000-0000-000000000601',
       checksumSha256: 'a'.repeat(64),
       calibrationId: 'CAL-2026-0810-04',
       capturedAtUtc: '2026-08-12T10:00:05.000Z',
+      inspectionId: '00000000-0000-0000-0000-000000000601',
+      processingStatus: 'Completed',
     };
   }
 }
@@ -87,11 +106,11 @@ export class LiveStationGateway implements StationGateway {
     return () => socket.close();
   }
 
-  async capture(signal?: AbortSignal): Promise<CaptureReceipt> {
+  async capture(context: CaptureRequestContext, signal?: AbortSignal): Promise<CaptureReceipt> {
     const response = await fetch(`${this.baseUrl}/api/v1/captures`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ stationId: 'station-001', cameraSerial: 'camera-001', frameCount: 5 }),
+      body: JSON.stringify({ ...context, frameCount: 5 }),
       signal: signal ?? null,
     });
     if (!response.ok) throw new Error(`Station capture failed: ${response.status}`);

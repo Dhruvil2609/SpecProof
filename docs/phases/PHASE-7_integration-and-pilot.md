@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T07:08:10Z
+**Last Updated:** 2026-08-15T07:27:58Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -25,11 +25,11 @@ operator study, and factory pilot remain deferred hardware acceptance activities
 
 ### 7.2.1 End-to-End Integration
 
-- [ ] **TASK-7.2.1.1** — Wire camera → perception → measurement → decision → evidence pipeline
-- [ ] **TASK-7.2.1.2** — Wire station agent → platform API → web UI data flow
-- [ ] **TASK-7.2.1.3** — Offline capture → sync → display workflow
-- [ ] **TASK-7.2.1.4** — Multi-station concurrent operation test
-- [ ] **TASK-7.2.1.5** — Write end-to-end integration tests
+- [x] **TASK-7.2.1.1** — Wire camera → perception → measurement → decision → evidence pipeline
+- [x] **TASK-7.2.1.2** — Wire station agent → platform API → web UI data flow
+- [x] **TASK-7.2.1.3** — Offline capture → sync → display workflow
+- [x] **TASK-7.2.1.4** — Multi-station concurrent operation test
+- [x] **TASK-7.2.1.5** — Write end-to-end integration tests
 
 ### 7.2.2 Measurement Validation Study
 
@@ -138,3 +138,11 @@ validation remain deferred until qualified capture hardware and garments are ava
   tests passed, and 7 integrated Python tests passed. The real PostgreSQL test is checked in
   and gated by `SPEC_PROOF_RUN_DATABASE_INTEGRATION=1`; runtime execution remains pending
   because Docker is stopped.
+- 2026-08-15T07:27:58Z — Connected operator order/style/size/batch and immutable
+  tech-pack context through Station Host and gRPC, executed the local pipeline after capture,
+  durably persisted results before acknowledgement, added optional background capture/result
+  delivery, returned real inspection IDs/status, and replaced the UI timer with translated
+  polling, retry, offline, and timeout states. Added a versioned offline tech-pack fixture,
+  integrated gRPC acknowledgement test, and concurrent three-station identity/isolation test.
+  Validation passed: 19 Python tests, zero-warning .NET release build, and 11 operator tests
+  with lint/typecheck. Runtime Docker acceptance remains open.

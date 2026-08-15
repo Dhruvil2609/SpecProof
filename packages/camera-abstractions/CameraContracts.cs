@@ -19,14 +19,28 @@ public sealed record CameraCaptureRequest(
     string StationId,
     string CameraSerial,
     int FrameCount = 5,
-    CameraStreamProfile? Profile = null);
+    CameraStreamProfile? Profile = null,
+    InspectionCaptureContext? InspectionContext = null);
+
+public sealed record InspectionCaptureContext(
+    Guid TenantId,
+    Guid InspectionId,
+    string StationCode,
+    string OrderCode,
+    string StyleCode,
+    string SizeCode,
+    Guid? BatchId,
+    Guid TechPackId,
+    int TechPackVersion);
 
 public sealed record CameraCaptureResult(
     Guid CaptureId,
     string PackagePath,
     string PackageSha256,
     DateTimeOffset CapturedAtUtc,
-    string CalibrationId);
+    string CalibrationId,
+    Guid? InspectionId = null,
+    string ProcessingStatus = "Captured");
 
 public sealed record CameraHealth(
     string Status,

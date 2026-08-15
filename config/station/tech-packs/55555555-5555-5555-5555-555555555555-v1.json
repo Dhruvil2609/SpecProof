@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "tech_pack_id": "55555555-5555-5555-5555-555555555555",
+  "version": 1,
+  "brand": "SpecProof Demo",
+  "style_code": "SP-TEE-01",
+  "garment_category": "t_shirt",
+  "imported_poms": [
+    {
+      "original_term": "Across Chest",
+      "canonical_pom_id": "chest_width",
+      "mapping_status": "approved",
+      "grading_rules": [
+        {
+          "size_code": "S",
+          "target_mm": 480,
+          "lower_tolerance_mm": 5,
+          "upper_tolerance_mm": 5,
+          "tolerance_direction": "bilateral"
+        },
+        {
+          "size_code": "M",
+          "target_mm": 500,
+          "lower_tolerance_mm": 5,
+          "upper_tolerance_mm": 5,
+          "tolerance_direction": "bilateral"
+        },
+        {
+          "size_code": "L",
+          "target_mm": 520,
+          "lower_tolerance_mm": 5,
+          "upper_tolerance_mm": 5,
+          "tolerance_direction": "bilateral"
+        },
+        {
+          "size_code": "XL",
+          "target_mm": 540,
+          "lower_tolerance_mm": 5,
+          "upper_tolerance_mm": 5,
+          "tolerance_direction": "bilateral"
+        }
+      ]
+    }
+  ],
+  "approved": true,
+  "referenced_by_inspection": false,
+  "version_hash_sha256": ""
+}

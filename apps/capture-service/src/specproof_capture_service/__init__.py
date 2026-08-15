@@ -40,6 +40,7 @@ from specproof_capture_service.replay_validation import (
     validate_replay_corpus,
     validate_replay_package,
 )
+from specproof_capture_service.tech_pack_repository import LocalTechPackRepository, TechPackProvider
 
 __all__ = [
     "CalibrationMetrics",
@@ -59,6 +60,7 @@ __all__ = [
     "FramingResult",
     "InspectionQueueItem",
     "InspectionQueueState",
+    "LocalTechPackRepository",
     "MockCameraProvider",
     "OfflineCaptureQueue",
     "OfflineInspectionQueue",
@@ -66,6 +68,7 @@ __all__ = [
     "QueueState",
     "ReplayValidationResult",
     "StreamProfile",
+    "TechPackProvider",
     "calibration_is_acceptable",
     "create_calibration_record",
     "evaluate_synthetic_calibration",

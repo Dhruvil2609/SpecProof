@@ -47,7 +47,12 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
-import { createStationGateway, type PreviewFrame, type StationReadiness } from './stationGateway';
+import {
+  createStationGateway,
+  type CaptureReceipt,
+  type PreviewFrame,
+  type StationReadiness,
+} from './stationGateway';
 import './tokens.css';
 
 interface AuthSession {
@@ -63,7 +68,30 @@ interface AuthContextValue {
 }
 
 const authStorageKey = 'specproof-operator-session';
+const captureContextStorageKey = 'specproof-capture-context';
+const captureReceiptStorageKey = 'specproof-capture-receipt';
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+interface StoredCaptureContext {
+  readonly orderCode: string;
+  readonly styleCode: string;
+  readonly sizeCode: string;
+  readonly batchId: string;
+  readonly batchCode: string;
+  readonly techPackId: string;
+  readonly techPackVersion: number;
+}
+
+function readStoredValue<Value>(key: string): Value | null {
+  const value = window.sessionStorage.getItem(key);
+  if (value === null) return null;
+  try {
+    return JSON.parse(value) as Value;
+  } catch {
+    window.sessionStorage.removeItem(key);
+    return null;
+  }
+}
 
 function readSession(): AuthSession | null {
   const raw = window.sessionStorage.getItem(authStorageKey);
@@ -229,8 +257,8 @@ function OperatorShell() {
           <Route index element={<DashboardPage inspections={dashboard.data?.inspections ?? demoDashboard.inspections} />} />
           <Route path="capture/select" element={<CaptureSelectionPage />} />
           <Route path="capture/live" element={<CapturePreviewPage />} />
-          <Route path="capture/processing" element={<ProcessingPage />} />
-          <Route path="inspections/:id" element={<InspectionPage inspections={dashboard.data?.inspections ?? demoDashboard.inspections} />} />
+          <Route path="capture/processing" element={<ProcessingPage client={client} />} />
+          <Route path="inspections/:id" element={<InspectionPage client={client} inspections={dashboard.data?.inspections ?? demoDashboard.inspections} />} />
           <Route path="inspections/:id/review" element={<ReviewPage client={client} />} />
           <Route path="history" element={<HistoryPage inspections={dashboard.data?.inspections ?? demoDashboard.inspections} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -285,11 +313,19 @@ function InspectionTable({ inspections }: { readonly inspections: readonly Inspe
 function CaptureSelectionPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [context, setContext] = useState({ order: 'PO-24081', style: 'SP-TEE-01', size: 'M', batch: 'B-0810-A' });
+  const [context, setContext] = useState<StoredCaptureContext>({
+    orderCode: 'PO-24081',
+    styleCode: 'SP-TEE-01',
+    sizeCode: 'M',
+    batchId: '44444444-4444-4444-4444-444444444441',
+    batchCode: 'B-0810-A',
+    techPackId: '55555555-5555-5555-5555-555555555555',
+    techPackVersion: 1,
+  });
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.sessionStorage.setItem('specproof-capture-context', JSON.stringify(context));
+    window.sessionStorage.setItem(captureContextStorageKey, JSON.stringify(context));
     navigate('/capture/live');
   }
 
@@ -298,10 +334,10 @@ function CaptureSelectionPage() {
       <PageHeader eyebrow={t('capture.eyebrow')} title={t('capture.title')} description={t('capture.description')} />
       <Card className="form-card">
         <form className="context-grid" onSubmit={submit}>
-          <label htmlFor="capture-order">{t('capture.order')}<select id="capture-order" value={context.order} onChange={(event) => setContext({ ...context, order: event.target.value })}><option>PO-24081</option><option>PO-24079</option></select></label>
-          <label htmlFor="capture-style">{t('capture.style')}<select id="capture-style" value={context.style} onChange={(event) => setContext({ ...context, style: event.target.value })}><option>SP-TEE-01</option><option>CORE-02</option></select></label>
-          <label htmlFor="capture-size">{t('capture.size')}<select id="capture-size" value={context.size} onChange={(event) => setContext({ ...context, size: event.target.value })}><option>S</option><option>M</option><option>L</option><option>XL</option></select></label>
-          <label htmlFor="capture-batch">{t('capture.batch')}<select id="capture-batch" value={context.batch} onChange={(event) => setContext({ ...context, batch: event.target.value })}><option>B-0810-A</option><option>B-0810-B</option></select></label>
+          <label htmlFor="capture-order">{t('capture.order')}<select id="capture-order" value={context.orderCode} onChange={(event) => setContext({ ...context, orderCode: event.target.value })}><option>PO-24081</option><option>PO-24079</option></select></label>
+          <label htmlFor="capture-style">{t('capture.style')}<select id="capture-style" value={context.styleCode} onChange={(event) => setContext({ ...context, styleCode: event.target.value })}><option>SP-TEE-01</option></select></label>
+          <label htmlFor="capture-size">{t('capture.size')}<select id="capture-size" value={context.sizeCode} onChange={(event) => setContext({ ...context, sizeCode: event.target.value })}><option>S</option><option>M</option><option>L</option><option>XL</option></select></label>
+          <label htmlFor="capture-batch">{t('capture.batch')}<select id="capture-batch" value={context.batchId} onChange={(event) => setContext({ ...context, batchId: event.target.value, batchCode: event.target.selectedOptions[0]?.text ?? '' })}><option value="44444444-4444-4444-4444-444444444441">B-0810-A</option><option value="44444444-4444-4444-4444-444444444442">B-0810-B</option></select></label>
           <Button type="submit">{t('capture.continue')}</Button>
         </form>
       </Card>
@@ -311,6 +347,7 @@ function CaptureSelectionPage() {
 
 function CapturePreviewPage() {
   const { t } = useTranslation();
+  const { session } = useAuth();
   const navigate = useNavigate();
   const [depth, setDepth] = useState(true);
   const [recapture, setRecapture] = useState(false);
@@ -329,8 +366,27 @@ function CapturePreviewPage() {
   }, [gateway]);
 
   async function triggerCapture() {
+    const captureContext = readStoredValue<StoredCaptureContext>(captureContextStorageKey);
+    if (captureContext === null || session === null) {
+      navigate('/capture/select');
+      return;
+    }
     try {
-      await gateway.capture();
+      const receipt = await gateway.capture({
+        tenantId: session.tenantId,
+        stationId: (import.meta.env.VITE_STATION_ID as string | undefined)
+          ?? '33333333-3333-3333-3333-333333333333',
+        stationCode: (import.meta.env.VITE_STATION_CODE as string | undefined) ?? 'STN-LON-01',
+        cameraSerial: (import.meta.env.VITE_CAMERA_SERIAL as string | undefined) ?? 'MOCK-001',
+        inspectionId: crypto.randomUUID(),
+        orderCode: captureContext.orderCode,
+        styleCode: captureContext.styleCode,
+        sizeCode: captureContext.sizeCode,
+        batchId: captureContext.batchId,
+        techPackId: captureContext.techPackId,
+        techPackVersion: captureContext.techPackVersion,
+      });
+      window.sessionStorage.setItem(captureReceiptStorageKey, JSON.stringify(receipt));
       navigate('/capture/processing');
     } catch {
       setRecapture(true);
@@ -365,15 +421,46 @@ function CapturePreviewPage() {
   );
 }
 
-function ProcessingPage() {
+function ProcessingPage({ client }: { readonly client: SpecProofClient }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState(0);
+  const navigate = useNavigate();
+  const [receipt] = useState(() => readStoredValue<CaptureReceipt>(captureReceiptStorageKey));
+  const [state, setState] = useState<'waiting' | 'retrying' | 'offline' | 'timeout'>('waiting');
+  const [retryVersion, setRetryVersion] = useState(0);
   const steps = ['processing.capture', 'processing.surface', 'processing.measure', 'processing.evidence'] as const;
 
   useEffect(() => {
-    const timer = window.setInterval(() => setStep((current) => Math.min(current + 1, steps.length)), 260);
-    return () => window.clearInterval(timer);
-  }, [steps.length]);
+    if (receipt === null) return;
+    let active = true;
+    let timer = 0;
+    const started = Date.now();
+    const poll = async () => {
+      if (!navigator.onLine) {
+        setState('offline');
+      } else {
+        try {
+          await client.getInspection(receipt.inspectionId);
+          if (active) navigate(`/inspections/${receipt.inspectionId}`, { replace: true });
+          return;
+        } catch {
+          setState('retrying');
+        }
+      }
+      if (Date.now() - started >= 30_000) {
+        setState('timeout');
+        return;
+      }
+      timer = window.setTimeout(() => void poll(), 1_000);
+    };
+    void poll();
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [client, navigate, receipt, retryVersion]);
+
+  if (receipt === null) return <Navigate to="/capture/select" replace />;
+  const step = receipt.processingStatus.toLowerCase() === 'queued' ? 3 : 1;
 
   return (
     <>
@@ -381,16 +468,31 @@ function ProcessingPage() {
       <Card className="processing-card">
         <div className="processing-orbit"><Gauge aria-hidden="true" /><strong>{Math.round((step / steps.length) * 100)}%</strong></div>
         <ol>{steps.map((key, index) => <li key={key} className={index < step ? 'complete' : index === step ? 'active' : ''}><span>{index + 1}</span>{t(key)}</li>)}</ol>
-        {step === steps.length ? <Link className="button" to="/inspections/00000000-0000-0000-0000-000000000601">{t('processing.complete')}</Link> : null}
+        <p role="status">{t(`processing.${state}`)}</p>
+        {state === 'timeout' ? <Button onClick={() => { setState('waiting'); setRetryVersion((value) => value + 1); }}>{t('common.retry')}</Button> : null}
       </Card>
     </>
   );
 }
 
-function InspectionPage({ inspections }: { readonly inspections: readonly Inspection[] }) {
+function InspectionPage({
+  client,
+  inspections,
+}: {
+  readonly client: SpecProofClient;
+  readonly inspections: readonly Inspection[];
+}) {
   const { t } = useTranslation();
   const { id } = useParams();
-  const inspection = inspections.find((candidate) => candidate.id === id) ?? inspections[0];
+  const fallback = inspections.find((candidate) => candidate.id === id);
+  const inspectionQuery = useQuery({
+    queryKey: ['operator-inspection', id],
+    queryFn: ({ signal }) => client.getInspection(id ?? '', signal),
+    enabled: id !== undefined,
+    initialData: fallback,
+  });
+  const inspection = inspectionQuery.data;
+  if (inspectionQuery.isLoading) return <p role="status">{t('common.loading')}</p>;
   if (inspection === undefined) return <Navigate to="/history" replace />;
   return (
     <>
