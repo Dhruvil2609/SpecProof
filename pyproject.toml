@@ -11,6 +11,7 @@ specproof-doctor = "specproof_doctor.cli:main"
 specproof-capture-service = "specproof_capture_service.grpc_server:main"
 specproof-measurement-api = "specproof_measurement_service.api:main"
 specproof-validation-study = "specproof_validation_study.cli:main"
+specproof-integration-benchmark = "specproof_measurement_service.performance:main"
 
 [build-system]
 requires = ["setuptools>=69"]

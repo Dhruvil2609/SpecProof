@@ -8,6 +8,7 @@ from time import perf_counter_ns
 from typing import TypeVar
 from uuid import UUID, uuid4
 
+from opentelemetry import metrics
 from pydantic import BaseModel, Field, model_validator
 from specproof_capture_service.capture_package import CapturePackageReader
 from specproof_capture_service.models import CaptureManifest
@@ -23,6 +24,13 @@ from specproof_measurement_service.executor import ExecutedMeasurement, execute_
 from specproof_measurement_service.ontology import PomOntology, tshirt_ontology
 from specproof_measurement_service.pipeline import PerceptionPipeline, PerceptionResult
 from specproof_measurement_service.techpack import TechPackVersion
+
+_meter = metrics.get_meter("specproof.measurement.inspection")
+_stage_duration = _meter.create_histogram(
+    "specproof.inspection.stage.duration",
+    unit="ms",
+    description="Local inspection pipeline stage duration",
+)
 
 
 class InspectionContext(BaseModel):
@@ -180,7 +188,9 @@ class InspectionPipeline:
             evidence,
             manifest.captured_at_utc.isoformat(),
         )
-        timings.append(StageTiming(stage="total", duration_ms=_elapsed_ms(total_started)))
+        total_duration = _elapsed_ms(total_started)
+        timings.append(StageTiming(stage="total", duration_ms=total_duration))
+        _stage_duration.record(total_duration, {"stage": "total"})
         return InspectionPipelineResult(
             context=request.context,
             perception=perception,
@@ -200,7 +210,9 @@ class InspectionPipeline:
     ) -> ResultType:
         started = perf_counter_ns()
         result = operation()
-        timings.append(StageTiming(stage=stage, duration_ms=_elapsed_ms(started)))
+        duration = _elapsed_ms(started)
+        timings.append(StageTiming(stage=stage, duration_ms=duration))
+        _stage_duration.record(duration, {"stage": stage})
         return result
 
     @staticmethod

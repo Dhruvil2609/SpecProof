@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import platform
 from pathlib import Path
+from time import perf_counter_ns
+
+from opentelemetry import metrics
 
 from specproof_capture_service.calibration import CalibrationStore
 from specproof_capture_service.capture_package import CapturePackageWriter
@@ -11,6 +14,13 @@ from specproof_capture_service.errors import CalibrationExpiredError
 from specproof_capture_service.models import CaptureManifest, StationHealth, StreamProfile
 from specproof_capture_service.offline_queue import OfflineCaptureQueue
 from specproof_capture_service.provider import CameraProvider
+
+_meter = metrics.get_meter("specproof.capture.coordinator")
+_capture_duration = _meter.create_histogram(
+    "specproof.capture.duration",
+    unit="ms",
+    description="Calibrated capture and durable package queue duration",
+)
 
 
 class CaptureCoordinator:
@@ -40,6 +50,7 @@ class CaptureCoordinator:
     ) -> tuple[CaptureManifest, Path, str]:
         """Capture and queue a checksummed package."""
 
+        started = perf_counter_ns()
         if not 3 <= frame_count <= 15:
             raise ValueError("frame_count must be between 3 and 15")
         calibration = self._calibration_store.get_active(station_id, camera_serial)
@@ -69,6 +80,7 @@ class CaptureCoordinator:
         final_path = temporary_name.with_name(f"{manifest.capture_id}.spcapture")
         temporary_name.replace(final_path)
         self._queue.enqueue(manifest.capture_id, final_path, package_sha256)
+        _capture_duration.record((perf_counter_ns() - started) / 1_000_000)
         return manifest, final_path, package_sha256
 
     async def health(self) -> StationHealth:

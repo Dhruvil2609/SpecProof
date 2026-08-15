@@ -83,6 +83,7 @@ public sealed class ModelConfigurationTests
                 "20260805000000_MeasurementEngine",
                 "20260806000000_PlatformTrustLayer",
                 "20260812000000_WebApplication",
+                "20260815073000_Phase7PerformanceIndexes",
             ],
             migrationIds);
     }
@@ -198,6 +199,25 @@ public sealed class ModelConfigurationTests
             context.Model.FindEntityType(typeof(TechPackImportDraft))
                 ?.FindProperty(nameof(TechPackImportDraft.DraftJson))
                 ?.GetColumnType());
+    }
+
+    [Fact]
+    public void Phase7Performance_Model_IndexesLatestTenantEvidence()
+    {
+        var options = new DbContextOptionsBuilder<SpecProofDbContext>()
+            .UseNpgsql("Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123")
+            .Options;
+        using var context = new SpecProofDbContext(options);
+
+        var index = context.Model.FindEntityType(typeof(EvidenceRecord))
+            ?.GetIndexes()
+            .SingleOrDefault(candidate =>
+                candidate.GetDatabaseName() == "ix_evidence_records_tenant_id_created_at_utc");
+
+        Assert.NotNull(index);
+        Assert.Equal(
+            [nameof(EvidenceRecord.TenantId), nameof(EvidenceRecord.CreatedAtUtc)],
+            index.Properties.Select(property => property.Name));
     }
 
     [Fact]

@@ -75,7 +75,8 @@ builder.Services.AddOpenTelemetry()
         metrics
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddRuntimeInstrumentation();
+            .AddRuntimeInstrumentation()
+            .AddMeter("SpecProof.Platform.Integration");
         if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
         {
             metrics.AddOtlpExporter();

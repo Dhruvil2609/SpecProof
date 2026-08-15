@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SpecProof.Contracts;
@@ -24,6 +26,12 @@ public sealed record IntegratedInspectionPersistenceResult(
 
 public sealed class IntegratedInspectionPersistence(EvidenceSignatureService signatureService)
 {
+    private static readonly Meter Meter = new("SpecProof.Platform.Integration");
+    private static readonly Histogram<double> PersistenceDuration = Meter.CreateHistogram<double>(
+        "specproof.inspection.persistence.duration",
+        unit: "ms",
+        description: "Atomic integrated inspection persistence duration");
+
     public async Task<IntegratedInspectionPersistenceResult> PersistAsync(
         SpecProofDbContext database,
         CreateInspectionRequest request,
@@ -164,7 +172,9 @@ public sealed class IntegratedInspectionPersistence(EvidenceSignatureService sig
                 Status = "queued",
                 AvailableAtUtc = now,
             });
+        var persistenceStarted = Stopwatch.GetTimestamp();
         await database.SaveChangesAsync(cancellationToken);
+        PersistenceDuration.Record(Stopwatch.GetElapsedTime(persistenceStarted).TotalMilliseconds);
 
         var signedEvidence = request.Evidence with
         {

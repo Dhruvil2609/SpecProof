@@ -590,6 +590,8 @@ internal sealed class EvidenceRecordConfiguration : IEntityTypeConfiguration<Evi
         builder.HasIndex(entity => entity.RecordHashSha256)
             .IsUnique()
             .HasDatabaseName("uq_evidence_records_record_hash_sha256");
+        builder.HasIndex(entity => new { entity.TenantId, entity.CreatedAtUtc })
+            .HasDatabaseName("ix_evidence_records_tenant_id_created_at_utc");
     }
 }
 

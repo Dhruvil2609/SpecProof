@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -18,6 +19,8 @@ from specproof_measurement_service import (
     parse_csv_tech_pack,
     tshirt_ontology,
 )
+from specproof_measurement_service.performance import benchmark_operation
+from specproof_measurement_service.performance import main as performance_main
 from specproof_measurement_service.pipeline import utc_now
 
 
@@ -98,6 +101,88 @@ def test_inspection_pipeline_rejects_capture_context_mismatch(tmp_path: Path) ->
 
     with pytest.raises(ValueError, match="station_id"):
         InspectionPipeline().run(request)
+
+
+@pytest.mark.performance
+def test_inspection_pipeline_warm_p95_meets_software_acceptance_gate(tmp_path: Path) -> None:
+    station_id = uuid4()
+    calibration_id = uuid4()
+    package_path = _write_package(tmp_path, station_id, calibration_id)
+    manifest = CapturePackageReader().read_manifest(package_path)
+    tech_pack_id = uuid4()
+    request = InspectionPipelineRequest(
+        context=InspectionContext(
+            tenant_id=uuid4(),
+            station_id=station_id,
+            inspection_id=uuid4(),
+            capture_id=UUID(manifest.capture_id),
+            calibration_id=calibration_id,
+            station_code="STATION-BENCHMARK-001",
+            order_code="ORDER-PERF-100",
+            style_code="TEE-100",
+            size_code="M",
+            tech_pack_id=tech_pack_id,
+            tech_pack_version=1,
+        ),
+        package_path=package_path,
+        tech_pack=_tech_pack(tmp_path, tech_pack_id),
+    )
+
+    summary = benchmark_operation(
+        lambda: InspectionPipeline().run(request),
+        warmup_iterations=1,
+        measured_iterations=3,
+    )
+
+    assert summary.software_gate_pass is True
+    assert summary.p95_ms < 15_000
+
+
+@pytest.mark.performance
+def test_integration_benchmark_cli_writes_acceptance_artifact(tmp_path: Path) -> None:
+    station_id = uuid4()
+    calibration_id = uuid4()
+    package_path = _write_package(tmp_path, station_id, calibration_id)
+    manifest = CapturePackageReader().read_manifest(package_path)
+    tech_pack_id = uuid4()
+    request = InspectionPipelineRequest(
+        context=InspectionContext(
+            tenant_id=uuid4(),
+            station_id=station_id,
+            inspection_id=uuid4(),
+            capture_id=UUID(manifest.capture_id),
+            calibration_id=calibration_id,
+            station_code="STATION-BENCHMARK-CLI-001",
+            order_code="ORDER-PERF-CLI-100",
+            style_code="TEE-100",
+            size_code="M",
+            tech_pack_id=tech_pack_id,
+            tech_pack_version=1,
+        ),
+        package_path=package_path,
+        tech_pack=_tech_pack(tmp_path, tech_pack_id),
+    )
+    request_path = tmp_path / "benchmark-request.json"
+    output_path = tmp_path / "benchmark-result.json"
+    request_path.write_text(request.model_dump_json(), encoding="utf-8")
+
+    exit_code = performance_main(
+        [
+            "--request",
+            str(request_path),
+            "--output",
+            str(output_path),
+            "--warmups",
+            "0",
+            "--iterations",
+            "1",
+        ]
+    )
+
+    output = json.loads(output_path.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert output["benchmark"]["software_gate_pass"] is True
+    assert "CPUExecutionProvider" in output["onnx"]["selected_providers"]
 
 
 @pytest.mark.unit

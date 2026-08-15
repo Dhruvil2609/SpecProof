@@ -341,7 +341,28 @@ Expected current result: 8 passing tests and successful builds for both applicat
 These tests verify forward migration, rollback, constraints, UTC column mapping, and
 append-only audit behavior against PostgreSQL.
 
-### Step 1.6: Verify Generated OpenAPI and API Health
+### Step 1.6: Run Phase 7 Performance Acceptance
+
+Run the repeatable integrated synthetic benchmark test:
+
+```powershell
+.venv\Scripts\python.exe -m pytest tests/unit/python/test_inspection_pipeline.py -m performance -q
+```
+
+When Docker PostgreSQL is available and `specproof_test` is migrated, capture the seeded
+query plans. The profiler always rolls its synthetic data back:
+
+```powershell
+$env:SPEC_PROOF_TEST_DATABASE = "Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123"
+.venv\Scripts\python.exe tools/performance/profile_platform_queries.py --output artifacts/performance/platform-query-plans.json
+Remove-Item Env:SPEC_PROOF_TEST_DATABASE
+```
+
+Treat warm p95 below 15 seconds as the software acceptance gate. Report the 5-second pilot
+target separately, and do not close CUDA or database profiling acceptance without runtime
+evidence from qualified hardware and PostgreSQL.
+
+### Step 1.7: Verify Generated OpenAPI and API Health
 
 Start the API in a dedicated terminal:
 
@@ -363,7 +384,7 @@ deployed schema. Use the migration acceptance tests for the current Phase 1 data
 gate and add a supported deployment migration command before treating this API as a
 shared environment.
 
-### Step 1.7: Verify Remote CI
+### Step 1.8: Verify Remote CI
 
 1. Push a branch to GitHub.
 2. Open a pull request.
@@ -376,7 +397,7 @@ shared environment.
 4. Confirm the workflows run on every configured Windows and Linux runner.
 5. Record the workflow URLs as verification evidence.
 
-### Step 1.8: Configure Branch Protection
+### Step 1.9: Configure Branch Protection
 
 A GitHub repository administrator must:
 

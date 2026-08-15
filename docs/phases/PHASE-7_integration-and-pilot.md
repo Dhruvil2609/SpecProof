@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T07:40:34Z
+**Last Updated:** 2026-08-15T07:55:13Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -48,11 +48,11 @@ statistics require physical hardware and garments.
 
 ### 7.2.3 Performance Optimisation
 
-- [ ] **TASK-7.2.3.1** — Profile full pipeline end-to-end
+- [x] **TASK-7.2.3.1** — Profile full pipeline end-to-end
 - [ ] **TASK-7.2.3.2** — Optimise to <5s per garment where feasible
 - [ ] **TASK-7.2.3.3** — GPU inference optimisation
 - [ ] **TASK-7.2.3.4** — Database query optimisation
-- [ ] **TASK-7.2.3.5** — Write performance benchmark tests
+- [x] **TASK-7.2.3.5** — Write performance benchmark tests
 
 ### 7.2.4 Resilience Testing
 
@@ -153,3 +153,13 @@ validation remain deferred until qualified capture hardware and garments are ava
   Bland–Altman limits, false-pass/fail rates, and crossed Gauge R&R variance components.
   Added deterministic passing/failing fixtures, three tests, a ≥30 garment/≥3 operator/≥3
   placement protocol, and collection template. Physical collection tasks remain deferred.
+- 2026-08-15T07:55:13Z — Added monotonic OpenTelemetry histograms for capture,
+  perception, compilation, measurement, decision, evidence, atomic persistence, and total
+  latency. Added repeatable warm-up/p50/p95/maximum/CPU/peak-memory benchmark output with
+  a strict 15-second software gate and separately reported 5-second pilot target. Added
+  ONNX Runtime CPU/CUDA provider qualification, a seeded PostgreSQL `EXPLAIN ANALYZE`
+  profiler for six platform query shapes, and a reversible tenant/evidence recency index.
+  Validation passed: 25 focused Python tests, Ruff, zero-warning .NET release build, and 17
+  data tests. CUDA acceptance and live PostgreSQL plan capture remain pending because no
+  qualified GPU is available and Docker/PostgreSQL is stopped; database optimisation is
+  therefore not marked complete.

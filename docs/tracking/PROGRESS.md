@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-15T07:40:34Z
+**Last Updated:** 2026-08-15T07:55:13Z
 **Timezone:** UTC
 **Language:** en
 
@@ -25,9 +25,9 @@
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
-|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      11 |      31% |
+|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      13 |      37% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **387** | **296** |  **76%** |
+| **Total** |                               |               | **387** | **298** |  **77%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -35,11 +35,11 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Stack                         | Result  | Evidence                             |
 | ----------------------------- | ------- | ------------------------------------ |
-| Python formatting and lint    | PARTIAL | Phase 6 changed files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
+| Python formatting and lint    | PARTIAL | Phase 7 performance files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 172 unit/regression tests, including passing/failing Gauge R&R and real Parquet output |
+| Python tests and coverage     | PASS    | 178 unit/regression/performance tests, including integrated warm-p95 and ONNX provider gates |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
-| .NET tests                    | PASS    | 46 tests: 24 platform API/station/storage, 6 contracts, 16 data |
+| .NET tests                    | PASS    | 47 tests: 24 platform API/station/storage, 6 contracts, 17 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
 | Frontend tests                | PASS    | 28 unit/integration tests plus 8 Edge E2E/axe/visual tests |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15T07:55:13Z | 7     | Added full-pipeline and platform performance instrumentation, repeatable resource/latency benchmarks with 15s/5s gates, ONNX provider qualification, seeded PostgreSQL EXPLAIN tooling, one evidence-backed index, and six passing tests; GPU and live database profiling remain pending. |
 | 2026-08-15T07:40:34Z | 7     | Completed the validation-study protocol and six software analysis/reporting tasks with versioned schemas, controlled CSV, Parquet, per-POM repeatability/reproducibility/agreement/error metrics, crossed Gauge R&R, pass/fail fixtures, and three passing tests. |
 | 2026-08-15T07:27:58Z | 7     | Completed the five software E2E tasks: operator context now reaches local processing and durable delivery, real inspection IDs drive platform polling, three stations submit concurrently without identity collisions, and Python/.NET/frontend validation passes. |
 | 2026-08-15T07:08:10Z | 7     | Added atomic integrated inspection/evidence/signature/audit/report persistence with version and hash validation, idempotent replay, 409 conflict semantics, a gated real-PostgreSQL test, zero-warning release build, and 47 passing focused tests; Docker runtime remains unavailable. |
@@ -100,6 +101,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Hardware acceptance gates         | RealSense camera, USB 3 fixture, artefact, and garments unavailable | Deferred until hardware arrives; continue software-first development |
 | Phase 6 browser acceptance         | Edge E2E/axe/visual suite passes; Chromium browser download/CI run is outstanding | Execute the configured Chromium job on Linux CI                        |
 | Phase 6 database runtime           | Docker daemon and PostgreSQL port 55432 are stopped                  | Start Docker Desktop and rerun migration integration tests            |
+| Phase 7 database profiling         | Seeded EXPLAIN profiler is checked in; Docker/PostgreSQL is stopped  | Start Docker Desktop, migrate `specproof_test`, and capture query plans |
 
 ## Update Rules
 
