@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-15T06:43:40Z
+**Last Updated:** 2026-08-15T06:52:18Z
 **Timezone:** UTC
 **Language:** en
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 6 changed files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 163 unit/regression tests, including 3 integrated inspection pipeline tests |
+| Python tests and coverage     | PASS    | 167 unit/regression tests, including 4 durable inspection delivery tests |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 45 tests: 23 platform API/station/storage, 6 contracts, 16 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15T06:52:18Z | 7     | Added a separate immutable SQLite inspection-result queue with restart recovery, bounded retry/dead-letter states, capture-completion gating, idempotency keys, payload hashes, HTTP platform submission, and 20 passing focused tests. |
 | 2026-08-15T06:43:40Z | 7     | Started Phase 7 with a UUID-validated local inspection orchestrator, sealed platform payload mapping, monotonic stage timings, backward-compatible gRPC context/result fields, and 13 passing focused tests; corrected the phase task count from 27 to 35. |
 | 2026-08-14T18:58:15Z | 5     | Implemented client-certificate device authentication, least-privilege station permissions, same-station enforcement, globally conflict-safe certificate registration, and audited certificate rotation; 23 focused platform API tests pass. |
 | 2026-08-14T18:41:43Z | 5     | Closed the tenant write-path vulnerability: JWT tenant claims are authoritative, conflicting headers and request tenants return 403, station registration requires authorisation, and 16 focused platform API tests pass. |

@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T06:43:40Z
+**Last Updated:** 2026-08-15T06:52:18Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -124,3 +124,9 @@ validation remain deferred until qualified capture hardware and garments are ava
   inspection ID, and processing status fields to the station gRPC contract. Focused
   integration and gRPC validation: 13 tests passed. TASK-7.2.1.1 remains open until the
   capture service invokes this pipeline automatically.
+- 2026-08-15T06:52:18Z — Added a separate durable SQLite inspection-result queue
+  with immutable canonical payload hashes, capture/inspection idempotency, pending,
+  submitting, retryable-failure, dead-letter, and completed states, bounded exponential
+  retry, process-restart recovery, manual dead-letter requeue, capture-upload gating, and
+  authenticated HTTP result submission. Focused queue and capture validation: 20 tests
+  passed. TASK-7.2.1.3 remains open until the operator-visible display flow is connected.

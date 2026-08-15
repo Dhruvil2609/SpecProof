@@ -11,8 +11,17 @@ from specproof_capture_service.calibration_evaluator import (
 )
 from specproof_capture_service.capture_package import CapturePackageReader, CapturePackageWriter
 from specproof_capture_service.coordinator import CaptureCoordinator
-from specproof_capture_service.framing import CaptureZone, FramingResult, validate_capture_zone_framing
+from specproof_capture_service.framing import (
+    CaptureZone,
+    FramingResult,
+    validate_capture_zone_framing,
+)
 from specproof_capture_service.fusion import fuse_depth_median, select_midpoint_color
+from specproof_capture_service.inspection_queue import (
+    InspectionQueueItem,
+    InspectionQueueState,
+    OfflineInspectionQueue,
+)
 from specproof_capture_service.metadata import CaptureMetadata
 from specproof_capture_service.mock_provider import MockCameraProvider
 from specproof_capture_service.models import (
@@ -48,8 +57,11 @@ __all__ = [
     "CaptureReplayProvider",
     "CaptureZone",
     "FramingResult",
+    "InspectionQueueItem",
+    "InspectionQueueState",
     "MockCameraProvider",
     "OfflineCaptureQueue",
+    "OfflineInspectionQueue",
     "QueueItem",
     "QueueState",
     "ReplayValidationResult",

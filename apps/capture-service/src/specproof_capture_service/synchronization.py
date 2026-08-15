@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Protocol
 
 from specproof_capture_service.capture_package import sha256_file
-from specproof_capture_service.offline_queue import OfflineCaptureQueue
+from specproof_capture_service.inspection_queue import OfflineInspectionQueue
+from specproof_capture_service.offline_queue import OfflineCaptureQueue, QueueState
 from specproof_capture_service.storage import CaptureObjectStore
 
 
@@ -38,6 +39,16 @@ class PlatformStationClient(Protocol):
 
     def complete_capture(self, *, asset_id: str, checksum_sha256: str) -> None:
         """Confirm a completed object upload."""
+        ...
+
+    def submit_inspection(
+        self,
+        *,
+        payload: dict[str, object],
+        payload_hash_sha256: str,
+        idempotency_key: str,
+    ) -> dict[str, object]:
+        """Submit a sealed inspection and evidence payload idempotently."""
         ...
 
 
@@ -85,6 +96,51 @@ class CaptureSynchronizer:
         except Exception as error:
             self._queue.fail(item.id, str(error))
             return False
+
+
+class InspectionResultSynchronizer:
+    """Deliver durable inspection results after their capture upload completes."""
+
+    def __init__(
+        self,
+        *,
+        capture_queue: OfflineCaptureQueue,
+        result_queue: OfflineInspectionQueue,
+        platform_client: PlatformStationClient,
+    ) -> None:
+        self._capture_queue = capture_queue
+        self._result_queue = result_queue
+        self._platform_client = platform_client
+
+    def synchronize_once(self) -> bool:
+        """Submit one eligible inspection result without risking station-side loss."""
+
+        completed_capture_ids = tuple(
+            capture_id
+            for capture_id in self._result_queue.pending_capture_ids()
+            if self._capture_completed(capture_id)
+        )
+        item = self._result_queue.claim_for_captures(completed_capture_ids)
+        if item is None:
+            return False
+        if not item.verify_hash():
+            self._result_queue.dead_letter(item.id, "Inspection payload checksum does not match")
+            return False
+        try:
+            self._platform_client.submit_inspection(
+                payload=item.payload(),
+                payload_hash_sha256=item.payload_hash_sha256,
+                idempotency_key=item.idempotency_key,
+            )
+            self._result_queue.complete(item.id)
+            return True
+        except Exception as error:
+            self._result_queue.fail(item.id, str(error))
+            return False
+
+    def _capture_completed(self, capture_id: str) -> bool:
+        capture = self._capture_queue.get_by_capture_id(capture_id)
+        return capture is not None and capture.state == QueueState.COMPLETED
 
 
 class HttpPlatformStationClient:
@@ -139,6 +195,24 @@ class HttpPlatformStationClient:
             {
                 "tenantId": self._tenant_id,
                 "checksumSha256": checksum_sha256,
+            },
+        )
+
+    def submit_inspection(
+        self,
+        *,
+        payload: dict[str, object],
+        payload_hash_sha256: str,
+        idempotency_key: str,
+    ) -> dict[str, object]:
+        """Submit an integrated inspection and canonical evidence atomically."""
+
+        return self._request(
+            "/api/v1/inspections",
+            payload,
+            extra_headers={
+                "Idempotency-Key": idempotency_key,
+                "X-Payload-SHA256": payload_hash_sha256,
             },
         )
 
