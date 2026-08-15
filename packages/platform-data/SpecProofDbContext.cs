@@ -116,5 +116,6 @@ public sealed class SpecProofDbContext(
         modelBuilder.Entity<SyncEnvelope>().HasQueryFilter(entity => CurrentTenantId == null || entity.TenantId == CurrentTenantId);
         modelBuilder.Entity<WebhookSubscription>().HasQueryFilter(entity => CurrentTenantId == null || entity.TenantId == CurrentTenantId);
         modelBuilder.Entity<BackgroundJobRecord>().HasQueryFilter(entity => CurrentTenantId == null || entity.TenantId == CurrentTenantId);
+        modelBuilder.Entity<AuditEvent>().HasQueryFilter(entity => CurrentTenantId == null || entity.TenantId == CurrentTenantId);
     }
 }

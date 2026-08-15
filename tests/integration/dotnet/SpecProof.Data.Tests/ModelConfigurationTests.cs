@@ -130,6 +130,7 @@ public sealed class ModelConfigurationTests
         Assert.True(context.Model.FindEntityType(typeof(InspectionRecord))?.GetDeclaredQueryFilters().Any());
         Assert.True(context.Model.FindEntityType(typeof(SyncEnvelope))?.GetDeclaredQueryFilters().Any());
         Assert.True(context.Model.FindEntityType(typeof(StationHealthReport))?.GetDeclaredQueryFilters().Any());
+        Assert.True(context.Model.FindEntityType(typeof(AuditEvent))?.GetDeclaredQueryFilters().Any());
     }
 
     [Fact]

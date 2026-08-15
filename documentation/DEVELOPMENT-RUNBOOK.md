@@ -362,7 +362,31 @@ Treat warm p95 below 15 seconds as the software acceptance gate. Report the 5-se
 target separately, and do not close CUDA or database profiling acceptance without runtime
 evidence from qualified hardware and PostgreSQL.
 
-### Step 1.7: Verify Generated OpenAPI and API Health
+### Step 1.7: Run Phase 7 Resilience Acceptance
+
+Run software power-loss, network, checksum, dead-letter, database-failure, and flaky-camera
+recovery tests:
+
+```powershell
+.venv\Scripts\python.exe -m pytest tests/integration/python/test_phase7_resilience.py -q
+dotnet test tests/unit/dotnet/SpecProof.Platform.Api.Tests/SpecProof.Platform.Api.Tests.csproj --configuration Release
+```
+
+When Docker PostgreSQL is available, execute the concurrent tenant and audit-linkage stress
+test against the isolated migrated database:
+
+```powershell
+$env:SPEC_PROOF_RUN_DATABASE_INTEGRATION = "1"
+$env:SPEC_PROOF_TEST_DATABASE = "Host=localhost;Port=55432;Database=specproof_test;Username=Admin;Password=Admin@123"
+dotnet test tests/unit/dotnet/SpecProof.Platform.Api.Tests/SpecProof.Platform.Api.Tests.csproj --configuration Release --filter "Category=Stress"
+Remove-Item Env:SPEC_PROOF_RUN_DATABASE_INTEGRATION
+Remove-Item Env:SPEC_PROOF_TEST_DATABASE
+```
+
+The flaky provider validates software retry behavior only. Keep physical USB disconnect,
+camera process recovery, and qualified-hardware soak acceptance open until hardware exists.
+
+### Step 1.8: Verify Generated OpenAPI and API Health
 
 Start the API in a dedicated terminal:
 
@@ -384,7 +408,7 @@ deployed schema. Use the migration acceptance tests for the current Phase 1 data
 gate and add a supported deployment migration command before treating this API as a
 shared environment.
 
-### Step 1.8: Verify Remote CI
+### Step 1.9: Verify Remote CI
 
 1. Push a branch to GitHub.
 2. Open a pull request.
@@ -397,7 +421,7 @@ shared environment.
 4. Confirm the workflows run on every configured Windows and Linux runner.
 5. Record the workflow URLs as verification evidence.
 
-### Step 1.9: Configure Branch Protection
+### Step 1.10: Configure Branch Protection
 
 A GitHub repository administrator must:
 

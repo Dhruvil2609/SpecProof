@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SpecProof.Contracts;
@@ -26,40 +28,8 @@ public sealed class IntegratedInspectionPostgreSqlTests
         var tenantId = Guid.NewGuid();
         var stationId = Guid.NewGuid();
         var captureId = Guid.NewGuid();
-        context.Tenants.Add(new Tenant { Id = tenantId, Name = "Integrated Tenant" });
-        context.Stations.Add(
-            new SpecProof.Platform.Data.Station
-            {
-                Id = stationId,
-                TenantId = tenantId,
-                FactoryId = Guid.NewGuid(),
-                StationCode = "STATION-INT-1",
-            });
-        context.CaptureAssets.Add(
-            new CaptureAsset
-            {
-                Id = Guid.NewGuid(),
-                TenantId = tenantId,
-                StationId = stationId,
-                CaptureId = captureId,
-                ObjectKey = $"{tenantId:N}/{stationId:N}/{captureId:N}.spcapture",
-                ContentType = "application/vnd.specproof.capture+zip",
-                SizeBytes = 1024,
-                ChecksumSha256 = new string('a', 64),
-                RetentionCategory = "inspection-evidence",
-                Encrypted = true,
-                UploadCompletedAtUtc = DateTimeOffset.UtcNow,
-            });
-        await context.SaveChangesAsync();
-        var signatureService = new EvidenceSignatureService(
-            new ConfigurationBuilder()
-                .AddInMemoryCollection(
-                    new Dictionary<string, string?>
-                    {
-                        ["Trust:SigningKeyId"] = "integration-key",
-                        ["Trust:SigningSecret"] = "integration-signing-secret",
-                    })
-                .Build());
+        await SeedTenantAsync(context, tenantId, stationId, "STATION-INT-1", [captureId]);
+        var signatureService = CreateSignatureService();
         var persistence = new IntegratedInspectionPersistence(signatureService);
         var request = CreateRequest(tenantId, stationId, captureId);
 
@@ -92,7 +62,55 @@ public sealed class IntegratedInspectionPostgreSqlTests
         Assert.Single(await context.BackgroundJobs.ToListAsync());
     }
 
-    private static SpecProofDbContext CreateDatabaseContext()
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task ConcurrentPersistence_PostgreSqlAvailable_IsTenantIsolatedAndAudited()
+    {
+        if (!string.Equals(
+            Environment.GetEnvironmentVariable("SPEC_PROOF_RUN_DATABASE_INTEGRATION"),
+            "1",
+            StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        await using var setup = CreateDatabaseContext();
+        await setup.Database.EnsureDeletedAsync();
+        await setup.Database.MigrateAsync();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var stationA = Guid.NewGuid();
+        var stationB = Guid.NewGuid();
+        var capturesA = Enumerable.Range(0, 8).Select(_ => Guid.NewGuid()).ToArray();
+        var capturesB = Enumerable.Range(0, 8).Select(_ => Guid.NewGuid()).ToArray();
+        await SeedTenantAsync(setup, tenantA, stationA, "STATION-LOAD-A", capturesA);
+        await SeedTenantAsync(setup, tenantB, stationB, "STATION-LOAD-B", capturesB);
+        var persistence = new IntegratedInspectionPersistence(CreateSignatureService());
+        var requests = capturesA
+            .Select(captureId => CreateRequest(tenantA, stationA, captureId, "STATION-LOAD-A"))
+            .Concat(capturesB.Select(
+                captureId => CreateRequest(tenantB, stationB, captureId, "STATION-LOAD-B")))
+            .ToArray();
+
+        var outcomes = await Task.WhenAll(
+            requests.Select(
+                async request =>
+                {
+                    await using var database = CreateDatabaseContext();
+                    return await persistence.PersistAsync(
+                        database,
+                        request,
+                        CancellationToken.None);
+                }));
+
+        Assert.All(
+            outcomes,
+            outcome => Assert.Equal(IntegratedInspectionPersistenceStatus.Created, outcome.Status));
+        await AssertTenantLoadAsync(tenantA, capturesA.Length);
+        await AssertTenantLoadAsync(tenantB, capturesB.Length);
+    }
+
+    private static SpecProofDbContext CreateDatabaseContext(Guid? tenantId = null)
     {
         var connectionString =
             Environment.GetEnvironmentVariable("SPEC_PROOF_TEST_DATABASE")
@@ -100,16 +118,107 @@ public sealed class IntegratedInspectionPostgreSqlTests
         var options = new DbContextOptionsBuilder<SpecProofDbContext>()
             .UseNpgsql(connectionString)
             .Options;
-        return new SpecProofDbContext(options);
+        return new SpecProofDbContext(
+            options,
+            tenantId is null ? null : new StaticTenantScope(tenantId.Value));
+    }
+
+    private static EvidenceSignatureService CreateSignatureService() =>
+        new(
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["Trust:SigningKeyId"] = "integration-key",
+                        ["Trust:SigningSecret"] = "integration-signing-secret",
+                    })
+                .Build());
+
+    private static async Task SeedTenantAsync(
+        SpecProofDbContext context,
+        Guid tenantId,
+        Guid stationId,
+        string stationCode,
+        IReadOnlyCollection<Guid> captureIds)
+    {
+        var organisationId = Guid.NewGuid();
+        var factoryId = Guid.NewGuid();
+        context.Tenants.Add(new Tenant { Id = tenantId, Name = $"Tenant {tenantId:N}" });
+        context.Organisations.Add(
+            new Organisation
+            {
+                Id = organisationId,
+                TenantId = tenantId,
+                Name = "Load Organisation",
+            });
+        context.Factories.Add(
+            new Factory
+            {
+                Id = factoryId,
+                TenantId = tenantId,
+                OrganisationId = organisationId,
+                Name = "Load Factory",
+            });
+        context.Stations.Add(
+            new SpecProof.Platform.Data.Station
+            {
+                Id = stationId,
+                TenantId = tenantId,
+                FactoryId = factoryId,
+                StationCode = stationCode,
+            });
+        context.CaptureAssets.AddRange(
+            captureIds.Select(
+                captureId => new CaptureAsset
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    StationId = stationId,
+                    CaptureId = captureId,
+                    ObjectKey = $"{tenantId:N}/{stationId:N}/{captureId:N}.spcapture",
+                    ContentType = "application/vnd.specproof.capture+zip",
+                    SizeBytes = 1024,
+                    ChecksumSha256 = new string('a', 64),
+                    RetentionCategory = "inspection-evidence",
+                    Encrypted = true,
+                    UploadCompletedAtUtc = DateTimeOffset.UtcNow,
+                }));
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task AssertTenantLoadAsync(Guid tenantId, int expectedCount)
+    {
+        await using var context = CreateDatabaseContext(tenantId);
+        var inspections = await context.InspectionRecords.ToArrayAsync();
+        var evidence = await context.EvidenceRecords.ToDictionaryAsync(
+            record => record.InspectionId);
+        var auditEvents = await context.AuditEvents.ToArrayAsync();
+
+        Assert.Equal(expectedCount, inspections.Length);
+        Assert.Equal(expectedCount, evidence.Count);
+        Assert.Equal(expectedCount, auditEvents.Length);
+        Assert.All(
+            auditEvents,
+            auditEvent =>
+            {
+                using var payload = JsonDocument.Parse(auditEvent.PayloadJson);
+                var evidenceHash = payload.RootElement
+                    .GetProperty("evidenceHashSha256")
+                    .GetString();
+                Assert.Equal(evidence[auditEvent.EntityId].RecordHashSha256, evidenceHash);
+            });
     }
 
     private static CreateInspectionRequest CreateRequest(
         Guid tenantId,
         Guid stationId,
-        Guid captureId)
+        Guid captureId,
+        string stationCode = "STATION-INT-1")
     {
         var inspectionId = Guid.NewGuid();
-        var evidenceHash = new string('b', 64);
+        var evidenceHash = Convert.ToHexString(
+            SHA256.HashData(inspectionId.ToByteArray()))
+            .ToLowerInvariant();
         var measurement = new MeasurementDto(
             "chest_width",
             "Chest Width",
@@ -153,11 +262,16 @@ public sealed class IntegratedInspectionPostgreSqlTests
             captureId,
             stationId,
             null,
-            "STATION-INT-1",
+            stationCode,
             "ORDER-INT-1",
             "STYLE-INT-1",
             "M",
             result,
             evidence);
+    }
+
+    private sealed class StaticTenantScope(Guid tenantId) : ITenantScope
+    {
+        public Guid? TenantId { get; } = tenantId;
     }
 }

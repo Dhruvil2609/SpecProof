@@ -11,6 +11,7 @@ from specproof_capture_service.calibration_evaluator import (
 )
 from specproof_capture_service.capture_package import CapturePackageReader, CapturePackageWriter
 from specproof_capture_service.coordinator import CaptureCoordinator
+from specproof_capture_service.flaky_provider import FlakyCameraProvider
 from specproof_capture_service.framing import (
     CaptureZone,
     FramingResult,
@@ -58,6 +59,7 @@ __all__ = [
     "CaptureReplayProvider",
     "CaptureZone",
     "FramingResult",
+    "FlakyCameraProvider",
     "InspectionQueueItem",
     "InspectionQueueState",
     "LocalTechPackRepository",

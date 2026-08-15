@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T07:55:13Z
+**Last Updated:** 2026-08-15T08:09:24Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -56,12 +56,12 @@ statistics require physical hardware and garments.
 
 ### 7.2.4 Resilience Testing
 
-- [ ] **TASK-7.2.4.1** — Power loss recovery test
-- [ ] **TASK-7.2.4.2** — Network disconnection during sync
-- [ ] **TASK-7.2.4.3** — Database unavailability handling
+- [x] **TASK-7.2.4.1** — Power loss recovery test
+- [x] **TASK-7.2.4.2** — Network disconnection during sync
+- [x] **TASK-7.2.4.3** — Database unavailability handling
 - [ ] **TASK-7.2.4.4** — Camera crash recovery
 - [ ] **TASK-7.2.4.5** — Concurrent user stress test
-- [ ] **TASK-7.2.4.6** — Write chaos/resilience tests
+- [x] **TASK-7.2.4.6** — Write chaos/resilience tests
 
 ### 7.2.5 Cross-Platform Validation
 
@@ -163,3 +163,13 @@ validation remain deferred until qualified capture hardware and garments are ava
   data tests. CUDA acceptance and live PostgreSQL plan capture remain pending because no
   qualified GPU is available and Docker/PostgreSQL is stopped; database optimisation is
   therefore not marked complete.
+- 2026-08-15T08:09:24Z — Added process-level termination recovery proving durable
+  inspection claims survive with zero loss; ambiguous post-commit network failure and
+  idempotent replay; immutable checksum corruption dead-lettering; operator-reviewed
+  dead-letter recovery; and station retention across platform database `503` responses.
+  Added a generic bounded coordinator recovery policy, deterministic flaky camera provider,
+  and controlled RFC 7807 database-unavailable handler. Closed the missing audit-event
+  tenant query filter and added a gated 16-request/two-tenant PostgreSQL stress suite with
+  evidence-to-audit linkage assertions. Validation passed: 25 focused Python tests, 27
+  platform tests, 17 data tests, Ruff, and a zero-warning release build. Physical USB/camera
+  qualification and live PostgreSQL stress execution remain deferred/open.

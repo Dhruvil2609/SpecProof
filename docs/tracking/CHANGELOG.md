@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-15T08:09:24Z - Added Phase 7 process-termination, network ambiguity, duplicate delivery, checksum corruption, dead-letter recovery, database-503 durability, and flaky-camera recovery suites; added generic bounded camera capture recovery, controlled RFC 7807 database-unavailable responses, and a gated concurrent two-tenant PostgreSQL stress test with audit/evidence linkage assertions.
 - 2026-08-15T07:55:13Z - Added capture-to-persistence OpenTelemetry latency histograms, repeatable warm-up/p50/p95/maximum/CPU/peak-memory pipeline benchmarks with a 15-second software gate and 5-second pilot target, ONNX Runtime CPU/CUDA provider qualification, seeded PostgreSQL `EXPLAIN ANALYZE` profiling for six platform query shapes, and a reversible tenant/evidence recency index.
 - 2026-08-15T07:40:34Z - Added the `specproof-validation-study` CLI with versioned study schemas, controlled CSV ingestion, normalized Parquet observations, per-POM repeatability, operator reproducibility, manual bias/MAE, Bland–Altman limits, false-pass/fail rates, crossed Gauge R&R components, JSON/HTML reporting, deterministic passing/failing fixtures, and the physical study protocol/templates.
 - 2026-08-15T07:27:58Z - Connected operator production context through Station Host and gRPC to the local inspection pipeline and durable result queue; added versioned offline tech-pack lookup, configurable background capture/result synchronization, real inspection IDs and processing status, translated platform polling/retry/offline/timeout UI states, an integrated acknowledgement test, and concurrent three-station delivery coverage.
@@ -55,6 +56,7 @@
 
 ### Fixed
 
+- 2026-08-15T08:09:24Z - Applied tenant query filtering to append-only audit events so scoped reads cannot expose another tenant's audit trail.
 - 2026-08-14T18:41:43Z - Fixed the Phase 5 tenant boundary so authenticated JWT claims are authoritative, conflicting tenant headers and tenant-bearing write requests are rejected, and station registration requires station-management authorisation; added six regression tests.
 - 2026-07-29T17:43:19Z - Resolved .NET Application Control test execution blocker and passed 7 real PostgreSQL migration/audit integration tests.
 - 2026-07-29T17:22:46Z - Resolved the Python 3.11 native module blocker and verified `specproof-doctor` exits with zero required failures.

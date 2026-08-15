@@ -25,6 +25,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedUICultures = supportedCultures;
 });
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<DatabaseAvailabilityExceptionHandler>();
 builder.Services.AddOpenApi();
 builder.Services.AddRateLimiter(options =>
 {
