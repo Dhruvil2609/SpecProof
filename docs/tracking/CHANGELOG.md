@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-15T07:08:10Z - Added atomic integrated platform persistence for inspection results, canonical evidence, evidence signatures, append-only audit events, and report jobs; added tenant/station/capture/inspection/version/hash consistency validation, identical replay and conflict semantics, and a gated real-PostgreSQL integration test.
 - 2026-08-15T06:52:18Z - Added a separate durable SQLite inspection-result delivery queue with immutable canonical payload hashes, capture and inspection idempotency, bounded exponential retry, process-restart recovery, dead-letter requeue, capture-upload gating, and authenticated HTTP platform submission.
 - 2026-08-15T06:43:40Z - Added the Phase 7 typed inspection orchestrator from validated `.spcapture` context through perception, compiled measurement rules, decision, sealed evidence, canonical platform payload mapping, and monotonic stage timings; appended backward-compatible inspection context, inspection ID, and processing status fields to the station gRPC contract and added three pipeline tests.
 - 2026-08-14T18:58:15Z - Added active-window client-certificate authentication for stations, least-privilege device claims, same-station endpoint enforcement, globally conflict-safe certificate registration, an audited certificate-rotation API, and seven regression tests.

@@ -46,6 +46,7 @@ builder.Services.AddSingleton<SpecProofJwtValidator>();
 builder.Services.AddSingleton<IDeviceCertificateAuthenticator, DeviceCertificateAuthenticator>();
 builder.Services.AddSingleton<DeviceCertificateRotationService>();
 builder.Services.AddSingleton<EvidenceSignatureService>();
+builder.Services.AddSingleton<IntegratedInspectionPersistence>();
 builder.Services.AddSingleton<SyncProtocolService>();
 builder.Services.AddSingleton<ReportingExportService>();
 builder.Services.AddSingleton<IEvidenceAssetReader, FileSystemEvidenceAssetReader>();
@@ -138,39 +139,24 @@ api.MapPost(
         async (
             CreateInspectionRequest request,
             SpecProofDbContext database,
+            IntegratedInspectionPersistence persistence,
             CancellationToken cancellationToken) =>
         {
-            var json = JsonSerializer.Serialize(request.Result, SpecProofJsonContext.Default.InspectionResultDto);
-            var record = new InspectionRecord
+            var outcome = await persistence.PersistAsync(database, request, cancellationToken);
+            return outcome.Status switch
             {
-                Id = request.InspectionId,
-                TenantId = request.TenantId,
-                CaptureId = request.CaptureId,
-                StationId = request.StationId,
-                BatchId = request.BatchId,
-                StationCode = request.StationCode,
-                OrderCode = request.OrderCode,
-                StyleCode = request.StyleCode,
-                SizeCode = request.SizeCode,
-                InspectionResultJson = json,
-                Status = request.Result.Status.ToString(),
-                EvidenceRecordHash = request.Result.EvidenceRecordHash,
-                CapturedAtUtc = request.Result.CapturedAtUtc,
+                IntegratedInspectionPersistenceStatus.Created => Results.Created(
+                    $"/api/v1/inspections/{request.InspectionId}",
+                    outcome.Submission),
+                IntegratedInspectionPersistenceStatus.Replayed => Results.Ok(outcome.Submission),
+                IntegratedInspectionPersistenceStatus.Conflict => Results.Conflict(
+                    new
+                    {
+                        code = "inspection_payload_conflict",
+                        request.InspectionId,
+                    }),
+                _ => Results.ValidationProblem(outcome.Errors!),
             };
-            database.InspectionRecords.Add(record);
-            database.BackgroundJobs.Add(
-                new BackgroundJobRecord
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = request.TenantId,
-                    QueueName = "reports",
-                    JobType = "inspection.report.refresh",
-                    PayloadJson = JsonSerializer.Serialize(new { request.InspectionId }, SpecProofJsonOptions.Canonical),
-                    Status = "queued",
-                    AvailableAtUtc = DateTimeOffset.UtcNow,
-                });
-            await database.SaveChangesAsync(cancellationToken);
-            return Results.Created($"/api/v1/inspections/{record.Id}", request.Result);
         })
     .WithName("CreateInspection")
     .RequireTenantMatch<CreateInspectionRequest>()

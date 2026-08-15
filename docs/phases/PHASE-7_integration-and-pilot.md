@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T06:52:18Z
+**Last Updated:** 2026-08-15T07:08:10Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -130,3 +130,11 @@ validation remain deferred until qualified capture hardware and garments are ava
   retry, process-restart recovery, manual dead-letter requeue, capture-upload gating, and
   authenticated HTTP result submission. Focused queue and capture validation: 20 tests
   passed. TASK-7.2.1.3 remains open until the operator-visible display flow is connected.
+- 2026-08-15T07:08:10Z — Expanded platform inspection submission with canonical
+  evidence and tech-pack version bindings. Added consistent tenant, station, capture,
+  inspection, status, measurement, and hash validation; evidence signing; one-transaction
+  inspection, evidence, audit, and report-job persistence; identical replay; and conflicting
+  replay detection. Release build passed with zero warnings, 24 platform tests and 16 data
+  tests passed, and 7 integrated Python tests passed. The real PostgreSQL test is checked in
+  and gated by `SPEC_PROOF_RUN_DATABASE_INTEGRATION=1`; runtime execution remains pending
+  because Docker is stopped.

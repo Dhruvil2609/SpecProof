@@ -469,6 +469,8 @@ public sealed class EvidenceSignatureService(IConfiguration configuration)
         configuration["Trust:SigningSecret"]
         ?? "specproof-development-evidence-signing-secret-change-before-production");
 
+    public string KeyId => keyId;
+
     public EvidenceSignatureResult Sign(string canonicalEvidenceJson)
     {
         var signature = HMACSHA256.HashData(secret, Encoding.UTF8.GetBytes(canonicalEvidenceJson));
@@ -692,7 +694,8 @@ public sealed record CreateInspectionRequest(
     string OrderCode,
     string StyleCode,
     string SizeCode,
-    InspectionResultDto Result) : ITenantBoundRequest, IStationBoundRequest;
+    InspectionResultDto Result,
+    EvidenceRecordDto Evidence) : ITenantBoundRequest, IStationBoundRequest;
 
 public sealed record ReviewInspectionRequest(string Outcome, string Note);
 

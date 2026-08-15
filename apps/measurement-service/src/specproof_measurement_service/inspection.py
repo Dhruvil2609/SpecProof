@@ -283,11 +283,14 @@ class InspectionPipeline:
                 "modelVersion": evidence.versions.model_version,
                 "ontologyVersion": evidence.versions.ontology_version,
                 "compilerVersion": evidence.versions.compiler_version,
+                "techPackId": str(request.context.tech_pack_id),
+                "techPackVersion": request.context.tech_pack_version,
             },
             "measurements": measurements,
             "status": status,
             "previousHashSha256": evidence.previous_hash_sha256,
             "recordHashSha256": evidence.record_hash_sha256,
+            "signature": None,
         }
         return PlatformInspectionSubmission(
             tenant_id=request.context.tenant_id,

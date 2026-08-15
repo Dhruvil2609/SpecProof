@@ -44,7 +44,9 @@ public sealed record EvidenceVersionsDto(
     string CalibrationRecordId,
     string ModelVersion,
     string OntologyVersion,
-    string CompilerVersion);
+    string CompilerVersion,
+    Guid? TechPackId = null,
+    int? TechPackVersion = null);
 
 public sealed record EvidenceRecordDto(
     string EvidenceId,

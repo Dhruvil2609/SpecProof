@@ -10,6 +10,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="..\..\..\..\apps\platform-api\SpecProof.Platform.Api.csproj" />
     <ProjectReference Include="..\..\..\..\apps\station-host\SpecProof.Station.Host.csproj" />
   </ItemGroup>
