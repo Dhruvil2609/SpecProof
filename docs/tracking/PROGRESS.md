@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-15T07:27:58Z
+**Last Updated:** 2026-08-15T07:40:34Z
 **Timezone:** UTC
 **Language:** en
 
@@ -25,9 +25,9 @@
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
-|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |       5 |      14% |
+|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      11 |      31% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **387** | **290** |  **75%** |
+| **Total** |                               |               | **387** | **296** |  **76%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 6 changed files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 169 unit/regression tests, including integrated capture acknowledgement and three-station delivery |
+| Python tests and coverage     | PASS    | 172 unit/regression tests, including passing/failing Gauge R&R and real Parquet output |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 46 tests: 24 platform API/station/storage, 6 contracts, 16 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15T07:40:34Z | 7     | Completed the validation-study protocol and six software analysis/reporting tasks with versioned schemas, controlled CSV, Parquet, per-POM repeatability/reproducibility/agreement/error metrics, crossed Gauge R&R, pass/fail fixtures, and three passing tests. |
 | 2026-08-15T07:27:58Z | 7     | Completed the five software E2E tasks: operator context now reaches local processing and durable delivery, real inspection IDs drive platform polling, three stations submit concurrently without identity collisions, and Python/.NET/frontend validation passes. |
 | 2026-08-15T07:08:10Z | 7     | Added atomic integrated inspection/evidence/signature/audit/report persistence with version and hash validation, idempotent replay, 409 conflict semantics, a gated real-PostgreSQL test, zero-warning release build, and 47 passing focused tests; Docker runtime remains unavailable. |
 | 2026-08-15T06:52:18Z | 7     | Added a separate immutable SQLite inspection-result queue with restart recovery, bounded retry/dead-letter states, capture-completion gating, idempotency keys, payload hashes, HTTP platform submission, and 20 passing focused tests. |

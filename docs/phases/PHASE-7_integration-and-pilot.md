@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T07:27:58Z
+**Last Updated:** 2026-08-15T07:40:34Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -33,14 +33,14 @@ operator study, and factory pilot remain deferred hardware acceptance activities
 
 ### 7.2.2 Measurement Validation Study
 
-- [ ] **TASK-7.2.2.1** — Define study protocol (≥30 garments, ≥3 operators, ≥3 placements)
+- [x] **TASK-7.2.2.1** — Define study protocol (≥30 garments, ≥3 operators, ≥3 placements)
 - [ ] **TASK-7.2.2.2** — Collect manual reference measurements
 - [ ] **TASK-7.2.2.3** — Run automated measurements
-- [ ] **TASK-7.2.2.4** — Compute repeatability (same placement std dev ≤2mm)
-- [ ] **TASK-7.2.2.5** — Compute reproducibility (diff operators ≤4mm 95%)
-- [ ] **TASK-7.2.2.6** — Compute agreement with manual (MAE ≤5mm)
-- [ ] **TASK-7.2.2.7** — Report per POM, not aggregated
-- [ ] **TASK-7.2.2.8** — Generate Gauge R&R report
+- [x] **TASK-7.2.2.4** — Compute repeatability (same placement std dev ≤2mm)
+- [x] **TASK-7.2.2.5** — Compute reproducibility (diff operators ≤4mm 95%)
+- [x] **TASK-7.2.2.6** — Compute agreement with manual (MAE ≤5mm)
+- [x] **TASK-7.2.2.7** — Report per POM, not aggregated
+- [x] **TASK-7.2.2.8** — Generate Gauge R&R report
 
 Study protocol, data schemas, analysis scripts, report templates, and synthetic dry
 runs can be completed before hardware arrives. Real data collection and acceptance
@@ -146,3 +146,10 @@ validation remain deferred until qualified capture hardware and garments are ava
   integrated gRPC acknowledgement test, and concurrent three-station identity/isolation test.
   Validation passed: 19 Python tests, zero-warning .NET release build, and 11 operator tests
   with lint/typecheck. Runtime Docker acceptance remains open.
+- 2026-08-15T07:40:34Z — Added `specproof-validation-study` with versioned garment,
+  POM, operator, placement, repeat, manual, and automated schemas; controlled CSV input;
+  normalized Zstandard Parquet output; and JSON/HTML per-POM reports. Statistics include
+  same-placement standard deviation, operator P95 reproducibility, bias, MAE,
+  Bland–Altman limits, false-pass/fail rates, and crossed Gauge R&R variance components.
+  Added deterministic passing/failing fixtures, three tests, a ≥30 garment/≥3 operator/≥3
+  placement protocol, and collection template. Physical collection tasks remain deferred.

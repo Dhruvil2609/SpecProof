@@ -1,0 +1,17 @@
+schema_version,garment_id,style_code,size_code,pom_id,operator_id,placement_id,repeat,target_mm,lower_tolerance_mm,upper_tolerance_mm,manual_mm,automated_mm
+1,G01,SP-TEE-01,M,chest_width,O01,P01,1,500,5,5,499,499.2
+1,G01,SP-TEE-01,M,chest_width,O01,P01,2,500,5,5,499,498.8
+1,G01,SP-TEE-01,M,chest_width,O01,P02,1,500,5,5,499,499.1
+1,G01,SP-TEE-01,M,chest_width,O01,P02,2,500,5,5,499,498.9
+1,G01,SP-TEE-01,M,chest_width,O02,P01,1,500,5,5,499,499.7
+1,G01,SP-TEE-01,M,chest_width,O02,P01,2,500,5,5,499,499.3
+1,G01,SP-TEE-01,M,chest_width,O02,P02,1,500,5,5,499,499.6
+1,G01,SP-TEE-01,M,chest_width,O02,P02,2,500,5,5,499,499.4
+1,G02,SP-TEE-01,M,chest_width,O01,P01,1,500,5,5,501,501.2
+1,G02,SP-TEE-01,M,chest_width,O01,P01,2,500,5,5,501,500.8
+1,G02,SP-TEE-01,M,chest_width,O01,P02,1,500,5,5,501,501.1
+1,G02,SP-TEE-01,M,chest_width,O01,P02,2,500,5,5,501,500.9
+1,G02,SP-TEE-01,M,chest_width,O02,P01,1,500,5,5,501,501.7
+1,G02,SP-TEE-01,M,chest_width,O02,P01,2,500,5,5,501,501.3
+1,G02,SP-TEE-01,M,chest_width,O02,P02,1,500,5,5,501,501.6
+1,G02,SP-TEE-01,M,chest_width,O02,P02,2,500,5,5,501,501.4

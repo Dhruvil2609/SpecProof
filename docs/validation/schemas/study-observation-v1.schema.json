@@ -1,0 +1,236 @@
+{
+  "$defs": {
+    "Garment": {
+      "description": "One physical garment included in a study.",
+      "properties": {
+        "garment_id": {
+          "minLength": 1,
+          "title": "Garment Id",
+          "type": "string"
+        },
+        "size_code": {
+          "minLength": 1,
+          "title": "Size Code",
+          "type": "string"
+        },
+        "style_code": {
+          "minLength": 1,
+          "title": "Style Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "garment_id",
+        "style_code",
+        "size_code"
+      ],
+      "title": "Garment",
+      "type": "object"
+    },
+    "Placement": {
+      "description": "A controlled garment placement repeat.",
+      "properties": {
+        "placement_id": {
+          "minLength": 1,
+          "title": "Placement Id",
+          "type": "string"
+        },
+        "sequence": {
+          "exclusiveMinimum": 0,
+          "title": "Sequence",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "placement_id",
+        "sequence"
+      ],
+      "title": "Placement",
+      "type": "object"
+    },
+    "PomDefinition": {
+      "description": "One approved point of measure and tolerance.",
+      "properties": {
+        "lower_tolerance_mm": {
+          "minimum": 0,
+          "title": "Lower Tolerance Mm",
+          "type": "number"
+        },
+        "pom_id": {
+          "minLength": 1,
+          "title": "Pom Id",
+          "type": "string"
+        },
+        "target_mm": {
+          "title": "Target Mm",
+          "type": "number"
+        },
+        "upper_tolerance_mm": {
+          "minimum": 0,
+          "title": "Upper Tolerance Mm",
+          "type": "number"
+        }
+      },
+      "required": [
+        "pom_id",
+        "target_mm",
+        "lower_tolerance_mm",
+        "upper_tolerance_mm"
+      ],
+      "title": "PomDefinition",
+      "type": "object"
+    },
+    "StudyObservation": {
+      "description": "Normalized joined manual and automated reading.",
+      "properties": {
+        "automated_mm": {
+          "exclusiveMinimum": 0,
+          "title": "Automated Mm",
+          "type": "number"
+        },
+        "garment_id": {
+          "minLength": 1,
+          "title": "Garment Id",
+          "type": "string"
+        },
+        "lower_tolerance_mm": {
+          "minimum": 0,
+          "title": "Lower Tolerance Mm",
+          "type": "number"
+        },
+        "manual_mm": {
+          "exclusiveMinimum": 0,
+          "title": "Manual Mm",
+          "type": "number"
+        },
+        "operator_id": {
+          "minLength": 1,
+          "title": "Operator Id",
+          "type": "string"
+        },
+        "placement_id": {
+          "minLength": 1,
+          "title": "Placement Id",
+          "type": "string"
+        },
+        "pom_id": {
+          "minLength": 1,
+          "title": "Pom Id",
+          "type": "string"
+        },
+        "repeat": {
+          "exclusiveMinimum": 0,
+          "title": "Repeat",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "size_code": {
+          "minLength": 1,
+          "title": "Size Code",
+          "type": "string"
+        },
+        "style_code": {
+          "minLength": 1,
+          "title": "Style Code",
+          "type": "string"
+        },
+        "target_mm": {
+          "title": "Target Mm",
+          "type": "number"
+        },
+        "upper_tolerance_mm": {
+          "minimum": 0,
+          "title": "Upper Tolerance Mm",
+          "type": "number"
+        }
+      },
+      "required": [
+        "garment_id",
+        "style_code",
+        "size_code",
+        "pom_id",
+        "operator_id",
+        "placement_id",
+        "repeat",
+        "target_mm",
+        "lower_tolerance_mm",
+        "upper_tolerance_mm",
+        "manual_mm",
+        "automated_mm"
+      ],
+      "title": "StudyObservation",
+      "type": "object"
+    },
+    "StudyOperator": {
+      "description": "An anonymized operator participating in the study.",
+      "properties": {
+        "operator_id": {
+          "minLength": 1,
+          "title": "Operator Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator_id"
+      ],
+      "title": "StudyOperator",
+      "type": "object"
+    }
+  },
+  "description": "Versioned relational study schema before normalized analytical export.",
+  "properties": {
+    "garments": {
+      "items": {
+        "$ref": "#/$defs/Garment"
+      },
+      "title": "Garments",
+      "type": "array"
+    },
+    "observations": {
+      "items": {
+        "$ref": "#/$defs/StudyObservation"
+      },
+      "title": "Observations",
+      "type": "array"
+    },
+    "operators": {
+      "items": {
+        "$ref": "#/$defs/StudyOperator"
+      },
+      "title": "Operators",
+      "type": "array"
+    },
+    "placements": {
+      "items": {
+        "$ref": "#/$defs/Placement"
+      },
+      "title": "Placements",
+      "type": "array"
+    },
+    "poms": {
+      "items": {
+        "$ref": "#/$defs/PomDefinition"
+      },
+      "title": "Poms",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "garments",
+    "poms",
+    "operators",
+    "placements",
+    "observations"
+  ],
+  "title": "ValidationStudyDataset",
+  "type": "object"
+}

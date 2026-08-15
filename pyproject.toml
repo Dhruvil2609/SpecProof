@@ -10,6 +10,7 @@ dependencies = []
 specproof-doctor = "specproof_doctor.cli:main"
 specproof-capture-service = "specproof_capture_service.grpc_server:main"
 specproof-measurement-api = "specproof_measurement_service.api:main"
+specproof-validation-study = "specproof_validation_study.cli:main"
 
 [build-system]
 requires = ["setuptools>=69"]
@@ -29,6 +30,7 @@ runtime = [
   "opentelemetry-instrumentation-grpc>=0.57b0",
   "opentelemetry-sdk>=1.36",
   "protobuf>=6.31",
+  "pyarrow>=18.0",
   "pydantic>=2.8",
   "psycopg[binary]>=3.2",
   "redis>=6.0",
@@ -66,6 +68,7 @@ packages = [
   "specproof_doctor",
   "specproof_geometry",
   "specproof_measurement_service",
+  "specproof_validation_study",
 ]
 include-package-data = true
 
@@ -74,6 +77,7 @@ specproof_capture_service = ["py.typed", "generated/*.pyi"]
 specproof_doctor = ["py.typed"]
 specproof_geometry = ["py.typed"]
 specproof_measurement_service = ["py.typed"]
+specproof_validation_study = ["py.typed"]
 
 [tool.setuptools.package-dir]
 specproof_capture_service = "apps/capture-service/src/specproof_capture_service"
@@ -81,6 +85,7 @@ specproof_capture_service = "apps/capture-service/src/specproof_capture_service"
 specproof_doctor = "tools/specproof-doctor/src/specproof_doctor"
 specproof_geometry = "packages/geometry/src/specproof_geometry"
 specproof_measurement_service = "apps/measurement-service/src/specproof_measurement_service"
+specproof_validation_study = "tools/specproof-validation-study/src/specproof_validation_study"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -90,6 +95,7 @@ pythonpath = [
   "packages/geometry/src",
   "apps/capture-service/src",
   "apps/measurement-service/src",
+  "tools/specproof-validation-study/src",
 ]
 addopts = "-ra"
 asyncio_mode = "auto"
@@ -123,12 +129,14 @@ include = [
   "packages/geometry/src",
   "apps/capture-service/src",
   "apps/measurement-service/src",
+  "tools/specproof-validation-study/src",
 ]
 extraPaths = [
   "tools/specproof-doctor/src",
   "packages/geometry/src",
   "apps/capture-service/src",
   "apps/measurement-service/src",
+  "tools/specproof-validation-study/src",
 ]
 exclude = [
   "apps/capture-service/src/specproof_capture_service/generated",
@@ -145,6 +153,7 @@ source = [
   "apps/measurement-service/src/specproof_measurement_service",
   "packages/geometry/src/specproof_geometry",
   "tools/specproof-doctor/src/specproof_doctor",
+  "tools/specproof-validation-study/src/specproof_validation_study",
 ]
 omit = [
   "apps/capture-service/src/specproof_capture_service/generated/*",

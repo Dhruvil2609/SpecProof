@@ -1,0 +1,2 @@
+schema_version,garment_id,style_code,size_code,pom_id,operator_id,placement_id,repeat,target_mm,lower_tolerance_mm,upper_tolerance_mm,manual_mm,automated_mm
+1,G001,SP-TEE-01,M,chest_width,O01,P01,1,500,5,5,499.5,500.1

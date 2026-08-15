@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-15T07:40:34Z - Added the `specproof-validation-study` CLI with versioned study schemas, controlled CSV ingestion, normalized Parquet observations, per-POM repeatability, operator reproducibility, manual bias/MAE, Bland–Altman limits, false-pass/fail rates, crossed Gauge R&R components, JSON/HTML reporting, deterministic passing/failing fixtures, and the physical study protocol/templates.
 - 2026-08-15T07:27:58Z - Connected operator production context through Station Host and gRPC to the local inspection pipeline and durable result queue; added versioned offline tech-pack lookup, configurable background capture/result synchronization, real inspection IDs and processing status, translated platform polling/retry/offline/timeout UI states, an integrated acknowledgement test, and concurrent three-station delivery coverage.
 - 2026-08-15T07:08:10Z - Added atomic integrated platform persistence for inspection results, canonical evidence, evidence signatures, append-only audit events, and report jobs; added tenant/station/capture/inspection/version/hash consistency validation, identical replay and conflict semantics, and a gated real-PostgreSQL integration test.
 - 2026-08-15T06:52:18Z - Added a separate durable SQLite inspection-result delivery queue with immutable canonical payload hashes, capture and inspection idempotency, bounded exponential retry, process-restart recovery, dead-letter requeue, capture-upload gating, and authenticated HTTP platform submission.
