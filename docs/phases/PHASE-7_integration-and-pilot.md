@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T08:09:24Z
+**Last Updated:** 2026-08-15T08:38:15Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -69,7 +69,7 @@ statistics require physical hardware and garments.
 - [ ] **TASK-7.2.5.2** — Measurement results within tolerance cross-platform
 - [ ] **TASK-7.2.5.3** — Docker container deployment test
 - [ ] **TASK-7.2.5.4** — Linux installer/package test
-- [ ] **TASK-7.2.5.5** — Write cross-platform regression suite
+- [x] **TASK-7.2.5.5** — Write cross-platform regression suite ✅ (2026-08-15T08:38:15Z)
 
 ### 7.2.6 Pilot Preparation
 
@@ -173,3 +173,14 @@ validation remain deferred until qualified capture hardware and garments are ava
   evidence-to-audit linkage assertions. Validation passed: 25 focused Python tests, 27
   platform tests, 17 data tests, Ruff, and a zero-warning release build. Physical USB/camera
   qualification and live PostgreSQL stress execution remain deferred/open.
+- 2026-08-15T08:38:15Z — Added a shared, versioned cross-platform replay fixture with
+  canonical numeric/category fingerprints and explicit floating-point tolerances, plus
+  Windows and Ubuntu replay jobs. Added pinned multi-stage application Dockerfiles, an
+  application Compose profile with startup migrations and health checks, and a versioned
+  Linux x64 station package containing the self-contained Station Host, locked Python
+  requirements, wheel, configuration templates, systemd units, installer, and a UTC
+  SHA-256 manifest. Local validation passed: nine focused Python tests, package assembly
+  and verification, Compose configuration, both frontend production builds, 50 .NET tests,
+  and a zero-warning release build. Remote Windows/Ubuntu runs, live container startup,
+  and Ubuntu package startup remain open because CI has not run and the local Docker daemon
+  is stopped.

@@ -86,6 +86,13 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
+if (app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var database = scope.ServiceProvider.GetRequiredService<SpecProofDbContext>();
+    await database.Database.MigrateAsync();
+}
+
 app.UseRequestLocalization();
 app.UseExceptionHandler();
 app.UseRateLimiter();

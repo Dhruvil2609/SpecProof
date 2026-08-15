@@ -1,0 +1,19 @@
+[Unit]
+Description=SpecProof station browser host
+After=network-online.target specproof-capture.service
+Wants=network-online.target
+Requires=specproof-capture.service
+
+[Service]
+Type=simple
+User=specproof
+Group=specproof
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5070
+WorkingDirectory=/opt/specproof/station/host
+ExecStart=/opt/specproof/station/host/SpecProof.Station.Host --environment Pilot
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

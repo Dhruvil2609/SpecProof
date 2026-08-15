@@ -1,0 +1,18 @@
+[Unit]
+Description=SpecProof capture and measurement service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=specproof
+Group=specproof
+EnvironmentFile=/etc/specproof/station.env
+WorkingDirectory=/var/lib/specproof/station
+ExecStart=/opt/specproof/station/python/bin/specproof-capture-service
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

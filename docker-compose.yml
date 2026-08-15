@@ -159,6 +159,78 @@ services:
       retries: 5
       start_period: 30s
 
+  platform-api:
+    profiles: ["application"]
+    build:
+      context: .
+      dockerfile: apps/platform-api/Dockerfile
+    image: specproof/platform-api:0.1.0
+    container_name: specproof-platform-api
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__SpecProof: Host=postgres;Port=5432;Database=specproof;Username=Admin;Password=Admin@123
+      Database__ApplyMigrations: "true"
+      MeasurementService__BaseUrl: http://measurement-service:8010/
+    ports:
+      - "5080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      measurement-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  measurement-service:
+    profiles: ["application"]
+    build:
+      context: .
+      dockerfile: apps/measurement-service/Dockerfile
+    image: specproof/measurement-service:0.1.0
+    container_name: specproof-measurement-service
+    ports:
+      - "8010:8010"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  operator-ui:
+    profiles: ["application"]
+    build:
+      context: .
+      dockerfile: apps/operator-ui/Dockerfile
+    image: specproof/operator-ui:0.1.0
+    container_name: specproof-operator-ui
+    ports:
+      - "4173:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  admin-ui:
+    profiles: ["application"]
+    build:
+      context: .
+      dockerfile: apps/admin-ui/Dockerfile
+    image: specproof/admin-ui:0.1.0
+    container_name: specproof-admin-ui
+    ports:
+      - "4174:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres-data:
   redis-data:

@@ -1,0 +1,74 @@
+name: phase7-deployment
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  golden-replay:
+    name: Golden replay (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.11
+      - run: uv sync --group runtime --group dev
+      - run: uv run pytest tests/cross-platform tests/regression/python/test_perception_replay_regression.py -v
+
+  application-containers:
+    name: Application Compose acceptance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose --profile application config --quiet
+      - run: docker compose --profile application build
+      - run: docker compose --profile application up --detach --wait
+      - run: curl --fail --silent http://127.0.0.1:5080/healthz
+      - run: curl --fail --silent http://127.0.0.1:8010/health
+      - run: curl --fail --silent http://127.0.0.1:4173/healthz
+      - run: curl --fail --silent http://127.0.0.1:4174/healthz
+      - if: always()
+        run: docker compose --profile application down --volumes
+
+  linux-station-package:
+    name: Linux x64 station package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.11
+      - run: uv sync --group runtime --group dev
+      - run: uv run python tools/packaging/build_station_package.py --version 0.1.0-ci --output-dir artifacts/packages
+      - name: Smoke extracted Station Host with capture service
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=$(find artifacts/packages -name '*.tar.gz' -print -quit)
+          mkdir -p artifacts/station-smoke
+          tar -xzf "$archive" -C artifacts/station-smoke
+          package_root=$(find artifacts/station-smoke -mindepth 1 -maxdepth 1 -type d -print -quit)
+          uv run specproof-capture-service >artifacts/capture-service.log 2>&1 &
+          capture_pid=$!
+          "$package_root/host/SpecProof.Station.Host" --urls http://127.0.0.1:5070 >artifacts/station-host.log 2>&1 &
+          host_pid=$!
+          trap 'kill "$host_pid" "$capture_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:5070/api/v1/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat artifacts/capture-service.log artifacts/station-host.log
+          exit 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: specproof-station-linux-x64
+          path: artifacts/packages/*.tar.gz

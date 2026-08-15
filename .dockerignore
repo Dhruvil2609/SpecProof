@@ -1,0 +1,16 @@
+.git
+.cache
+.pnpm-store
+.pytest_cache
+.ruff_cache
+.uv-cache
+.venv
+.venv-blocked
+**/bin
+**/coverage
+**/dist
+**/node_modules
+**/obj
+TestResults
+artifacts
+station-data

@@ -386,7 +386,40 @@ Remove-Item Env:SPEC_PROOF_TEST_DATABASE
 The flaky provider validates software retry behavior only. Keep physical USB disconnect,
 camera process recovery, and qualified-hardware soak acceptance open until hardware exists.
 
-### Step 1.8: Verify Generated OpenAPI and API Health
+### Step 1.8: Run Phase 7 Deployment Acceptance
+
+Run the shared golden replay and package-definition tests locally:
+
+```powershell
+.venv\Scripts\python.exe -m pytest tests/cross-platform/test_golden_replay.py tests/regression/python/test_perception_replay_regression.py tests/unit/tools/test_phase7_deployment.py -q
+docker compose --profile application config --quiet
+```
+
+With Docker Desktop running, build and start the complete application profile, verify the
+four health endpoints, then stop it cleanly:
+
+```powershell
+docker compose --profile application up --build --wait
+Invoke-RestMethod http://127.0.0.1:5080/healthz
+Invoke-RestMethod http://127.0.0.1:8000/healthz
+Invoke-RestMethod http://127.0.0.1:4173/healthz
+Invoke-RestMethod http://127.0.0.1:4174/healthz
+docker compose --profile application down --volumes
+```
+
+Build and cryptographically verify a versioned Linux x64 station package:
+
+```powershell
+.venv\Scripts\python.exe tools/packaging/build_station_package.py --version 0.1.0-local --output-dir artifacts/packages
+.venv\Scripts\python.exe -c "from pathlib import Path; from tools.packaging.build_station_package import verify_station_package; verify_station_package(Path('artifacts/packages/specproof-station-0.1.0-local-linux-x64.tar.gz'))"
+```
+
+The local package check proves archive contents, modes, and hashes. Keep Linux startup and
+cross-platform equivalence gates open until `.github/workflows/phase7-deployment.yml` passes
+on hosted Windows and Ubuntu runners; keep container acceptance open until the live profile
+passes with a running Docker daemon.
+
+### Step 1.9: Verify Generated OpenAPI and API Health
 
 Start the API in a dedicated terminal:
 
@@ -408,7 +441,7 @@ deployed schema. Use the migration acceptance tests for the current Phase 1 data
 gate and add a supported deployment migration command before treating this API as a
 shared environment.
 
-### Step 1.9: Verify Remote CI
+### Step 1.10: Verify Remote CI
 
 1. Push a branch to GitHub.
 2. Open a pull request.

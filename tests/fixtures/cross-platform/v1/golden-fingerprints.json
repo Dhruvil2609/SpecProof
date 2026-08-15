@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "scenario": "synthetic-tshirt-front",
+  "coordinateTolerance": 0.000001,
+  "fingerprintSha256": "aa6fc83f4f96f5e40af3971e4d056f047c90129efd7a68b8f04b956417c1f237",
+  "category": "t_shirt",
+  "orientation": "front",
+  "meshVertexCount": 362,
+  "meshTriangleCount": 622,
+  "mappedPixelCount": 362,
+  "landmarks": [
+    {"name": "neck_left", "x": 18.0, "y": 11.0, "confidence": 0.82, "status": "detected"},
+    {"name": "neck_right", "x": 21.0, "y": 11.0, "confidence": 0.82, "status": "detected"},
+    {"name": "shoulder_left", "x": 6.0, "y": 12.0, "confidence": 0.78, "status": "detected"},
+    {"name": "shoulder_right", "x": 33.0, "y": 12.0, "confidence": 0.78, "status": "detected"},
+    {"name": "sleeve_hem_left", "x": 6.0, "y": 16.0, "confidence": 0.78, "status": "detected"},
+    {"name": "sleeve_hem_right", "x": 33.0, "y": 16.0, "confidence": 0.78, "status": "detected"},
+    {"name": "side_seam_left", "x": 13.0, "y": 21.0, "confidence": 0.78, "status": "detected"},
+    {"name": "side_seam_right", "x": 26.0, "y": 21.0, "confidence": 0.78, "status": "detected"},
+    {"name": "hem_left", "x": 13.0, "y": 27.0, "confidence": 0.86, "status": "detected"},
+    {"name": "hem_right", "x": 26.0, "y": 27.0, "confidence": 0.86, "status": "detected"}
+  ]
+}
