@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-14T18:58:15Z
+**Last Updated:** 2026-08-15T06:43:40Z
 **Timezone:** UTC
 **Language:** en
 
@@ -25,9 +25,9 @@
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
-|         7 | Integration and Pilot         | `NOT_STARTED` |      27 |       0 |       0% |
+|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |       0 |       0% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **379** | **285** |  **75%** |
+| **Total** |                               |               | **387** | **285** |  **74%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 6 changed files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 160 unit/regression tests, including 3 measurement API tests |
+| Python tests and coverage     | PASS    | 163 unit/regression tests, including 3 integrated inspection pipeline tests |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 45 tests: 23 platform API/station/storage, 6 contracts, 16 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15T06:43:40Z | 7     | Started Phase 7 with a UUID-validated local inspection orchestrator, sealed platform payload mapping, monotonic stage timings, backward-compatible gRPC context/result fields, and 13 passing focused tests; corrected the phase task count from 27 to 35. |
 | 2026-08-14T18:58:15Z | 5     | Implemented client-certificate device authentication, least-privilege station permissions, same-station enforcement, globally conflict-safe certificate registration, and audited certificate rotation; 23 focused platform API tests pass. |
 | 2026-08-14T18:41:43Z | 5     | Closed the tenant write-path vulnerability: JWT tenant claims are authoritative, conflicting headers and request tenants return 403, station registration requires authorisation, and 16 focused platform API tests pass. |
 | 2026-08-14T18:25:20Z | 6     | Implemented all 49 Phase 6 tasks, including industrial React apps, shared UI/generated client, JWT/RBAC flows, station browser API, authorised evidence assets, tech-pack facade/gateway, tenant persistence, immutable migration, API retry tests, and Edge E2E/axe/visual coverage. Phase remains in progress until Chromium CI and database runtime acceptance execute. |

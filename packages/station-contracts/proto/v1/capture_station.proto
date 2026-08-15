@@ -67,6 +67,27 @@ message CaptureRequest {
   string station_id = 2;
   uint32 frame_count = 3;
   StreamProfile profile = 4;
+  InspectionContext inspection_context = 5;
+}
+
+message InspectionContext {
+  string tenant_id = 1;
+  string inspection_id = 2;
+  string order_code = 3;
+  string style_code = 4;
+  string size_code = 5;
+  string batch_id = 6;
+  string tech_pack_id = 7;
+  uint32 tech_pack_version = 8;
+}
+
+enum CaptureProcessingStatus {
+  CAPTURE_PROCESSING_STATUS_UNSPECIFIED = 0;
+  CAPTURE_PROCESSING_STATUS_CAPTURED = 1;
+  CAPTURE_PROCESSING_STATUS_PROCESSING = 2;
+  CAPTURE_PROCESSING_STATUS_QUEUED = 3;
+  CAPTURE_PROCESSING_STATUS_COMPLETED = 4;
+  CAPTURE_PROCESSING_STATUS_FAILED = 5;
 }
 
 message CaptureResponse {
@@ -75,6 +96,8 @@ message CaptureResponse {
   string package_sha256 = 3;
   google.protobuf.Timestamp captured_at_utc = 4;
   string calibration_id = 5;
+  string inspection_id = 6;
+  CaptureProcessingStatus processing_status = 7;
 }
 
 message RecordingRequest {

@@ -1,9 +1,9 @@
 # Phase 7 — Integration and Pilot
 
 **Phase ID:** PHASE-7  
-**Status:** `NOT_STARTED`  
+**Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-08-15T06:43:40Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -112,3 +112,15 @@ statistics require physical hardware and garments.
 
 Software integration can be completed before hardware. Pilot readiness and measurement
 validation remain deferred until qualified capture hardware and garments are available.
+
+---
+
+## 7.5 Implementation Evidence
+
+- 2026-08-15T06:43:40Z — Added the typed local `InspectionPipeline` contract and
+  orchestrator for validated `.spcapture` context, perception, compiled rules,
+  measurement execution, decision routing, sealed evidence, canonical platform payloads,
+  and monotonic per-stage timings. Appended backward-compatible inspection context,
+  inspection ID, and processing status fields to the station gRPC contract. Focused
+  integration and gRPC validation: 13 tests passed. TASK-7.2.1.1 remains open until the
+  capture service invokes this pipeline automatically.

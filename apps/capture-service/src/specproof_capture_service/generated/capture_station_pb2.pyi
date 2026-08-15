@@ -11,11 +11,26 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class CaptureProcessingStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CAPTURE_PROCESSING_STATUS_UNSPECIFIED: _ClassVar[CaptureProcessingStatus]
+    CAPTURE_PROCESSING_STATUS_CAPTURED: _ClassVar[CaptureProcessingStatus]
+    CAPTURE_PROCESSING_STATUS_PROCESSING: _ClassVar[CaptureProcessingStatus]
+    CAPTURE_PROCESSING_STATUS_QUEUED: _ClassVar[CaptureProcessingStatus]
+    CAPTURE_PROCESSING_STATUS_COMPLETED: _ClassVar[CaptureProcessingStatus]
+    CAPTURE_PROCESSING_STATUS_FAILED: _ClassVar[CaptureProcessingStatus]
+
 class CalibrationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     CALIBRATION_MODE_UNSPECIFIED: _ClassVar[CalibrationMode]
     CALIBRATION_MODE_DAILY: _ClassVar[CalibrationMode]
     CALIBRATION_MODE_FULL: _ClassVar[CalibrationMode]
+CAPTURE_PROCESSING_STATUS_UNSPECIFIED: CaptureProcessingStatus
+CAPTURE_PROCESSING_STATUS_CAPTURED: CaptureProcessingStatus
+CAPTURE_PROCESSING_STATUS_PROCESSING: CaptureProcessingStatus
+CAPTURE_PROCESSING_STATUS_QUEUED: CaptureProcessingStatus
+CAPTURE_PROCESSING_STATUS_COMPLETED: CaptureProcessingStatus
+CAPTURE_PROCESSING_STATUS_FAILED: CaptureProcessingStatus
 CALIBRATION_MODE_UNSPECIFIED: CalibrationMode
 CALIBRATION_MODE_DAILY: CalibrationMode
 CALIBRATION_MODE_FULL: CalibrationMode
@@ -97,30 +112,56 @@ class PreviewFrame(_message.Message):
     def __init__(self, frame_id: _Optional[str] = ..., captured_at_utc: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., color_jpeg: _Optional[bytes] = ..., depth_preview_png: _Optional[bytes] = ..., color_width: _Optional[int] = ..., color_height: _Optional[int] = ...) -> None: ...
 
 class CaptureRequest(_message.Message):
-    __slots__ = ("camera_serial", "station_id", "frame_count", "profile")
+    __slots__ = ("camera_serial", "station_id", "frame_count", "profile", "inspection_context")
     CAMERA_SERIAL_FIELD_NUMBER: _ClassVar[int]
     STATION_ID_FIELD_NUMBER: _ClassVar[int]
     FRAME_COUNT_FIELD_NUMBER: _ClassVar[int]
     PROFILE_FIELD_NUMBER: _ClassVar[int]
+    INSPECTION_CONTEXT_FIELD_NUMBER: _ClassVar[int]
     camera_serial: str
     station_id: str
     frame_count: int
     profile: StreamProfile
-    def __init__(self, camera_serial: _Optional[str] = ..., station_id: _Optional[str] = ..., frame_count: _Optional[int] = ..., profile: _Optional[_Union[StreamProfile, _Mapping]] = ...) -> None: ...
+    inspection_context: InspectionContext
+    def __init__(self, camera_serial: _Optional[str] = ..., station_id: _Optional[str] = ..., frame_count: _Optional[int] = ..., profile: _Optional[_Union[StreamProfile, _Mapping]] = ..., inspection_context: _Optional[_Union[InspectionContext, _Mapping]] = ...) -> None: ...
+
+class InspectionContext(_message.Message):
+    __slots__ = ("tenant_id", "inspection_id", "order_code", "style_code", "size_code", "batch_id", "tech_pack_id", "tech_pack_version")
+    TENANT_ID_FIELD_NUMBER: _ClassVar[int]
+    INSPECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORDER_CODE_FIELD_NUMBER: _ClassVar[int]
+    STYLE_CODE_FIELD_NUMBER: _ClassVar[int]
+    SIZE_CODE_FIELD_NUMBER: _ClassVar[int]
+    BATCH_ID_FIELD_NUMBER: _ClassVar[int]
+    TECH_PACK_ID_FIELD_NUMBER: _ClassVar[int]
+    TECH_PACK_VERSION_FIELD_NUMBER: _ClassVar[int]
+    tenant_id: str
+    inspection_id: str
+    order_code: str
+    style_code: str
+    size_code: str
+    batch_id: str
+    tech_pack_id: str
+    tech_pack_version: int
+    def __init__(self, tenant_id: _Optional[str] = ..., inspection_id: _Optional[str] = ..., order_code: _Optional[str] = ..., style_code: _Optional[str] = ..., size_code: _Optional[str] = ..., batch_id: _Optional[str] = ..., tech_pack_id: _Optional[str] = ..., tech_pack_version: _Optional[int] = ...) -> None: ...
 
 class CaptureResponse(_message.Message):
-    __slots__ = ("capture_id", "package_path", "package_sha256", "captured_at_utc", "calibration_id")
+    __slots__ = ("capture_id", "package_path", "package_sha256", "captured_at_utc", "calibration_id", "inspection_id", "processing_status")
     CAPTURE_ID_FIELD_NUMBER: _ClassVar[int]
     PACKAGE_PATH_FIELD_NUMBER: _ClassVar[int]
     PACKAGE_SHA256_FIELD_NUMBER: _ClassVar[int]
     CAPTURED_AT_UTC_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_ID_FIELD_NUMBER: _ClassVar[int]
+    INSPECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    PROCESSING_STATUS_FIELD_NUMBER: _ClassVar[int]
     capture_id: str
     package_path: str
     package_sha256: str
     captured_at_utc: _timestamp_pb2.Timestamp
     calibration_id: str
-    def __init__(self, capture_id: _Optional[str] = ..., package_path: _Optional[str] = ..., package_sha256: _Optional[str] = ..., captured_at_utc: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., calibration_id: _Optional[str] = ...) -> None: ...
+    inspection_id: str
+    processing_status: CaptureProcessingStatus
+    def __init__(self, capture_id: _Optional[str] = ..., package_path: _Optional[str] = ..., package_sha256: _Optional[str] = ..., captured_at_utc: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., calibration_id: _Optional[str] = ..., inspection_id: _Optional[str] = ..., processing_status: _Optional[_Union[CaptureProcessingStatus, str]] = ...) -> None: ...
 
 class RecordingRequest(_message.Message):
     __slots__ = ("camera_serial", "output_path", "profile")

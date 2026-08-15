@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-15T06:43:40Z - Added the Phase 7 typed inspection orchestrator from validated `.spcapture` context through perception, compiled measurement rules, decision, sealed evidence, canonical platform payload mapping, and monotonic stage timings; appended backward-compatible inspection context, inspection ID, and processing status fields to the station gRPC contract and added three pipeline tests.
 - 2026-08-14T18:58:15Z - Added active-window client-certificate authentication for stations, least-privilege device claims, same-station endpoint enforcement, globally conflict-safe certificate registration, an audited certificate-rotation API, and seven regression tests.
 - 2026-08-14T18:25:20Z - Added all 49 Phase 6 implementation tasks: operator and admin React applications with the SpecProof industrial editorial theme; shared accessible UI, dark/light themes, i18n and pseudo-locale; development JWT and tenant switching; simulated/live station gateways; ASP.NET station health/camera/capture/WebSocket APIs; measurement-service FastAPI tech-pack import/validation; platform web DTOs, endpoints, gateway and RBAC; authorised tenant-scoped evidence asset reads; production-order/batch/draft/review persistence; reversible immutable-review migration; generated TypeScript client drift and retry tests; Playwright Edge E2E, axe, and visual snapshots; CSV/PDF reports; evidence inspection; and 40 new frontend, Python, contract, API, station, storage, and data tests.
 - 2026-08-06T17:32:54Z - Added Phase 5 platform and trust backbone with versioned ASP.NET Core API endpoints, FluentValidation request validation, rate limiting, tenant resolution and EF query filters, tenant-scoped object storage keys, RBAC/JWT helpers, station/device management APIs, signed evidence verification, tamper-evident hash-chain support, idempotent sync envelopes, inspection/batch reporting, CSV export, retention deletion, webhook/job persistence, reversible EF migration, and 11 new .NET tests.
@@ -38,6 +39,7 @@
 
 ### Changed
 
+- 2026-08-15T06:43:40Z - Started Phase 7 and corrected its documented task count from 27 to 35, increasing the roadmap total from 379 to 387 tasks.
 - 2026-07-30T17:19:06Z - Updated Phase 0-8 roadmap language so coding proceeds with mock, replay, synthetic, Docker, and simulated API tests while hardware gates remain deferred acceptance items.
 - 2026-07-29T17:22:46Z - Moved local Docker PostgreSQL from `localhost:5432` to `localhost:55432` to avoid conflict with an existing Windows PostgreSQL process.
 - 2026-07-28T17:50:19Z - Installed and locked the Python 3.11 runtime, ML, station, and development dependency groups and updated Phase 0 evidence from host verification.
