@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-16T10:13:27Z
+**Last Updated:** 2026-08-16T10:21:03Z
 **Timezone:** UTC
 **Language:** en
 
@@ -26,8 +26,8 @@
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
 |         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      24 |      69% |
-|         8 | Production Hardening          | `IN_PROGRESS` |      50 |       9 |      18% |
-| **Total** |                               |               | **401** | **318** |  **79%** |
+|         8 | Production Hardening          | `IN_PROGRESS` |      50 |      10 |      20% |
+| **Total** |                               |               | **401** | **319** |  **80%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,7 +37,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 7 performance files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 214 tests, including Windows/Debian package integrity and offline-runtime checks |
+| Python tests and coverage     | PASS    | 216 tests, including production container hardening and station packages |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
 | .NET tests                    | PASS    | 61 tests: 38 platform API/station/storage, 6 contracts, 17 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-16T10:21:03Z | 8     | Hardened all four application OCI images with non-root users, image health checks, OCI labels, read-only filesystems, dropped capabilities, no-new-privileges, non-root nginx runtime paths, and six passing tests; live Docker acceptance remains open. |
 | 2026-08-16T10:13:27Z | 8     | Added an offline Linux amd64 Debian package with preserved configuration, lifecycle scripts, payload hashes, hardened systemd units, Linux CI, and three passing tests; remote build and live lifecycle acceptance remain open. |
 | 2026-08-16T09:48:28Z | 8     | Added an offline Windows x64 station service ZIP with SCM integration, supervised capture process, approved environment-file loading, frozen wheelhouse, hash verification, lifecycle scripts, Windows CI, and six passing tests; MSI and elevated lifecycle acceptance remain open. |
 | 2026-08-16T09:21:20Z | 8     | Added deterministic CycloneDX generation for 725 Python, NuGet, npm, and OCI components plus a pinned Trivy CI workflow for dependency, source, configuration, and five image scans; remote scan gates remain open until execution. |

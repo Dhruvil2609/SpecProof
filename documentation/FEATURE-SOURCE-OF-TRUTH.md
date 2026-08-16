@@ -481,6 +481,27 @@ Python dependencies at the factory.
 - `tests/unit/tools/test_phase8_linux_deb.py` covers package content and unit hardening.
 - `.github/workflows/phase8-packaging.yml` performs native Linux package validation.
 
+### `SPF-027` Production Application Containers
+
+**Use Case:** Platform operators deploy API, measurement, operator, and admin services as
+least-privileged, health-checked OCI images.
+
+**Expected Behaviour:**
+
+- Run every application process as a non-root user.
+- Expose image-native health checks and OCI title, vendor, and source labels.
+- Run with read-only root filesystems, `/tmp` tmpfs, no Linux capabilities, and
+  `no-new-privileges` in the application Compose profile.
+- Keep nginx PID and temporary paths under `/tmp` and bypass root-oriented entrypoint scripts.
+- Build and scan every image in the Phase 8 security workflow.
+
+**Evidence and Tests:**
+
+- Application Dockerfiles define non-root runtime stages and health checks.
+- `infra/docker/web/nginx-main.conf` defines the non-root web runtime.
+- `docker-compose.yml` defines runtime privilege and filesystem restrictions.
+- `tests/unit/tools/test_phase8_container_hardening.py` enforces image/Compose policy.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.

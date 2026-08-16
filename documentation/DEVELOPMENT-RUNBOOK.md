@@ -854,3 +854,15 @@ wheelhouse, constructs Debian control/data archives, and verifies every payload 
 CI validates native `dpkg-deb` compatibility. Do not close live lifecycle acceptance until a
 clean supported Ubuntu target passes install, upgrade, removal, service start, and data
 preservation checks.
+
+Validate production application image policy before a Docker build:
+
+```powershell
+.venv\Scripts\python.exe -m pytest tests/unit/tools/test_phase8_container_hardening.py -q
+docker compose --profile application config --quiet
+```
+
+Every application image must run non-root with an image-native health check and OCI identity
+labels. Compose enforces a read-only root filesystem, `/tmp` tmpfs, all capabilities dropped,
+and `no-new-privileges`. The security workflow builds and scans each image; do not close image
+runtime or vulnerability gates until that workflow passes.

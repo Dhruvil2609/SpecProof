@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T10:21:03Z - Hardened all four application OCI images with non-root execution, native health checks, OCI identity labels, read-only Compose filesystems, dropped capabilities, no-new-privileges, non-root nginx runtime paths, and two new policy tests.
 - 2026-08-16T10:13:27Z - Added an offline Linux amd64 Debian station package with frozen dependencies, preserved configuration, maintainer lifecycle scripts, SHA-256 payload verification, hardened systemd service units, Linux CI validation, and three automated tests.
 - 2026-08-16T09:48:28Z - Added the offline Windows x64 station service package with Windows Service Control Manager integration, supervised Python capture processing, approved environment-file loading, versioned activation, frozen wheelhouse, SHA-256 verification, install/uninstall scripts, Windows CI, and six automated tests.
 - 2026-08-16T09:21:20Z - Added deterministic CycloneDX 1.6 SBOM generation for Python, NuGet, npm, and OCI components, three regression tests, and a CI workflow for credential, dependency, source, configuration, and built-image security scans with per-image SBOM artifacts.

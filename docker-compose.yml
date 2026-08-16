@@ -182,6 +182,10 @@ services:
       dockerfile: apps/platform-api/Dockerfile
     image: specproof/platform-api:0.1.0
     container_name: specproof-platform-api
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
@@ -212,6 +216,10 @@ services:
       dockerfile: apps/measurement-service/Dockerfile
     image: specproof/measurement-service:0.1.0
     container_name: specproof-measurement-service
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     ports:
       - "8010:8010"
     healthcheck:
@@ -228,6 +236,10 @@ services:
       dockerfile: apps/operator-ui/Dockerfile
     image: specproof/operator-ui:0.1.0
     container_name: specproof-operator-ui
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     ports:
       - "4173:8080"
     healthcheck:
@@ -243,6 +255,10 @@ services:
       dockerfile: apps/admin-ui/Dockerfile
     image: specproof/admin-ui:0.1.0
     container_name: specproof-admin-ui
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     ports:
       - "4174:8080"
     healthcheck:

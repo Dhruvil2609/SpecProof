@@ -12,6 +12,14 @@ COPY packages/web-ui packages/web-ui
 RUN pnpm --filter @specproof/admin-ui build
 
 FROM nginx:1.29.0-alpine3.22
+LABEL org.opencontainers.image.title="SpecProof Admin UI" \
+      org.opencontainers.image.vendor="SpecProof" \
+      org.opencontainers.image.source="https://github.com/Dhruvil2609/SpecProof"
+COPY infra/docker/web/nginx-main.conf /etc/nginx/nginx.conf
 COPY infra/docker/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/apps/admin-ui/dist /usr/share/nginx/html
 EXPOSE 8080
+USER nginx
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget --spider --quiet http://127.0.0.1:8080/healthz || exit 1
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

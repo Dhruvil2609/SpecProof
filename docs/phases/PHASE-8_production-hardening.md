@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T10:13:27Z
+**Last Updated:** 2026-08-16T10:21:03Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -44,7 +44,7 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 - [x] **TASK-8.2.2.2** — Windows service package ✅ (2026-08-16T09:48:28Z)
 - [x] **TASK-8.2.2.3** — Linux installer (Debian package or signed bundle) ✅ (2026-08-16T10:13:27Z)
 - [x] **TASK-8.2.2.4** — Linux systemd service definitions ✅ (2026-08-16T10:13:27Z)
-- [ ] **TASK-8.2.2.5** — OCI container images for platform services
+- [x] **TASK-8.2.2.5** — OCI container images for platform services ✅ (2026-08-16T10:21:03Z)
 - [ ] **TASK-8.2.2.6** — Write installer tests (install, upgrade, uninstall)
 
 ### 8.2.3 Code Signing
@@ -186,3 +186,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   CI builds the package and validates it with `dpkg-deb`. Three portable Debian/systemd tests,
   Ruff, strict Pyright, workflow formatting, and diff validation pass. Remote CI and live
   install/upgrade/uninstall acceptance remain open.
+- 2026-08-16T10:21:03Z — Hardened all four production application OCI definitions. Platform
+  API, measurement service, operator UI, and admin UI now expose image identity/vendor/source
+  labels, run as non-root users, and provide image-native health checks. Application Compose
+  drops every Linux capability, sets `no-new-privileges`, mounts only `/tmp` as writable, and
+  makes each root filesystem read-only. Added a non-root nginx main configuration with all
+  runtime files under `/tmp` and bypassed root-oriented entrypoint scripts. Six focused
+  container/deployment tests and Compose configuration validation pass. Docker image build and
+  runtime acceptance remain open because the local daemon is stopped; CI definitions cover it.
