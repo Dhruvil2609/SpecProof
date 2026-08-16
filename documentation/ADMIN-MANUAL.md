@@ -146,10 +146,19 @@ For repeated failures:
 
 - Do not commit production secrets.
 - Use tenant isolation and role-based access.
-- Use TLS for remote access.
+- Use TLS for every remote service and terminate only TLS 1.2 or 1.3.
 - Rotate credentials and certificates.
 - Keep audit logs append-only.
 - Review data-retention and deletion requirements with each tenant.
+- Configure production JWT issuer, audience, and a secret of at least 32 characters.
+- Configure a non-development evidence signing key ID and protected signing secret.
+- Set `Security:RequireHttps=true` and provide station CA SHA-256 roots under
+  `Security:DeviceCertificates:AllowedRootCertificateSha256`.
+- Require station certificate chain trust, client-authentication EKU, and online revocation.
+
+Production startup fails when these controls are absent. Development Compose explicitly runs
+the platform API in the `Development` environment and is not production evidence. Follow
+`docs/security/TLS-BASELINE.md` for deployment acceptance.
 
 ## 12. Capture Storage and Credentials
 

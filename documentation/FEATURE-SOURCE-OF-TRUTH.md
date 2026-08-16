@@ -2,7 +2,7 @@
 
 **Audience:** Developers, QA, product owners, and technical reviewers  
 **Status:** Living draft  
-**Last Updated:** 2026-08-01T08:20:52Z
+**Last Updated:** 2026-08-16T08:32:52Z
 
 This document lists the expected system features and use cases. It is the developer-facing source of truth for what each feature should do. Update it whenever requirements, implementation, tests, or user workflows change.
 
@@ -61,6 +61,7 @@ gates.
 | `SPF-019` | API and webhooks | Planned | Integrator, Developer |
 | `SPF-020` | Observability and support bundle | Partially Implemented | Admin, Support |
 | `SPF-021` | Unified development launcher | Implemented | Developer, Support |
+| `SPF-022` | Production identity and transport security | Partially Implemented | Admin, Security, Support |
 
 ## 3. Feature Details
 
@@ -368,6 +369,28 @@ without manually coordinating each process.
   unique ports, working directories, .NET project paths, and infrastructure-only mode.
 - `start-development.ps1 -ValidateOnly -SkipInfrastructure` verifies host command
   resolution without starting services.
+
+### `SPF-022` Production Identity and Transport Security
+
+**Use Case:** Security administrators deploy the platform with fail-closed identity,
+authorisation, station certificate, and transport controls.
+
+**Expected Behaviour:**
+
+- Reject anonymous access to every non-public API route.
+- Validate JWT signature, issuer, audience, lifetime, tenant, and known role.
+- Bind station requests to active tenant/station identities backed by trusted client
+  certificates.
+- Reject production startup when protected secrets, HTTPS, certificate chain, EKU,
+  revocation, or trusted roots are not configured.
+- Emit restrictive security headers and maintain an auditable certificate rotation path.
+
+**Evidence and Tests:**
+
+- `tests/unit/dotnet/SpecProof.Platform.Api.Tests/PlatformTrustLayerTests.cs` covers JWT,
+  API boundary, tenant/station binding, certificate policy, startup validation, and headers.
+- `docs/security/AUTHENTICATION-AUTHORIZATION-AUDIT.md` records the route audit and findings.
+- `docs/security/TLS-BASELINE.md` defines production transport acceptance.
 
 ## 4. Source-of-Truth Update Rules
 

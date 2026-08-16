@@ -129,6 +129,38 @@ public sealed class JwtAuthenticationMiddleware(RequestDelegate next)
     }
 }
 
+public sealed class ApiAuthenticationBoundaryMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext context, IWebHostEnvironment environment)
+    {
+        var isApiRequest = context.Request.Path.StartsWithSegments("/api/v1");
+        var isDevelopmentToken = context.Request.Path.Equals("/api/v1/auth/dev-token")
+            && (environment.IsDevelopment() || environment.IsEnvironment("Test"));
+        if (isApiRequest
+            && !isDevelopmentToken
+            && context.User.Identity?.IsAuthenticated != true)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        await next(context);
+    }
+}
+
+public sealed class SecurityHeadersMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        context.Response.Headers.XContentTypeOptions = "nosniff";
+        context.Response.Headers.XFrameOptions = "DENY";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        context.Response.Headers.ContentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'";
+        context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+        await next(context);
+    }
+}
+
 public sealed record DeviceAuthenticationResult(Guid IdentityId, Guid TenantId, Guid StationId);
 
 public interface IDeviceCertificateAuthenticator
@@ -139,13 +171,82 @@ public interface IDeviceCertificateAuthenticator
         CancellationToken cancellationToken);
 }
 
-public sealed class DeviceCertificateAuthenticator : IDeviceCertificateAuthenticator
+public interface IDeviceCertificatePolicy
+{
+    bool IsAccepted(X509Certificate2 certificate);
+}
+
+public sealed class DeviceCertificatePolicy(IConfiguration configuration) : IDeviceCertificatePolicy
+{
+    public const string ClientAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.2";
+
+    public bool IsAccepted(X509Certificate2 certificate)
+    {
+        var nowUtc = DateTimeOffset.UtcNow;
+        if (certificate.NotBefore.ToUniversalTime() > nowUtc.UtcDateTime
+            || certificate.NotAfter.ToUniversalTime() <= nowUtc.UtcDateTime)
+        {
+            return false;
+        }
+
+        var requireClientAuthentication = configuration.GetValue(
+            "Security:DeviceCertificates:RequireClientAuthenticationEku",
+            false);
+        if (requireClientAuthentication && !HasClientAuthenticationUsage(certificate))
+        {
+            return false;
+        }
+
+        if (!configuration.GetValue("Security:DeviceCertificates:RequireChainTrust", false))
+        {
+            return true;
+        }
+
+        using var chain = new X509Chain();
+        chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+        chain.ChainPolicy.RevocationMode = ParseRevocationMode(
+            configuration["Security:DeviceCertificates:RevocationMode"]);
+        chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+        if (!chain.Build(certificate) || chain.ChainElements.Count == 0)
+        {
+            return false;
+        }
+
+        var allowedRoots = configuration
+            .GetSection("Security:DeviceCertificates:AllowedRootCertificateSha256")
+            .Get<string[]>() ?? [];
+        var root = chain.ChainElements[^1].Certificate;
+        var rootSha256 = DeviceCertificateThumbprint.Compute(root);
+        return allowedRoots.Any(allowed =>
+            string.Equals(DeviceCertificateThumbprint.Normalize(allowed), rootSha256, StringComparison.Ordinal));
+    }
+
+    private static bool HasClientAuthenticationUsage(X509Certificate2 certificate) =>
+        certificate.Extensions
+            .OfType<X509EnhancedKeyUsageExtension>()
+            .Any(extension => extension.EnhancedKeyUsages
+                .OfType<Oid>()
+                .Any(usage => usage.Value == ClientAuthenticationEnhancedKeyUsageOid));
+
+    private static X509RevocationMode ParseRevocationMode(string? configured) =>
+        Enum.TryParse<X509RevocationMode>(configured, true, out var mode)
+            ? mode
+            : X509RevocationMode.Online;
+}
+
+public sealed class DeviceCertificateAuthenticator(IDeviceCertificatePolicy certificatePolicy)
+    : IDeviceCertificateAuthenticator
 {
     public async Task<DeviceAuthenticationResult?> AuthenticateAsync(
         X509Certificate2 certificate,
         SpecProofDbContext database,
         CancellationToken cancellationToken)
     {
+        if (!certificatePolicy.IsAccepted(certificate))
+        {
+            return null;
+        }
+
         var thumbprint = DeviceCertificateThumbprint.Compute(certificate);
         var now = DateTimeOffset.UtcNow;
         var matches = await database.DeviceIdentities
@@ -394,12 +495,18 @@ public sealed class SpecProofJwtValidator(IConfiguration configuration)
     public string CreateToken(Guid tenantId, string subject, string role, DateTimeOffset expiresAtUtc)
     {
         var header = JsonSerializer.SerializeToUtf8Bytes(new { alg = "HS256", typ = "JWT" });
+        var nowUtc = DateTimeOffset.UtcNow;
         var payload = JsonSerializer.SerializeToUtf8Bytes(
             new Dictionary<string, object>
             {
                 ["sub"] = subject,
                 ["tenant_id"] = tenantId.ToString("D", CultureInfo.InvariantCulture),
                 ["role"] = role,
+                ["iss"] = configuration["Authentication:Issuer"] ?? "specproof-development",
+                ["aud"] = configuration["Authentication:Audience"] ?? "specproof-development",
+                ["iat"] = nowUtc.ToUnixTimeSeconds(),
+                ["nbf"] = nowUtc.AddSeconds(-30).ToUnixTimeSeconds(),
+                ["jti"] = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture),
                 ["exp"] = expiresAtUtc.ToUnixTimeSeconds(),
             });
         var unsignedToken = $"{Base64UrlEncode(header)}.{Base64UrlEncode(payload)}";
@@ -409,40 +516,72 @@ public sealed class SpecProofJwtValidator(IConfiguration configuration)
 
     public ClaimsPrincipal? Validate(string token)
     {
-        var parts = token.Split('.');
-        if (parts.Length != 3)
+        try
         {
-            return null;
-        }
+            var parts = token.Split('.');
+            if (parts.Length != 3)
+            {
+                return null;
+            }
 
-        var unsignedToken = $"{parts[0]}.{parts[1]}";
-        var expectedSignature = HMACSHA256.HashData(secret, Encoding.UTF8.GetBytes(unsignedToken));
-        var actualSignature = Base64UrlDecode(parts[2]);
-        if (!CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature))
-        {
-            return null;
-        }
+            using var header = JsonDocument.Parse(Base64UrlDecode(parts[0]));
+            if (header.RootElement.GetProperty("alg").GetString() != "HS256")
+            {
+                return null;
+            }
 
-        using var payload = JsonDocument.Parse(Base64UrlDecode(parts[1]));
-        var expiresAt = DateTimeOffset.FromUnixTimeSeconds(payload.RootElement.GetProperty("exp").GetInt64());
-        if (expiresAt <= DateTimeOffset.UtcNow)
-        {
-            return null;
-        }
+            var unsignedToken = $"{parts[0]}.{parts[1]}";
+            var expectedSignature = HMACSHA256.HashData(secret, Encoding.UTF8.GetBytes(unsignedToken));
+            var actualSignature = Base64UrlDecode(parts[2]);
+            if (!CryptographicOperations.FixedTimeEquals(expectedSignature, actualSignature))
+            {
+                return null;
+            }
 
-        var role = payload.RootElement.GetProperty("role").GetString() ?? string.Empty;
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, payload.RootElement.GetProperty("sub").GetString() ?? string.Empty),
-            new("tenant_id", payload.RootElement.GetProperty("tenant_id").GetString() ?? string.Empty),
-            new(ClaimTypes.Role, role),
-        };
-        if (PlatformPermissions.RolePermissions.TryGetValue(role, out var permissions))
-        {
+            using var payload = JsonDocument.Parse(Base64UrlDecode(parts[1]));
+            var root = payload.RootElement;
+            var nowUtc = DateTimeOffset.UtcNow;
+            var expiresAt = DateTimeOffset.FromUnixTimeSeconds(root.GetProperty("exp").GetInt64());
+            var notBefore = DateTimeOffset.FromUnixTimeSeconds(root.GetProperty("nbf").GetInt64());
+            var expectedIssuer = configuration["Authentication:Issuer"] ?? "specproof-development";
+            var expectedAudience = configuration["Authentication:Audience"] ?? "specproof-development";
+            if (expiresAt <= nowUtc
+                || notBefore > nowUtc.AddSeconds(30)
+                || root.GetProperty("iss").GetString() != expectedIssuer
+                || root.GetProperty("aud").GetString() != expectedAudience)
+            {
+                return null;
+            }
+
+            var role = root.GetProperty("role").GetString() ?? string.Empty;
+            if (!PlatformPermissions.RolePermissions.TryGetValue(role, out var permissions))
+            {
+                return null;
+            }
+
+            var tenantId = root.GetProperty("tenant_id").GetString();
+            if (!Guid.TryParse(tenantId, out _))
+            {
+                return null;
+            }
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, root.GetProperty("sub").GetString() ?? string.Empty),
+                new("tenant_id", tenantId),
+                new(ClaimTypes.Role, role),
+            };
             claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
+            return new ClaimsPrincipal(new ClaimsIdentity(claims, "SpecProofJwt"));
         }
-
-        return new ClaimsPrincipal(new ClaimsIdentity(claims, "SpecProofJwt"));
+        catch (Exception exception) when (
+            exception is FormatException
+            or JsonException
+            or KeyNotFoundException
+            or ArgumentOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     private static string Base64UrlEncode(byte[] value) =>
@@ -453,6 +592,93 @@ public sealed class SpecProofJwtValidator(IConfiguration configuration)
         var padded = value.Replace('-', '+').Replace('_', '/');
         padded = padded.PadRight(padded.Length + ((4 - (padded.Length % 4)) % 4), '=');
         return Convert.FromBase64String(padded);
+    }
+}
+
+public static class ProductionSecurityPolicy
+{
+    private const string DevelopmentJwtSecret =
+        "specproof-development-jwt-secret-change-before-production";
+    private const string DevelopmentSigningSecret =
+        "specproof-development-evidence-signing-secret-change-before-production";
+
+    public static void Validate(IHostEnvironment environment, IConfiguration configuration)
+    {
+        if (!environment.IsProduction())
+        {
+            return;
+        }
+
+        var failures = new List<string>();
+        RequireSecret(
+            configuration["Authentication:JwtSecret"],
+            DevelopmentJwtSecret,
+            "Authentication:JwtSecret",
+            failures);
+        RequireSecret(
+            configuration["Trust:SigningSecret"],
+            DevelopmentSigningSecret,
+            "Trust:SigningSecret",
+            failures);
+        RequireValue(configuration["Authentication:Issuer"], "Authentication:Issuer", failures);
+        RequireValue(configuration["Authentication:Audience"], "Authentication:Audience", failures);
+        RequireValue(configuration["Trust:SigningKeyId"], "Trust:SigningKeyId", failures);
+        if (!configuration.GetValue("Security:RequireHttps", false))
+        {
+            failures.Add("Security:RequireHttps must be true");
+        }
+
+        if (!configuration.GetValue("Security:DeviceCertificates:RequireChainTrust", false))
+        {
+            failures.Add("Security:DeviceCertificates:RequireChainTrust must be true");
+        }
+
+        if (!configuration.GetValue(
+                "Security:DeviceCertificates:RequireClientAuthenticationEku",
+                false))
+        {
+            failures.Add(
+                "Security:DeviceCertificates:RequireClientAuthenticationEku must be true");
+        }
+
+        var roots = configuration
+            .GetSection("Security:DeviceCertificates:AllowedRootCertificateSha256")
+            .Get<string[]>() ?? [];
+        if (roots.Length == 0 || roots.Any(root => root.Length != 64 || !root.All(Uri.IsHexDigit)))
+        {
+            failures.Add(
+                "Security:DeviceCertificates:AllowedRootCertificateSha256 requires valid SHA-256 values");
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Production security configuration is invalid: {string.Join("; ", failures)}");
+        }
+    }
+
+    private static void RequireSecret(
+        string? value,
+        string developmentValue,
+        string name,
+        ICollection<string> failures)
+    {
+        if (string.IsNullOrWhiteSpace(value)
+            || value.Length < 32
+            || string.Equals(value, developmentValue, StringComparison.Ordinal))
+        {
+            failures.Add($"{name} must be a non-development secret of at least 32 characters");
+        }
+    }
+
+    private static void RequireValue(string? value, string name, ICollection<string> failures)
+    {
+        if (string.IsNullOrWhiteSpace(value)
+            || value.Contains("development", StringComparison.OrdinalIgnoreCase)
+            || value.Contains("dev-", StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"{name} must be explicitly configured for production");
+        }
     }
 }
 

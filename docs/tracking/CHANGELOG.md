@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T08:32:52Z - Added a fail-closed platform API authentication boundary, hardened JWT claim validation, production security startup policy, station certificate validity/EKU/chain/revocation/root controls, restrictive response headers, authentication/authorisation audit, TLS baseline, and six security regression tests.
 - 2026-08-16T08:16:19Z - Started Phase 8 with a production threat model covering assets, principals, trust boundaries, threats, invariants, and external risks; added a canonical JSON Schema and evidence catalogue for all 15 production quality gates, plus three baseline regression tests.
 - 2026-08-15T09:00:23Z - Added the Phase 7 pilot operations package: assessed operator training, deployment/rollback checklist, support runbook, incident severity/escalation matrix, OTLP-to-Prometheus collection, database-backed pilot gauges, six alert rules, a provisioned Grafana dashboard, and PostgreSQL/MinIO backup/verify/restore tooling with UTC SHA-256 manifests and automated integrity tests.
 - 2026-08-15T08:38:15Z - Added versioned cross-platform replay fingerprints and numeric tolerances, Windows/Ubuntu deployment acceptance jobs, pinned application Dockerfiles and Compose profile, and a verified Linux x64 station package with a self-contained Station Host, locked Python requirements, configuration/systemd templates, installer, and UTC SHA-256 manifest.
@@ -69,6 +70,10 @@
 - 2026-07-28T17:50:19Z - Fixed `specproof-doctor` Windows command-shim execution so pnpm is detected and validated correctly.
 - 2026-07-28T16:34:20Z — Removed frontend non-null assertions that violated lint rules.
 - 2026-07-28T16:34:20Z — Replaced corrupted Phase 0, Phase 1, Phase 2, progress, and changelog text with valid UTF-8.
+
+### Security
+
+- 2026-08-16T08:32:52Z - Closed production identity fail-open risks by rejecting development credentials and incomplete TLS/certificate policy at startup, rejecting malformed or untrusted JWTs, and requiring authenticated `/api/v1` access by default.
 
 ### Blocked
 

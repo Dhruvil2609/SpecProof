@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using SpecProof.Contracts;
 using SpecProof.Platform.Api;
 using SpecProof.Platform.Data;
@@ -78,6 +80,92 @@ public sealed class PlatformTrustLayerTests
 
         Assert.False(nextCalled);
         Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public void DeviceCertificatePolicy_ClientAuthenticationRequired_RejectsCertificateWithoutEku()
+    {
+        using var certificate = CreateCertificate();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Security:DeviceCertificates:RequireClientAuthenticationEku"] = "true",
+                })
+            .Build();
+        var policy = new DeviceCertificatePolicy(configuration);
+
+        Assert.False(policy.IsAccepted(certificate));
+    }
+
+    [Fact]
+    public async Task ApiAuthenticationBoundaryMiddleware_AnonymousApiRequest_ReturnsUnauthorized()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/v1/inspections";
+        var nextCalled = false;
+        var middleware = new ApiAuthenticationBoundaryMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+        await middleware.InvokeAsync(context, new StubHostEnvironment("Production"));
+
+        Assert.False(nextCalled);
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SecurityHeadersMiddleware_ResponseStarting_AddsRestrictiveHeaders()
+    {
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+        var middleware = new SecurityHeadersMiddleware(
+            async httpContext => await httpContext.Response.StartAsync());
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal("nosniff", context.Response.Headers.XContentTypeOptions);
+        Assert.Equal("DENY", context.Response.Headers.XFrameOptions);
+        Assert.Contains("default-src 'none'", context.Response.Headers.ContentSecurityPolicy.ToString());
+    }
+
+    [Fact]
+    public void ProductionSecurityPolicy_MissingProtectedConfiguration_FailsClosed()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ProductionSecurityPolicy.Validate(
+                new StubHostEnvironment("Production"),
+                configuration));
+
+        Assert.Contains("Authentication:JwtSecret", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("RequireHttps", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ProductionSecurityPolicy_CompleteProtectedConfiguration_Passes()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Authentication:JwtSecret"] = new string('a', 40),
+                    ["Authentication:Issuer"] = "specproof-platform",
+                    ["Authentication:Audience"] = "specproof-clients",
+                    ["Trust:SigningSecret"] = new string('b', 40),
+                    ["Trust:SigningKeyId"] = "production-key-v1",
+                    ["Security:RequireHttps"] = "true",
+                    ["Security:DeviceCertificates:RequireChainTrust"] = "true",
+                    ["Security:DeviceCertificates:RequireClientAuthenticationEku"] = "true",
+                    ["Security:DeviceCertificates:AllowedRootCertificateSha256:0"] = new string('c', 64),
+                })
+            .Build();
+
+        ProductionSecurityPolicy.Validate(new StubHostEnvironment("Production"), configuration);
     }
 
     [Fact]
@@ -358,6 +446,14 @@ public sealed class PlatformTrustLayerTests
     }
 
     [Fact]
+    public void SpecProofJwtValidator_MalformedToken_ReturnsNull()
+    {
+        var validator = CreateJwtValidator();
+
+        Assert.Null(validator.Validate("not-a.valid.jwt"));
+    }
+
+    [Fact]
     public void PlatformPermissions_OperatorRole_DoesNotIncludeAdminStationManagement()
     {
         var permissions = PlatformPermissions.RolePermissions["operator"];
@@ -490,6 +586,8 @@ public sealed class PlatformTrustLayerTests
                 new Dictionary<string, string?>
                 {
                     ["Authentication:JwtSecret"] = "unit-test-jwt-secret",
+                    ["Authentication:Issuer"] = "unit-test-issuer",
+                    ["Authentication:Audience"] = "unit-test-audience",
                     ["Trust:SigningKeyId"] = "unit-test-key",
                     ["Trust:SigningSecret"] = "unit-test-evidence-secret",
                 })
@@ -550,5 +648,20 @@ public sealed class PlatformTrustLayerTests
             SpecProofDbContext database,
             CancellationToken cancellationToken) =>
             Task.FromResult(result);
+    }
+
+    private sealed class StubHostEnvironment(string environmentName) : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "SpecProof.Platform.Api.Tests";
+
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+
+        public string WebRootPath { get; set; } = string.Empty;
+
+        public string EnvironmentName { get; set; } = environmentName;
+
+        public string ContentRootPath { get; set; } = string.Empty;
+
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

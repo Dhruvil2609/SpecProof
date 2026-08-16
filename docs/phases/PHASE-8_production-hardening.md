@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T08:16:19Z
+**Last Updated:** 2026-08-16T08:32:52Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -29,14 +29,14 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 
 ### 8.2.1 Security Hardening
 
-- [ ] **TASK-8.2.1.1** — Security audit of authentication and authorisation
+- [x] **TASK-8.2.1.1** — Security audit of authentication and authorisation ✅ (2026-08-16T08:32:52Z)
 - [ ] **TASK-8.2.1.2** — Secret management review (no secrets in source)
-- [ ] **TASK-8.2.1.3** — TLS configuration audit
+- [x] **TASK-8.2.1.3** — TLS configuration audit ✅ (2026-08-16T08:32:52Z)
 - [ ] **TASK-8.2.1.4** — Encryption at rest for sensitive captures
 - [ ] **TASK-8.2.1.5** — Dependency vulnerability scan (SBOM)
 - [ ] **TASK-8.2.1.6** — Container vulnerability scan
 - [ ] **TASK-8.2.1.7** — Penetration test remediation
-- [ ] **TASK-8.2.1.8** — Write security regression tests
+- [x] **TASK-8.2.1.8** — Write security regression tests ✅ (2026-08-16T08:32:52Z)
 
 ### 8.2.2 Installer and Packaging
 
@@ -138,3 +138,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   deferred external risks, and added the canonical schema and catalogue for all 15 release
   quality gates. Three baseline regression tests pass. No Phase 8 implementation task is
   closed by this planning baseline.
+- 2026-08-16T08:32:52Z — Completed the authentication/authorisation and TLS audits.
+  Added a fail-closed authentication boundary for all non-public API routes, hardened JWT
+  issuer/audience/lifetime/role/tenant parsing, production startup validation for identity,
+  signing, HTTPS, and station certificate policy, restrictive API response headers, and
+  station certificate validity, client-authentication EKU, chain, revocation, and root
+  allow-list checks. Documented resolved findings and the deployment TLS baseline. Validation
+  passed with six new security tests, 34 platform tests, 17 data tests, six contract tests,
+  Compose configuration, and a zero-warning release build.

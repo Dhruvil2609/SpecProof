@@ -15,6 +15,7 @@ using SpecProof.Platform.Api;
 using SpecProof.Platform.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+ProductionSecurityPolicy.Validate(builder.Environment, builder.Configuration);
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -44,6 +45,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<TenantScopeAccessor>();
 builder.Services.AddScoped<ITenantScope>(provider => provider.GetRequiredService<TenantScopeAccessor>());
 builder.Services.AddSingleton<SpecProofJwtValidator>();
+builder.Services.AddSingleton<IDeviceCertificatePolicy, DeviceCertificatePolicy>();
 builder.Services.AddSingleton<IDeviceCertificateAuthenticator, DeviceCertificateAuthenticator>();
 builder.Services.AddSingleton<DeviceCertificateRotationService>();
 builder.Services.AddSingleton<EvidenceSignatureService>();
@@ -97,9 +99,16 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
 
 app.UseRequestLocalization();
 app.UseExceptionHandler();
+if (app.Configuration.GetValue("Security:RequireHttps", false))
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseRateLimiter();
 app.UseMiddleware<JwtAuthenticationMiddleware>();
 app.UseMiddleware<DeviceCertificateAuthenticationMiddleware>();
+app.UseMiddleware<ApiAuthenticationBoundaryMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.MapOpenApi("/api/v1/openapi.json");

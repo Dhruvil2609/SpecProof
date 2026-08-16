@@ -776,3 +776,19 @@ Use UTC timestamps:
 
 Do not mark blocked hardware, administrative, or remote checks complete from local
 source inspection alone.
+
+## 9. Phase 8 Production Security Validation
+
+Run the complete security-focused platform test project and release build:
+
+```powershell
+dotnet build SpecProof.slnx --configuration Release --no-restore
+dotnet test tests/unit/dotnet/SpecProof.Platform.Api.Tests/SpecProof.Platform.Api.Tests.csproj --configuration Release --no-build
+docker compose --profile application config --quiet
+```
+
+Before starting a production API instance, inject protected JWT and evidence-signing
+credentials, configure issuer/audience, enable HTTPS, and configure one or more trusted
+station CA SHA-256 values. Production startup must fail when any required control is missing.
+Use `docs/security/AUTHENTICATION-AUTHORIZATION-AUDIT.md` and
+`docs/security/TLS-BASELINE.md` as the acceptance checklists.
