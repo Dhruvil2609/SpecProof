@@ -202,3 +202,15 @@ Package removal stops and disables the units. Purge removes program assets but i
 preserves `/var/lib/specproof/station`; erase station data only through the approved retention
 and decommission process. The Debian package is not signed release evidence until Phase 8
 signing completes.
+
+## 15. Signed Updates and Rollback
+
+Accept a station update only when its canonical manifest signature, key ID, manifest hash,
+package size, package SHA-256, runtime identifier, data-schema range, and station rollout cohort
+all validate. Stage offline artifacts locally before stopping services. Activation preserves the
+previous release descriptor so rollback does not require network access.
+
+If post-update health or queue checks fail, stop new inspections, activate the previous
+descriptor, run the prior package lifecycle procedure, and verify queue/evidence integrity.
+Never delete station state to force an update or rollback. Follow
+`docs/release/SIGNED-UPDATES.md`; only the release signing service may access private keys.

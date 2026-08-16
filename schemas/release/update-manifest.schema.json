@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://specproof.local/schemas/release/update-manifest.schema.json",
+  "title": "SpecProof signed update manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseVersion",
+    "generatedAtUtc",
+    "minimumDataSchemaVersion",
+    "maximumDataSchemaVersion",
+    "rolloutPercentage",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "releaseVersion": { "type": "string", "minLength": 1 },
+    "generatedAtUtc": { "type": "string", "format": "date-time" },
+    "minimumDataSchemaVersion": { "type": "integer", "minimum": 1 },
+    "maximumDataSchemaVersion": { "type": "integer", "minimum": 1 },
+    "rolloutPercentage": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fileName", "runtimeIdentifier", "sizeBytes", "sha256"],
+        "properties": {
+          "fileName": { "type": "string", "minLength": 1 },
+          "runtimeIdentifier": { "type": "string", "minLength": 1 },
+          "sizeBytes": { "type": "integer", "minimum": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

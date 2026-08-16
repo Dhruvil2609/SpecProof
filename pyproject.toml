@@ -20,6 +20,7 @@ build-backend = "setuptools.build_meta"
 [dependency-groups]
 runtime = [
   "boto3>=1.40",
+  "cryptography>=46,<47",
   "fastapi>=0.116",
   "grpcio>=1.74",
   "numpy>=2.0",
@@ -145,6 +146,9 @@ exclude = [
   "apps/capture-service/src/specproof_capture_service/identity.py",
   "apps/capture-service/src/specproof_capture_service/observability.py",
   "apps/capture-service/src/specproof_capture_service/realsense_provider.py",
+]
+executionEnvironments = [
+  { root = "tools/release_management", reportUnknownVariableType = false, reportUnknownArgumentType = false },
 ]
 
 [tool.coverage.run]

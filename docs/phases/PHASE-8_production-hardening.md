@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T10:21:03Z
+**Last Updated:** 2026-08-16T10:36:10Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -53,16 +53,16 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 - [ ] **TASK-8.2.3.2** — Sign all Windows executables and installers
 - [ ] **TASK-8.2.3.3** — Sign container images
 - [ ] **TASK-8.2.3.4** — SHA-256 checksum publication
-- [ ] **TASK-8.2.3.5** — Write signature verification tests
+- [x] **TASK-8.2.3.5** — Write signature verification tests ✅ (2026-08-16T10:36:10Z)
 
 ### 8.2.4 Update Mechanism
 
-- [ ] **TASK-8.2.4.1** — Signed package verification
-- [ ] **TASK-8.2.4.2** — Staged rollout support
-- [ ] **TASK-8.2.4.3** — Rollback mechanism
-- [ ] **TASK-8.2.4.4** — Schema compatibility check
-- [ ] **TASK-8.2.4.5** — Offline update package support
-- [ ] **TASK-8.2.4.6** — Write update/rollback tests
+- [x] **TASK-8.2.4.1** — Signed package verification ✅ (2026-08-16T10:36:10Z)
+- [x] **TASK-8.2.4.2** — Staged rollout support ✅ (2026-08-16T10:36:10Z)
+- [x] **TASK-8.2.4.3** — Rollback mechanism ✅ (2026-08-16T10:36:10Z)
+- [x] **TASK-8.2.4.4** — Schema compatibility check ✅ (2026-08-16T10:36:10Z)
+- [x] **TASK-8.2.4.5** — Offline update package support ✅ (2026-08-16T10:36:10Z)
+- [x] **TASK-8.2.4.6** — Write update/rollback tests ✅ (2026-08-16T10:36:10Z)
 
 ### 8.2.5 Observability Production Setup
 
@@ -194,3 +194,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   runtime files under `/tmp` and bypassed root-oriented entrypoint scripts. Six focused
   container/deployment tests and Compose configuration validation pass. Docker image build and
   runtime acceptance remain open because the local daemon is stopped; CI definitions cover it.
+- 2026-08-16T10:36:10Z — Added RSA-PSS/SHA-256 signed canonical release manifests, a versioned
+  JSON Schema, package size/hash verification, runtime selection, data-schema compatibility,
+  deterministic UUID-based staged rollout, offline package staging, atomic activation, and
+  atomic rollback descriptors. Added and locked `cryptography 46.0.7`. Four tests prove valid
+  signatures, tamper rejection, schema and checksum rejection, stable 0–100% rollout, offline
+  activation, and rollback. Ruff, scoped strict Pyright, schema formatting, and diff validation
+  pass. Managed signing keys, checksum publication, Authenticode, container signing, and full
+  installer execution remain open release gates.

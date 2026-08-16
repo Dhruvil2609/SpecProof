@@ -866,3 +866,16 @@ Every application image must run non-root with an image-native health check and 
 labels. Compose enforces a read-only root filesystem, `/tmp` tmpfs, all capabilities dropped,
 and `no-new-privileges`. The security workflow builds and scans each image; do not close image
 runtime or vulnerability gates until that workflow passes.
+
+Validate signed update behavior:
+
+```powershell
+.venv\Scripts\ruff.exe check tools/release_management tests/unit/tools/test_signed_updates.py
+.venv\Scripts\pyright.exe tools/release_management/signed_updates.py
+.venv\Scripts\python.exe -m pytest tests/unit/tools/test_signed_updates.py -q
+```
+
+Production private keys remain in the approved signing service. Local tests generate ephemeral
+RSA keys and prove signature/tamper, schema, rollout, checksum, activation, and rollback logic.
+Use `schemas/release/update-manifest.schema.json` and `docs/release/SIGNED-UPDATES.md`; do not
+close checksum publication, Authenticode, or container-signing tasks from unit evidence.

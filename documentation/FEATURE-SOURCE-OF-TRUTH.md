@@ -502,6 +502,28 @@ least-privileged, health-checked OCI images.
 - `docker-compose.yml` defines runtime privilege and filesystem restrictions.
 - `tests/unit/tools/test_phase8_container_hardening.py` enforces image/Compose policy.
 
+### `SPF-028` Signed Offline Station Updates
+
+**Use Case:** Release operators roll out a verified station release gradually and recover
+offline to the previous release without risking station inspection data.
+
+**Expected Behaviour:**
+
+- Sign canonical manifests with RSA-PSS/SHA-256 and verify with a pinned public key.
+- Reject altered manifests, packages with wrong size/hash, incompatible data schemas, unknown
+  runtimes, and stations outside the rollout cohort.
+- Select stable rollout cohorts deterministically from station UUIDs.
+- Stage packages under versioned directories and atomically preserve current/previous release
+  descriptors for offline rollback.
+- Keep signing private keys outside station and repository storage.
+
+**Evidence and Tests:**
+
+- `tools/release_management/signed_updates.py` implements signing, verification, and activation.
+- `schemas/release/update-manifest.schema.json` defines the release contract.
+- `tests/unit/tools/test_signed_updates.py` covers trust, tamper, rollout, schema, and rollback.
+- `docs/release/SIGNED-UPDATES.md` defines production key and update procedures.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.
