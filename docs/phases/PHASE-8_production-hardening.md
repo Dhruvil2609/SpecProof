@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T09:21:20Z
+**Last Updated:** 2026-08-16T09:48:28Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -41,7 +41,7 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 ### 8.2.2 Installer and Packaging
 
 - [ ] **TASK-8.2.2.1** — Windows installer (MSIX/MSI)
-- [ ] **TASK-8.2.2.2** — Windows service package
+- [x] **TASK-8.2.2.2** — Windows service package ✅ (2026-08-16T09:48:28Z)
 - [ ] **TASK-8.2.2.3** — Linux installer (Debian package or signed bundle)
 - [ ] **TASK-8.2.2.4** — Linux systemd service definitions
 - [ ] **TASK-8.2.2.5** — OCI container images for platform services
@@ -168,3 +168,13 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   per-image CycloneDX artifacts. Three SBOM tests, seven adjacent Phase 8 security tests,
   Ruff, strict Pyright, workflow parsing/formatting, and a zero-finding repository scan pass.
   Dependency/container scan tasks and the scan quality gate remain open until remote CI runs.
+- 2026-08-16T09:48:28Z — Added the offline Windows x64 station service package. Station Host
+  now integrates with Windows Service Control Manager, loads only approved keys from a
+  protected station environment file, and supervises/restarts the local Python capture
+  process without shell argument parsing. The versioned ZIP contains self-contained host
+  output, frozen requirements, a dependency wheelhouse, the SpecProof wheel, production
+  templates, SHA-256 manifest verification, and administrator install/upgrade/uninstall
+  scripts that preserve station data by default. Windows CI builds and verifies the package.
+  Three Python package tests, three .NET service tests, PowerShell parsing, strict Python
+  typing/lint, and a zero-warning .NET build pass. MSI creation and elevated lifecycle
+  acceptance remain open.

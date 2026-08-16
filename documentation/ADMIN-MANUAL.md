@@ -175,3 +175,17 @@ Use `config/production.env.example` only as a deployment inventory and follow
 - Real `.bag` and `.spcapture` fixtures belong in Git LFS.
 - Production station storage requires `SPEC_PROOF_S3_SERVER_SIDE_ENCRYPTION`; use `aws:kms`
   with `SPEC_PROOF_S3_KMS_KEY_ID` where managed KMS is available.
+
+## 13. Windows Station Service
+
+Use the versioned `specproof-station-<version>-win-x64.zip` artifact on Windows stations.
+Verify and extract the archive locally, then run `install-service.ps1` as Administrator. The
+installer preserves `C:\ProgramData\SpecProof\Station` during upgrades, installs dependencies
+from the packaged offline wheelhouse, and configures `SpecProofStationHost` under the
+least-privileged `LocalService` account.
+
+Before starting the service, replace every placeholder in
+`C:\ProgramData\SpecProof\Station\config\station.env`. Use `uninstall-service.ps1` to remove
+program files while preserving station data; supply `-RemoveData` only after backup and
+retention approval. The ZIP is not an MSI and must not be treated as signed release evidence
+until the Phase 8 signing gate completes.

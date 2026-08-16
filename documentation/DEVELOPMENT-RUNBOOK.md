@@ -828,3 +828,15 @@ Review `artifacts/sbom/specproof.cdx.json` and retain it with release evidence. 
 `.github/workflows/security.yml` gate must also pass dependency and built-image scans and
 publish each container SBOM before closing the vulnerability-scan quality gates. See
 `docs/security/SUPPLY-CHAIN-SECURITY.md`.
+
+Build and verify the Windows x64 station service package on Windows:
+
+```powershell
+.venv\Scripts\python.exe tools/packaging/build_windows_station_package.py --version 0.1.0-local --output-dir artifacts/packages
+.venv\Scripts\python.exe -c "from pathlib import Path; from tools.packaging.build_windows_station_package import verify_windows_station_package; verify_windows_station_package(next(Path('artifacts/packages').glob('*-win-x64.zip')))"
+```
+
+The builder publishes Station Host for `win-x64`, exports frozen runtime/station requirements,
+downloads a platform-specific offline wheelhouse, and verifies the ZIP manifest. The
+`phase8-packaging` workflow performs the same build remotely. Do not close MSI or elevated
+install/upgrade/uninstall acceptance from archive tests alone.

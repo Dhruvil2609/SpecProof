@@ -433,6 +433,31 @@ container dependency and block known high-impact supply-chain risk.
 - `.github/workflows/security.yml` defines dependency and container security gates.
 - `docs/security/SUPPLY-CHAIN-SECURITY.md` defines generation and review policy.
 
+### `SPF-025` Windows Station Service Package
+
+**Use Case:** Administrators install or upgrade a production Windows x64 station without
+downloading runtime dependencies at the factory.
+
+**Expected Behaviour:**
+
+- Run Station Host under Windows Service Control Manager as `LocalService`.
+- Supervise the local Python capture process and restart it after unexpected exit.
+- Load only approved station, telemetry, ASP.NET Core, and .NET environment keys.
+- Package self-contained host output, frozen requirements, all dependency wheels, production
+  templates, lifecycle scripts, and a SHA-256 manifest in a versioned ZIP.
+- Preserve configuration/data during upgrade and default uninstall; remove data only through
+  an explicit administrator switch.
+
+**Evidence and Tests:**
+
+- `tools/packaging/build_windows_station_package.py` assembles and verifies the archive.
+- `installers/windows/install-service.ps1` installs/upgrades the service offline.
+- `installers/windows/uninstall-service.ps1` removes the service with explicit data handling.
+- `tests/unit/tools/test_phase8_windows_package.py` covers content and tamper rejection.
+- `tests/unit/dotnet/SpecProof.Platform.Api.Tests/StationServiceTests.cs` covers environment
+  parsing and shell-free child process configuration.
+- `.github/workflows/phase8-packaging.yml` builds and verifies the Windows artifact.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.

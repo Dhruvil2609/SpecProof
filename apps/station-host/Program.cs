@@ -9,8 +9,11 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SpecProof.Camera.Abstractions;
 using SpecProof.Station.Contracts.V1;
+using SpecProof.Station.Host;
 
+StationEnvironment.LoadConfiguredFile();
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseWindowsService(options => options.ServiceName = "SpecProof Station Host");
 var captureServiceAddress =
     builder.Configuration["CaptureService:Address"] ?? "http://127.0.0.1:50051";
 
@@ -18,6 +21,11 @@ builder.Services.AddSingleton(_ => GrpcChannel.ForAddress(captureServiceAddress)
 builder.Services.AddSingleton(serviceProvider =>
     new CaptureStation.CaptureStationClient(serviceProvider.GetRequiredService<GrpcChannel>()));
 builder.Services.AddSingleton<ICameraProvider, GrpcCameraProvider>();
+builder.Services.AddOptions<CaptureProcessOptions>()
+    .BindConfiguration(CaptureProcessOptions.SectionName)
+    .Validate(CaptureProcessOptions.IsValid, CaptureProcessOptions.ValidationMessage)
+    .ValidateOnStart();
+builder.Services.AddHostedService<CaptureProcessSupervisor>();
 builder.Services.AddHostedService<StationSupervisor>();
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>

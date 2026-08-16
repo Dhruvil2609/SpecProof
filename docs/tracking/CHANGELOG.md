@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T09:48:28Z - Added the offline Windows x64 station service package with Windows Service Control Manager integration, supervised Python capture processing, approved environment-file loading, versioned activation, frozen wheelhouse, SHA-256 verification, install/uninstall scripts, Windows CI, and six automated tests.
 - 2026-08-16T09:21:20Z - Added deterministic CycloneDX 1.6 SBOM generation for Python, NuGet, npm, and OCI components, three regression tests, and a CI workflow for credential, dependency, source, configuration, and built-image security scans with per-image SBOM artifacts.
 - 2026-08-16T08:53:45Z - Added production secret-management policy, a placeholder-only environment template, a Git-tracked source scanner for private keys and credential-shaped values, and four automated regression tests.
 - 2026-08-16T08:44:57Z - Added capture encryption-at-rest enforcement with S3 AES256/KMS upload controls, HTTPS/KMS production validation, encryption metadata propagated to platform capture records, plaintext production registration rejection, local BitLocker/LUKS policy, and five automated tests.
