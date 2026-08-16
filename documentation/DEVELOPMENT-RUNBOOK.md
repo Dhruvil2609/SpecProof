@@ -803,3 +803,16 @@ Validate production capture encryption configuration and metadata propagation:
 
 Use `docs/security/CAPTURE-ENCRYPTION.md` for KMS, object-header, and encrypted-volume
 deployment acceptance. Development MinIO may remain plaintext and is not production evidence.
+
+Scan all Git-tracked source before staging or releasing production changes:
+
+```powershell
+.venv\Scripts\ruff.exe check tools/security tests/unit/tools/test_secret_scanner.py
+.venv\Scripts\pyright.exe tools/security/scan_secrets.py
+.venv\Scripts\python.exe -m pytest tests/unit/tools/test_secret_scanner.py -q
+.venv\Scripts\python.exe tools/security/scan_secrets.py
+```
+
+The final command must produce no findings. Use `config/production.env.example` as an
+inventory only; inject real values at runtime according to
+`docs/security/SECRET-MANAGEMENT.md`.

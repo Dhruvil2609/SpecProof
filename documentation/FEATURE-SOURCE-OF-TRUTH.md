@@ -392,6 +392,27 @@ authorisation, station certificate, and transport controls.
 - `docs/security/AUTHENTICATION-AUTHORIZATION-AUDIT.md` records the route audit and findings.
 - `docs/security/TLS-BASELINE.md` defines production transport acceptance.
 
+### `SPF-023` Production Secret Management
+
+**Use Case:** Release and security administrators prevent production credentials and private
+keys from entering source, packages, images, logs, or support artifacts.
+
+**Expected Behaviour:**
+
+- Inject production secrets at runtime from an approved protected provider.
+- Maintain an owned inventory and rotate credentials after schedule or suspected disclosure.
+- Reject tracked private-key files, private-key blocks, provider tokens, and unexplained
+  credential-shaped assignments.
+- Permit explicit development fixtures and deployment placeholders while production startup
+  independently rejects development identity and signing values.
+
+**Evidence and Tests:**
+
+- `tools/security/scan_secrets.py` scans Git-tracked source and fails on findings.
+- `tests/unit/tools/test_secret_scanner.py` covers key, token, placeholder, and repository cases.
+- `docs/security/SECRET-MANAGEMENT.md` defines storage, rotation, least privilege, and response.
+- `config/production.env.example` enumerates required deployment values without credentials.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.

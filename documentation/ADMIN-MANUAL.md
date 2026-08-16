@@ -145,6 +145,9 @@ For repeated failures:
 ## 11. Production Security Rules
 
 - Do not commit production secrets.
+- Inject production secrets from the approved secret manager, protected signing service,
+  operating-system credential store, or container secret; never embed them in images,
+  installers, support bundles, logs, or command-line arguments.
 - Use tenant isolation and role-based access.
 - Use TLS for every remote service and terminate only TLS 1.2 or 1.3.
 - Rotate credentials and certificates.
@@ -159,6 +162,8 @@ For repeated failures:
 Production startup fails when these controls are absent. Development Compose explicitly runs
 the platform API in the `Development` environment and is not production evidence. Follow
 `docs/security/TLS-BASELINE.md` for deployment acceptance.
+Use `config/production.env.example` only as a deployment inventory and follow
+`docs/security/SECRET-MANAGEMENT.md` for ownership, rotation, and incident response.
 
 ## 12. Capture Storage and Credentials
 
