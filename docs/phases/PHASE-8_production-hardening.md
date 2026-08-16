@@ -1,9 +1,9 @@
 # Phase 8 — Production Hardening
 
 **Phase ID:** PHASE-8  
-**Status:** `NOT_STARTED`  
+**Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-07-30T17:19:06Z
+**Last Updated:** 2026-08-16T08:16:19Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -18,6 +18,10 @@ Most Phase 8 software hardening can proceed before hardware is available: packag
 signing, update/rollback, security scans, SBOM, observability, backup/restore, and
 support runbooks. Hardware-in-loop, calibration accuracy, USB recovery, and stability
 quality gates remain deferred final-release gates.
+
+Phase 8 contains 50 implementation and acceptance tasks. Repository hardening proceeds as a
+software track while managed signing, independent penetration testing, legal/privacy review,
+remote release workflows, and qualified-hardware evidence remain explicit external gates.
 
 ---
 
@@ -124,3 +128,13 @@ quality gates remain deferred final-release gates.
 - [ ] Security scan clean
 - [ ] Compliance documentation complete
 - [ ] Production go/no-go decision documented
+
+---
+
+## 8.5 Implementation Evidence
+
+- 2026-08-16T08:16:19Z — Started Phase 8, corrected its task count from 36 to 50,
+  documented production assets, principals, trust boundaries, threats, invariants, and
+  deferred external risks, and added the canonical schema and catalogue for all 15 release
+  quality gates. Three baseline regression tests pass. No Phase 8 implementation task is
+  closed by this planning baseline.

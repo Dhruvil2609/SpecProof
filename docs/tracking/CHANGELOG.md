@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T08:16:19Z - Started Phase 8 with a production threat model covering assets, principals, trust boundaries, threats, invariants, and external risks; added a canonical JSON Schema and evidence catalogue for all 15 production quality gates, plus three baseline regression tests.
 - 2026-08-15T09:00:23Z - Added the Phase 7 pilot operations package: assessed operator training, deployment/rollback checklist, support runbook, incident severity/escalation matrix, OTLP-to-Prometheus collection, database-backed pilot gauges, six alert rules, a provisioned Grafana dashboard, and PostgreSQL/MinIO backup/verify/restore tooling with UTC SHA-256 manifests and automated integrity tests.
 - 2026-08-15T08:38:15Z - Added versioned cross-platform replay fingerprints and numeric tolerances, Windows/Ubuntu deployment acceptance jobs, pinned application Dockerfiles and Compose profile, and a verified Linux x64 station package with a self-contained Station Host, locked Python requirements, configuration/systemd templates, installer, and UTC SHA-256 manifest.
 - 2026-08-15T08:09:24Z - Added Phase 7 process-termination, network ambiguity, duplicate delivery, checksum corruption, dead-letter recovery, database-503 durability, and flaky-camera recovery suites; added generic bounded camera capture recovery, controlled RFC 7807 database-unavailable responses, and a gated concurrent two-tenant PostgreSQL stress test with audit/evidence linkage assertions.
@@ -47,6 +48,7 @@
 
 ### Changed
 
+- 2026-08-16T08:16:19Z - Corrected Phase 8 from 36 to 50 tasks, increasing the roadmap from 387 to 401 tasks, and set production hardening to `IN_PROGRESS`.
 - 2026-08-15T06:43:40Z - Started Phase 7 and corrected its documented task count from 27 to 35, increasing the roadmap total from 379 to 387 tasks.
 - 2026-07-30T17:19:06Z - Updated Phase 0-8 roadmap language so coding proceeds with mock, replay, synthetic, Docker, and simulated API tests while hardware gates remain deferred acceptance items.
 - 2026-07-29T17:22:46Z - Moved local Docker PostgreSQL from `localhost:5432` to `localhost:55432` to avoid conflict with an existing Windows PostgreSQL process.

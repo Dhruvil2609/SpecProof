@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.specproof.local/release/quality-gate-evidence.schema.json",
+  "title": "SpecProof Production Quality-Gate Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseVersion",
+    "sourceRevision",
+    "generatedAtUtc",
+    "decision",
+    "gates"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "releaseVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "sourceRevision": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "generatedAtUtc": {"type": "string", "format": "date-time", "pattern": "Z$"},
+    "decision": {"enum": ["GO", "NO_GO", "PENDING"]},
+    "gates": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": {"$ref": "#/$defs/gateEvidence"}
+    }
+  },
+  "$defs": {
+    "gateEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gateId", "status", "summary", "evidence"],
+      "properties": {
+        "gateId": {
+          "enum": [
+            "QG-01", "QG-02", "QG-03", "QG-04", "QG-05",
+            "QG-06", "QG-07", "QG-08", "QG-09", "QG-10",
+            "QG-11", "QG-12", "QG-13", "QG-14", "QG-15"
+          ]
+        },
+        "status": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 500},
+        "reviewer": {"type": "string", "minLength": 1, "maxLength": 200},
+        "reviewedAtUtc": {"type": "string", "format": "date-time", "pattern": "Z$"},
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["uri", "sha256"],
+            "properties": {
+              "uri": {"type": "string", "minLength": 1},
+              "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "PASS"}}},
+          "then": {"properties": {"evidence": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"status": {"const": "NOT_APPLICABLE"}}},
+          "then": {"required": ["reviewer", "reviewedAtUtc"]}
+        }
+      ]
+    }
+  }
+}
