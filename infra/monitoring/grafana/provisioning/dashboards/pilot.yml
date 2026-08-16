@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: SpecProof Pilot
+    orgId: 1
+    folder: SpecProof
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

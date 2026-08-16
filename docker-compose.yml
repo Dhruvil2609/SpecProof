@@ -81,7 +81,10 @@ services:
       - "9090:9090"
     volumes:
       - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
+    depends_on:
+      - otel-collector
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
       interval: 10s
@@ -98,6 +101,8 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     healthcheck:
       test:
         [
@@ -159,6 +164,17 @@ services:
       retries: 5
       start_period: 30s
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.134.0
+    container_name: specproof-otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "9464:9464"
+    volumes:
+      - ./infra/monitoring/otel/collector.yml:/etc/otelcol-contrib/config.yml:ro
+
   platform-api:
     profiles: ["application"]
     build:
@@ -171,6 +187,7 @@ services:
       ConnectionStrings__SpecProof: Host=postgres;Port=5432;Database=specproof;Username=Admin;Password=Admin@123
       Database__ApplyMigrations: "true"
       MeasurementService__BaseUrl: http://measurement-service:8010/
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     ports:
       - "5080:8080"
     depends_on:
@@ -178,6 +195,8 @@ services:
         condition: service_healthy
       measurement-service:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/healthz"]
       interval: 10s

@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-15T08:38:15Z
+**Last Updated:** 2026-08-15T09:00:23Z
 **Timezone:** UTC
 **Language:** en
 
@@ -25,9 +25,9 @@
 |         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
-|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      18 |      51% |
+|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      24 |      69% |
 |         8 | Production Hardening          | `NOT_STARTED` |      36 |       0 |       0% |
-| **Total** |                               |               | **387** | **303** |  **78%** |
+| **Total** |                               |               | **387** | **309** |  **80%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,9 +37,9 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 7 performance files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 188 unit/integration/regression/performance/cross-platform tests, including package verification |
+| Python tests and coverage     | PASS    | 194 tests, including backup/restore integrity and pilot operations configuration |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
-| .NET tests                    | PASS    | 50 tests: 27 platform API/station/storage, 6 contracts, 17 data |
+| .NET tests                    | PASS    | 51 tests: 28 platform API/station/storage, 6 contracts, 17 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
 | Frontend tests                | PASS    | 28 unit/integration tests plus 8 Edge E2E/axe/visual tests |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-15T09:00:23Z | 7     | Completed all six pilot-preparation tasks with operator training, deployment/support/incident procedures, OTLP/Prometheus/Grafana monitoring and alerting, and verified PostgreSQL/MinIO backup/restore tooling; live empty-environment restore acceptance remains open. |
 | 2026-08-15T08:38:15Z | 7     | Added versioned cross-platform replay fingerprints/tolerances and Windows/Ubuntu CI, application containers/Compose profile, and a verified Linux x64 station package with locked requirements, service templates, and SHA-256 manifest; live CI/container/package startup remains open. |
 | 2026-08-15T08:09:24Z | 7     | Added process crash, ambiguous network, duplicate delivery, checksum, dead-letter, database-503 retention, and flaky-camera recovery suites; added controlled database 503 handling, audit tenant isolation, and a gated concurrent PostgreSQL stress test. |
 | 2026-08-15T07:55:13Z | 7     | Added full-pipeline and platform performance instrumentation, repeatable resource/latency benchmarks with 15s/5s gates, ONNX provider qualification, seeded PostgreSQL EXPLAIN tooling, one evidence-backed index, and six passing tests; GPU and live database profiling remain pending. |
@@ -105,6 +106,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | Phase 6 database runtime           | Docker daemon and PostgreSQL port 55432 are stopped                  | Start Docker Desktop and rerun migration integration tests            |
 | Phase 7 database profiling/stress  | Seeded EXPLAIN and concurrent tenant suites are checked in; Docker/PostgreSQL is stopped | Start Docker Desktop, migrate `specproof_test`, and run both suites |
 | Phase 7 deployment runtime         | Cross-platform workflow, Compose application profile, and Linux package checks are implemented; local Docker is stopped and remote CI has not run | Start Docker Desktop and run the application profile; push the workflow and verify Windows/Ubuntu jobs |
+| Phase 7 restore acceptance         | Backup/restore tooling and gated integrity test are implemented; Docker PostgreSQL/MinIO targets are stopped | Restore into dedicated empty PostgreSQL/MinIO targets and record T-7.010 evidence |
 
 ## Update Rules
 

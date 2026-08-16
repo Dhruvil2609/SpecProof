@@ -401,7 +401,7 @@ four health endpoints, then stop it cleanly:
 ```powershell
 docker compose --profile application up --build --wait
 Invoke-RestMethod http://127.0.0.1:5080/healthz
-Invoke-RestMethod http://127.0.0.1:8000/healthz
+Invoke-RestMethod http://127.0.0.1:8010/health
 Invoke-RestMethod http://127.0.0.1:4173/healthz
 Invoke-RestMethod http://127.0.0.1:4174/healthz
 docker compose --profile application down --volumes
@@ -419,7 +419,35 @@ cross-platform equivalence gates open until `.github/workflows/phase7-deployment
 on hosted Windows and Ubuntu runners; keep container acceptance open until the live profile
 passes with a running Docker daemon.
 
-### Step 1.9: Verify Generated OpenAPI and API Health
+### Step 1.9: Verify Phase 7 Pilot Operations
+
+Validate monitoring configuration, operational documentation, and backup/restore logic:
+
+```powershell
+.venv\Scripts\ruff.exe check tools/pilot tests/unit/tools/test_backup_restore.py tests/unit/tools/test_pilot_operations.py
+.venv\Scripts\python.exe -m pytest tests/unit/tools/test_backup_restore.py tests/unit/tools/test_pilot_operations.py -q
+docker compose --profile application config --quiet
+```
+
+With the stack running, verify Prometheus targets at `http://127.0.0.1:9090/targets` and the
+provisioned `SpecProof Phase 7 Pilot` dashboard at `http://127.0.0.1:3000`. Confirm station,
+queue, latency, failure, calibration, report-job, and database panels receive data before a
+pilot shift.
+
+Follow `documentation/pilot/BACKUP-RESTORE.md` for backup and verification. Run the gated
+empty-environment integrity test only against dedicated PostgreSQL and MinIO restore targets:
+
+```powershell
+$env:SPEC_PROOF_RUN_BACKUP_RESTORE_INTEGRATION = "1"
+.venv\Scripts\python.exe -m pytest tests/integration/python/test_pilot_backup_restore.py -q
+Remove-Item Env:SPEC_PROOF_RUN_BACKUP_RESTORE_INTEGRATION
+```
+
+Set every source/restore database, object-storage endpoint, credential, and evidence-bucket
+environment variable documented by the test. The restore database URL must contain
+`restore`, and both restore targets must be empty.
+
+### Step 1.10: Verify Generated OpenAPI and API Health
 
 Start the API in a dedicated terminal:
 
@@ -441,7 +469,7 @@ deployed schema. Use the migration acceptance tests for the current Phase 1 data
 gate and add a supported deployment migration command before treating this API as a
 shared environment.
 
-### Step 1.10: Verify Remote CI
+### Step 1.11: Verify Remote CI
 
 1. Push a branch to GitHub.
 2. Open a pull request.
@@ -454,7 +482,7 @@ shared environment.
 4. Confirm the workflows run on every configured Windows and Linux runner.
 5. Record the workflow URLs as verification evidence.
 
-### Step 1.10: Configure Branch Protection
+### Step 1.12: Configure Branch Protection
 
 A GitHub repository administrator must:
 

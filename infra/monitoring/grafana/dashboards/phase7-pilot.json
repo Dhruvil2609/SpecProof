@@ -1,0 +1,78 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}}, "overrides": []},
+      "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [{"expr": "specproof_pilot_station_offline_total", "refId": "A"}],
+      "title": "Offline Stations",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "orange", "value": 10}, {"color": "red", "value": 25}]}}, "overrides": []},
+      "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
+      "id": 2,
+      "targets": [{"expr": "specproof_pilot_station_queue_depth", "refId": "A"}],
+      "title": "Durable Queue Depth",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0},
+      "id": 3,
+      "targets": [{"expr": "histogram_quantile(0.95, sum by (le) (rate(specproof_inspection_stage_duration_milliseconds_bucket{stage=\"total\"}[5m])))", "legendFormat": "p95", "refId": "A"}],
+      "title": "Inspection Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 6, "w": 4, "x": 16, "y": 0},
+      "id": 4,
+      "targets": [{"expr": "specproof_pilot_inspection_failures_15m", "refId": "A"}],
+      "title": "Failures (15m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 6, "w": 4, "x": 20, "y": 0},
+      "id": 5,
+      "targets": [{"expr": "specproof_pilot_calibration_expiring_total", "refId": "A"}],
+      "title": "Calibration Expiry",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"min": 0, "max": 1}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 6},
+      "id": 6,
+      "targets": [{"expr": "specproof_pilot_database_available", "refId": "A"}],
+      "title": "Database Available",
+      "type": "gauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 6},
+      "id": 7,
+      "targets": [{"expr": "specproof_pilot_background_job_queue_depth", "refId": "A"}],
+      "title": "Report Job Queue",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": ["specproof", "phase7", "pilot"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "title": "SpecProof Phase 7 Pilot",
+  "uid": "specproof-phase7-pilot",
+  "version": 1
+}

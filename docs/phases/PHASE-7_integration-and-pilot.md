@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-7  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-15T08:38:15Z
+**Last Updated:** 2026-08-15T09:00:23Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 6  
 **Language:** en  
@@ -73,12 +73,12 @@ statistics require physical hardware and garments.
 
 ### 7.2.6 Pilot Preparation
 
-- [ ] **TASK-7.2.6.1** — Operator training materials
-- [ ] **TASK-7.2.6.2** — Support runbooks
-- [ ] **TASK-7.2.6.3** — Station deployment checklist
-- [ ] **TASK-7.2.6.4** — Monitoring and alerting setup
-- [ ] **TASK-7.2.6.5** — Backup and restore procedure
-- [ ] **TASK-7.2.6.6** — Incident response plan
+- [x] **TASK-7.2.6.1** — Operator training materials ✅ (2026-08-15T09:00:23Z)
+- [x] **TASK-7.2.6.2** — Support runbooks ✅ (2026-08-15T09:00:23Z)
+- [x] **TASK-7.2.6.3** — Station deployment checklist ✅ (2026-08-15T09:00:23Z)
+- [x] **TASK-7.2.6.4** — Monitoring and alerting setup ✅ (2026-08-15T09:00:23Z)
+- [x] **TASK-7.2.6.5** — Backup and restore procedure ✅ (2026-08-15T09:00:23Z)
+- [x] **TASK-7.2.6.6** — Incident response plan ✅ (2026-08-15T09:00:23Z)
 
 ---
 
@@ -102,12 +102,12 @@ statistics require physical hardware and garments.
 ## 7.4 Exit Criteria
 
 - [ ] Full pipeline runs end-to-end without manual intervention
-- [ ] Software E2E pipeline runs with mock/replay capture data
+- [x] Software E2E pipeline runs with mock/replay capture data
 - [ ] Measurement validation study meets POC targets on hardware-captured data
 - [ ] <15s processing on dev workstation
 - [ ] Resilience tests pass (power, network, crash recovery)
 - [ ] Cross-platform replay produces equivalent results
-- [ ] Pilot documentation complete
+- [x] Pilot documentation complete
 - [ ] All test cases pass
 
 Software integration can be completed before hardware. Pilot readiness and measurement
@@ -184,3 +184,13 @@ validation remain deferred until qualified capture hardware and garments are ava
   and a zero-warning release build. Remote Windows/Ubuntu runs, live container startup,
   and Ubuntu package startup remain open because CI has not run and the local Docker daemon
   is stopped.
+- 2026-08-15T09:00:23Z — Added assessed operator training, a station deployment and
+  rollback checklist, symptom-based support procedures, and a severity/escalation incident
+  plan. Added OTLP collection, Prometheus scraping and six alert rules, a provisioned Phase 7
+  Grafana dashboard, and database-backed gauges for offline stations, durable queue depth,
+  calibration expiry, recent failures, report jobs, and PostgreSQL availability. Added
+  PostgreSQL/MinIO backup, verification, and empty-target restore tooling with UTC manifests,
+  SHA-256 verification, three unit tests, and a gated real-environment integrity test.
+  Validation passed: six Python unit tests, 28 platform tests, 17 data tests, six contract
+  tests, Ruff, Compose configuration, dashboard JSON parsing, and a zero-warning release
+  build. T-7.010 remains open until the real empty PostgreSQL/MinIO restore test runs.

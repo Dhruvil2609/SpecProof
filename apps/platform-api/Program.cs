@@ -50,6 +50,7 @@ builder.Services.AddSingleton<EvidenceSignatureService>();
 builder.Services.AddSingleton<IntegratedInspectionPersistence>();
 builder.Services.AddSingleton<SyncProtocolService>();
 builder.Services.AddSingleton<ReportingExportService>();
+builder.Services.AddHostedService<PilotMetricsService>();
 builder.Services.AddSingleton<IEvidenceAssetReader, FileSystemEvidenceAssetReader>();
 builder.Services.AddHttpClient<ITechPackImportGateway, TechPackImportGateway>(client =>
     client.BaseAddress = new Uri(
@@ -77,7 +78,8 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddMeter("SpecProof.Platform.Integration");
+            .AddMeter("SpecProof.Platform.Integration")
+            .AddMeter(PilotMetricsService.MeterName);
         if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
         {
             metrics.AddOtlpExporter();

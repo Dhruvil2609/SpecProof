@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-15T09:00:23Z - Added the Phase 7 pilot operations package: assessed operator training, deployment/rollback checklist, support runbook, incident severity/escalation matrix, OTLP-to-Prometheus collection, database-backed pilot gauges, six alert rules, a provisioned Grafana dashboard, and PostgreSQL/MinIO backup/verify/restore tooling with UTC SHA-256 manifests and automated integrity tests.
 - 2026-08-15T08:38:15Z - Added versioned cross-platform replay fingerprints and numeric tolerances, Windows/Ubuntu deployment acceptance jobs, pinned application Dockerfiles and Compose profile, and a verified Linux x64 station package with a self-contained Station Host, locked Python requirements, configuration/systemd templates, installer, and UTC SHA-256 manifest.
 - 2026-08-15T08:09:24Z - Added Phase 7 process-termination, network ambiguity, duplicate delivery, checksum corruption, dead-letter recovery, database-503 durability, and flaky-camera recovery suites; added generic bounded camera capture recovery, controlled RFC 7807 database-unavailable responses, and a gated concurrent two-tenant PostgreSQL stress test with audit/evidence linkage assertions.
 - 2026-08-15T07:55:13Z - Added capture-to-persistence OpenTelemetry latency histograms, repeatable warm-up/p50/p95/maximum/CPU/peak-memory pipeline benchmarks with a 15-second software gate and 5-second pilot target, ONNX Runtime CPU/CUDA provider qualification, seeded PostgreSQL `EXPLAIN ANALYZE` profiling for six platform query shapes, and a reversible tenant/evidence recency index.
