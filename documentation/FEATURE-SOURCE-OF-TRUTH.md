@@ -458,6 +458,29 @@ downloading runtime dependencies at the factory.
   parsing and shell-free child process configuration.
 - `.github/workflows/phase8-packaging.yml` builds and verifies the Windows artifact.
 
+### `SPF-026` Linux Debian Station Package
+
+**Use Case:** Administrators install a production Ubuntu amd64 station without downloading
+Python dependencies at the factory.
+
+**Expected Behaviour:**
+
+- Install self-contained Station Host output and build the capture virtual environment only
+  from packaged frozen wheels.
+- Preserve `/etc/specproof/station.env` across upgrades and station data across removal.
+- Register dedicated capture and host systemd units under the unprivileged `specproof` user.
+- Apply production systemd filesystem, kernel, privilege, personality, realtime, write-path,
+  and umask restrictions.
+- Verify the Debian payload against its SHA-256 manifest before release.
+
+**Evidence and Tests:**
+
+- `tools/packaging/build_linux_deb.py` assembles and verifies the Debian archive.
+- `installers/linux/debian` contains package metadata and lifecycle scripts.
+- `installers/linux/systemd` contains the hardened production units.
+- `tests/unit/tools/test_phase8_linux_deb.py` covers package content and unit hardening.
+- `.github/workflows/phase8-packaging.yml` performs native Linux package validation.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.

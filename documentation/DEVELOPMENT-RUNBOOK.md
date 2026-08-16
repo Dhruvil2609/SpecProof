@@ -840,3 +840,17 @@ The builder publishes Station Host for `win-x64`, exports frozen runtime/station
 downloads a platform-specific offline wheelhouse, and verifies the ZIP manifest. The
 `phase8-packaging` workflow performs the same build remotely. Do not close MSI or elevated
 install/upgrade/uninstall acceptance from archive tests alone.
+
+Build the Linux amd64 Debian package on an Ubuntu release runner:
+
+```bash
+uv run python tools/packaging/build_linux_deb.py --version 0.1.0-1 --output-dir artifacts/packages
+dpkg-deb --info artifacts/packages/specproof-station_0.1.0-1_amd64.deb
+dpkg-deb --contents artifacts/packages/specproof-station_0.1.0-1_amd64.deb
+```
+
+The builder publishes `linux-x64`, exports frozen runtime requirements, downloads an offline
+wheelhouse, constructs Debian control/data archives, and verifies every payload hash. Remote
+CI validates native `dpkg-deb` compatibility. Do not close live lifecycle acceptance until a
+clean supported Ubuntu target passes install, upgrade, removal, service start, and data
+preservation checks.

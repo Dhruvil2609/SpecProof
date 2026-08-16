@@ -1,0 +1,10 @@
+Package: specproof-station
+Version: ${VERSION}
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: SpecProof Release Engineering
+Depends: python3.11, python3.11-venv
+Description: SpecProof offline garment inspection station
+ Installs the Station Host, local capture service, frozen Python dependencies,
+ production configuration, and hardened systemd units.

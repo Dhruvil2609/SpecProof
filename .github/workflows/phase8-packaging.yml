@@ -9,6 +9,25 @@ permissions:
   contents: read
 
 jobs:
+  linux-debian-package:
+    name: Linux amd64 Debian station package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.11
+      - run: uv sync --group runtime --group dev
+      - run: uv run python tools/packaging/build_linux_deb.py --version 0.1.0-1 --output-dir artifacts/packages
+      - run: dpkg-deb --info artifacts/packages/*.deb
+      - run: dpkg-deb --contents artifacts/packages/*.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: specproof-station-linux-amd64-deb
+          path: artifacts/packages/*.deb
+
   windows-service-package:
     name: Windows x64 station service package
     runs-on: windows-latest

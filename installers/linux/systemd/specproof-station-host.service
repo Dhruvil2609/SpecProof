@@ -14,6 +14,18 @@ ExecStart=/opt/specproof/station/host/SpecProof.Station.Host --environment Pilot
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/specproof/station
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target

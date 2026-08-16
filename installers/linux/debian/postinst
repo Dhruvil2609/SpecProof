@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+INSTALL_ROOT=/opt/specproof/station
+ASSET_ROOT=/usr/lib/specproof/station/python
+DATA_ROOT=/var/lib/specproof/station
+
+if ! id specproof >/dev/null 2>&1; then
+  useradd --system --home-dir "$DATA_ROOT" --create-home --shell /usr/sbin/nologin specproof
+fi
+
+install -d -o specproof -g specproof "$DATA_ROOT"
+rm -rf "$INSTALL_ROOT/python"
+python3.11 -m venv "$INSTALL_ROOT/python"
+"$INSTALL_ROOT/python/bin/pip" install --no-index --find-links "$ASSET_ROOT/wheelhouse" --requirement "$ASSET_ROOT/requirements.lock"
+"$INSTALL_ROOT/python/bin/pip" install --no-deps "$ASSET_ROOT"/specproof-*.whl
+chown -R root:root "$INSTALL_ROOT"
+chown -R specproof:specproof "$DATA_ROOT"
+systemctl daemon-reload
+systemctl enable specproof-capture.service specproof-station-host.service

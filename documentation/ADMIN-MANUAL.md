@@ -189,3 +189,16 @@ Before starting the service, replace every placeholder in
 program files while preserving station data; supply `-RemoveData` only after backup and
 retention approval. The ZIP is not an MSI and must not be treated as signed release evidence
 until the Phase 8 signing gate completes.
+
+## 14. Linux Station Package
+
+Production Linux stations use `specproof-station_<version>_amd64.deb`. The package installs
+the host under `/opt/specproof/station`, creates an offline Python environment from packaged
+wheels, preserves `/etc/specproof/station.env`, and registers hardened capture and host
+systemd units. Install with the approved Debian package procedure, replace every placeholder,
+then start both units and verify station health.
+
+Package removal stops and disables the units. Purge removes program assets but intentionally
+preserves `/var/lib/specproof/station`; erase station data only through the approved retention
+and decommission process. The Debian package is not signed release evidence until Phase 8
+signing completes.

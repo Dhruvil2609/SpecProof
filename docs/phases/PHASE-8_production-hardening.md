@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T09:48:28Z
+**Last Updated:** 2026-08-16T10:13:27Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -42,8 +42,8 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 
 - [ ] **TASK-8.2.2.1** — Windows installer (MSIX/MSI)
 - [x] **TASK-8.2.2.2** — Windows service package ✅ (2026-08-16T09:48:28Z)
-- [ ] **TASK-8.2.2.3** — Linux installer (Debian package or signed bundle)
-- [ ] **TASK-8.2.2.4** — Linux systemd service definitions
+- [x] **TASK-8.2.2.3** — Linux installer (Debian package or signed bundle) ✅ (2026-08-16T10:13:27Z)
+- [x] **TASK-8.2.2.4** — Linux systemd service definitions ✅ (2026-08-16T10:13:27Z)
 - [ ] **TASK-8.2.2.5** — OCI container images for platform services
 - [ ] **TASK-8.2.2.6** — Write installer tests (install, upgrade, uninstall)
 
@@ -178,3 +178,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   Three Python package tests, three .NET service tests, PowerShell parsing, strict Python
   typing/lint, and a zero-warning .NET build pass. MSI creation and elevated lifecycle
   acceptance remain open.
+- 2026-08-16T10:13:27Z — Added a production Linux amd64 Debian package with self-contained
+  Station Host output, frozen Python requirements, an offline dependency wheelhouse, the
+  SpecProof wheel, preserved `/etc/specproof/station.env`, maintainer lifecycle scripts, and
+  a payload SHA-256 manifest. Hardened both systemd units with filesystem, home, kernel,
+  privilege, personality, realtime, architecture, write-path, and umask restrictions. Linux
+  CI builds the package and validates it with `dpkg-deb`. Three portable Debian/systemd tests,
+  Ruff, strict Pyright, workflow formatting, and diff validation pass. Remote CI and live
+  install/upgrade/uninstall acceptance remain open.
