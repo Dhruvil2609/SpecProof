@@ -816,3 +816,15 @@ Scan all Git-tracked source before staging or releasing production changes:
 The final command must produce no findings. Use `config/production.env.example` as an
 inventory only; inject real values at runtime according to
 `docs/security/SECRET-MANAGEMENT.md`.
+
+Generate the release SBOM after restoring NuGet assets:
+
+```powershell
+dotnet restore SpecProof.slnx
+.venv\Scripts\python.exe tools/security/generate_sbom.py
+```
+
+Review `artifacts/sbom/specproof.cdx.json` and retain it with release evidence. The remote
+`.github/workflows/security.yml` gate must also pass dependency and built-image scans and
+publish each container SBOM before closing the vulnerability-scan quality gates. See
+`docs/security/SUPPLY-CHAIN-SECURITY.md`.

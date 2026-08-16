@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T09:21:20Z - Added deterministic CycloneDX 1.6 SBOM generation for Python, NuGet, npm, and OCI components, three regression tests, and a CI workflow for credential, dependency, source, configuration, and built-image security scans with per-image SBOM artifacts.
 - 2026-08-16T08:53:45Z - Added production secret-management policy, a placeholder-only environment template, a Git-tracked source scanner for private keys and credential-shaped values, and four automated regression tests.
 - 2026-08-16T08:44:57Z - Added capture encryption-at-rest enforcement with S3 AES256/KMS upload controls, HTTPS/KMS production validation, encryption metadata propagated to platform capture records, plaintext production registration rejection, local BitLocker/LUKS policy, and five automated tests.
 - 2026-08-16T08:32:52Z - Added a fail-closed platform API authentication boundary, hardened JWT claim validation, production security startup policy, station certificate validity/EKU/chain/revocation/root controls, restrictive response headers, authentication/authorisation audit, TLS baseline, and six security regression tests.
@@ -75,6 +76,7 @@
 
 ### Security
 
+- 2026-08-16T09:21:20Z - Pinned the Trivy workflow action to the immutable commit for its signed `v0.36.0` release and configured high/critical dependency and container gates; scan tasks remain pending until remote CI executes successfully.
 - 2026-08-16T08:53:45Z - Verified the tracked repository contains no detected private-key material or credential-shaped production secrets and documented runtime injection, rotation, least-privilege, and disclosure response requirements.
 - 2026-08-16T08:44:57Z - Required encrypted object storage and encrypted station volumes for sensitive production captures while preserving canonical plaintext evidence hashes.
 - 2026-08-16T08:32:52Z - Closed production identity fail-open risks by rejecting development credentials and incomplete TLS/certificate policy at startup, rejecting malformed or untrusted JWTs, and requiring authenticated `/api/v1` access by default.

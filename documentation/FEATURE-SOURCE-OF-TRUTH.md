@@ -413,6 +413,26 @@ keys from entering source, packages, images, logs, or support artifacts.
 - `docs/security/SECRET-MANAGEMENT.md` defines storage, rotation, least privilege, and response.
 - `config/production.env.example` enumerates required deployment values without credentials.
 
+### `SPF-024` Release Software Bill of Materials
+
+**Use Case:** Release and security administrators inventory every locked application and
+container dependency and block known high-impact supply-chain risk.
+
+**Expected Behaviour:**
+
+- Generate deterministic CycloneDX 1.6 components from Python, NuGet, npm, and OCI sources.
+- Require restored NuGet assets so transitive .NET dependencies are not silently omitted.
+- Reject unversioned container base images and preserve package hashes exposed by lockfiles.
+- Audit dependency manifests, source/configuration, and every built image in remote CI.
+- Publish the workspace SBOM and a separate image SBOM for every production container.
+
+**Evidence and Tests:**
+
+- `tools/security/generate_sbom.py` generates the canonical workspace artifact.
+- `tests/unit/tools/test_sbom_generator.py` covers ecosystems, determinism, and restore safety.
+- `.github/workflows/security.yml` defines dependency and container security gates.
+- `docs/security/SUPPLY-CHAIN-SECURITY.md` defines generation and review policy.
+
 ## 4. Source-of-Truth Update Rules
 
 - Add a feature entry before implementing a new product capability.

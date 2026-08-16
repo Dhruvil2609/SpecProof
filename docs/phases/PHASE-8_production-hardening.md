@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T08:53:45Z
+**Last Updated:** 2026-08-16T09:21:20Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -93,7 +93,7 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 
 ### 8.2.7 Compliance Documentation
 
-- [ ] **TASK-8.2.7.1** — SBOM generation for all components
+- [x] **TASK-8.2.7.1** — SBOM generation for all components ✅ (2026-08-16T09:21:20Z)
 - [ ] **TASK-8.2.7.2** — Data protection impact assessment
 - [ ] **TASK-8.2.7.3** — Third-party license compliance
 - [ ] **TASK-8.2.7.4** — Release notes generation
@@ -160,3 +160,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   rotation, incident response, and the production secret inventory; and added a
   placeholder-only production environment template. Four scanner regression tests, Ruff,
   strict Pyright, and a zero-finding repository scan pass.
+- 2026-08-16T09:21:20Z — Added deterministic CycloneDX 1.6 SBOM generation across the
+  resolved Python `uv.lock`, restored NuGet assets, npm `pnpm-lock.yaml`, and pinned OCI base
+  images. The local workspace SBOM contains 725 normalized components. Added a scheduled and
+  pull-request security workflow for credential scanning, Python/NuGet/npm audits, Trivy
+  source/configuration checks, five image builds, high/critical vulnerability gates, and
+  per-image CycloneDX artifacts. Three SBOM tests, seven adjacent Phase 8 security tests,
+  Ruff, strict Pyright, workflow parsing/formatting, and a zero-finding repository scan pass.
+  Dependency/container scan tasks and the scan quality gate remain open until remote CI runs.

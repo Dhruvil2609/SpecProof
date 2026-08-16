@@ -1,0 +1,89 @@
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-dependencies:
+    name: Source, dependencies, and SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: uv python install 3.11
+      - run: uv sync --group runtime --group dev
+      - run: dotnet restore SpecProof.slnx
+      - run: pnpm install --frozen-lockfile
+      - run: uv run python tools/security/scan_secrets.py
+      - run: uv run python tools/security/generate_sbom.py
+      - run: mkdir -p artifacts/security
+      - run: uv export --frozen --all-groups --no-emit-project --output-file artifacts/security/python-requirements.txt
+      - run: uvx pip-audit==2.10.1 --requirement artifacts/security/python-requirements.txt --disable-pip
+      - run: dotnet list SpecProof.slnx package --vulnerable --include-transitive
+      - run: pnpm audit --audit-level high
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: specproof-source-sbom
+          path: artifacts/sbom/specproof.cdx.json
+
+  containers:
+    name: Container scan (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: platform-api
+            dockerfile: apps/platform-api/Dockerfile
+          - name: measurement-service
+            dockerfile: apps/measurement-service/Dockerfile
+          - name: operator-ui
+            dockerfile: apps/operator-ui/Dockerfile
+          - name: admin-ui
+            dockerfile: apps/admin-ui/Dockerfile
+          - name: mlflow
+            dockerfile: infra/docker/mlflow/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --file ${{ matrix.dockerfile }} --tag specproof/${{ matrix.name }}:security .
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: specproof/${{ matrix.name }}:security
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - run: mkdir -p artifacts/sbom
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: specproof/${{ matrix.name }}:security
+          format: cyclonedx
+          output: artifacts/sbom/${{ matrix.name }}.cdx.json
+          exit-code: "0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: specproof-${{ matrix.name }}-sbom
+          path: artifacts/sbom/${{ matrix.name }}.cdx.json
