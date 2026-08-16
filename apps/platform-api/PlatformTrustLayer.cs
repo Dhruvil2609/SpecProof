@@ -682,6 +682,11 @@ public static class ProductionSecurityPolicy
     }
 }
 
+public static class CaptureUploadSecurity
+{
+    public static bool IsAccepted(bool production, bool encrypted) => !production || encrypted;
+}
+
 public sealed record EvidenceSignatureResult(
     string KeyId,
     string Algorithm,

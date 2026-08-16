@@ -511,8 +511,18 @@ api.MapPost(
         async (
             InitiateCaptureUploadRequest request,
             SpecProofDbContext database,
+            IWebHostEnvironment environment,
             CancellationToken cancellationToken) =>
         {
+            if (!CaptureUploadSecurity.IsAccepted(environment.IsProduction(), request.Encrypted))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]>
+                    {
+                        ["encrypted"] = ["Production capture uploads require encryption at rest."],
+                    });
+            }
+
             var stationExists = await database.Stations.AnyAsync(
                 station => station.Id == request.StationId && station.TenantId == request.TenantId,
                 cancellationToken);
@@ -546,7 +556,7 @@ api.MapPost(
                 SizeBytes = request.SizeBytes,
                 ChecksumSha256 = request.ChecksumSha256,
                 RetentionCategory = "standard",
-                Encrypted = false,
+                Encrypted = request.Encrypted,
             };
             database.CaptureAssets.Add(asset);
             await database.SaveChangesAsync(cancellationToken);
@@ -762,7 +772,8 @@ public sealed record InitiateCaptureUploadRequest(
     Guid StationId,
     Guid CaptureId,
     long SizeBytes,
-    string ChecksumSha256) : ITenantBoundRequest, IStationBoundRequest;
+    string ChecksumSha256,
+    bool Encrypted = false) : ITenantBoundRequest, IStationBoundRequest;
 
 public sealed record InitiateCaptureUploadResponse(Guid AssetId, string ObjectKey);
 

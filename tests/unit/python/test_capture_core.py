@@ -308,6 +308,10 @@ def test_synchronizer_valid_package_uploads_and_completes_queue(tmp_path: Path) 
     class ObjectStore:
         uploaded = False
 
+        @property
+        def encrypted(self) -> bool:
+            return True
+
         def upload(self, **_: object) -> None:
             self.uploaded = True
 

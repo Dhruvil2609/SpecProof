@@ -3,7 +3,7 @@
 **Phase ID:** PHASE-8  
 **Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-16T08:32:52Z
+**Last Updated:** 2026-08-16T08:44:57Z
 **Estimated Duration:** 4–6 weeks  
 **Dependencies:** Phase 7  
 **Language:** en  
@@ -32,7 +32,7 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
 - [x] **TASK-8.2.1.1** — Security audit of authentication and authorisation ✅ (2026-08-16T08:32:52Z)
 - [ ] **TASK-8.2.1.2** — Secret management review (no secrets in source)
 - [x] **TASK-8.2.1.3** — TLS configuration audit ✅ (2026-08-16T08:32:52Z)
-- [ ] **TASK-8.2.1.4** — Encryption at rest for sensitive captures
+- [x] **TASK-8.2.1.4** — Encryption at rest for sensitive captures ✅ (2026-08-16T08:44:57Z)
 - [ ] **TASK-8.2.1.5** — Dependency vulnerability scan (SBOM)
 - [ ] **TASK-8.2.1.6** — Container vulnerability scan
 - [ ] **TASK-8.2.1.7** — Penetration test remediation
@@ -146,3 +146,11 @@ remote release workflows, and qualified-hardware evidence remain explicit extern
   allow-list checks. Documented resolved findings and the deployment TLS baseline. Validation
   passed with six new security tests, 34 platform tests, 17 data tests, six contract tests,
   Compose configuration, and a zero-warning release build.
+- 2026-08-16T08:44:57Z — Added production capture encryption-at-rest enforcement.
+  Station object uploads now support `AES256` and KMS server-side encryption, preserve the
+  plaintext capture checksum as immutable metadata, report encryption during upload
+  initiation, and reject missing encryption, missing KMS keys, or plaintext endpoints in
+  production. The platform rejects unencrypted production capture registrations and records
+  encryption state. Documented mandatory BitLocker/LUKS protection for local durable queues.
+  Validation passed with four new Python tests, one new platform test, Ruff, strict Pyright
+  on production modules, 20 focused Python tests, 35 platform tests, and a zero-warning build.

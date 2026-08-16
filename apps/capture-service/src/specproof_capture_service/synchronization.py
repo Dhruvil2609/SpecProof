@@ -33,6 +33,7 @@ class PlatformStationClient(Protocol):
         package_path: Path,
         checksum_sha256: str,
         idempotency_key: str,
+        encrypted: bool,
     ) -> UploadTarget:
         """Create or recover an upload target."""
         ...
@@ -81,6 +82,7 @@ class CaptureSynchronizer:
                 package_path=item.package_path,
                 checksum_sha256=item.package_sha256,
                 idempotency_key=item.idempotency_key,
+                encrypted=self._object_store.encrypted,
             )
             self._object_store.upload(
                 package_path=item.package_path,
@@ -168,6 +170,7 @@ class HttpPlatformStationClient:
         package_path: Path,
         checksum_sha256: str,
         idempotency_key: str,
+        encrypted: bool,
     ) -> UploadTarget:
         """Initiate an idempotent capture upload."""
 
@@ -179,6 +182,7 @@ class HttpPlatformStationClient:
                 "captureId": capture_id,
                 "sizeBytes": package_path.stat().st_size,
                 "checksumSha256": checksum_sha256,
+                "encrypted": encrypted,
             },
             extra_headers={"Idempotency-Key": idempotency_key},
         )

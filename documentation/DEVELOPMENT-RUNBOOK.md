@@ -792,3 +792,14 @@ credentials, configure issuer/audience, enable HTTPS, and configure one or more 
 station CA SHA-256 values. Production startup must fail when any required control is missing.
 Use `docs/security/AUTHENTICATION-AUTHORIZATION-AUDIT.md` and
 `docs/security/TLS-BASELINE.md` as the acceptance checklists.
+
+Validate production capture encryption configuration and metadata propagation:
+
+```powershell
+.venv\Scripts\ruff.exe check apps/capture-service/src/specproof_capture_service/storage.py tests/unit/python/test_storage_security.py
+.venv\Scripts\pyright.exe apps/capture-service/src/specproof_capture_service/storage.py apps/capture-service/src/specproof_capture_service/synchronization.py
+.venv\Scripts\python.exe -m pytest tests/unit/python/test_storage_security.py tests/unit/python/test_capture_core.py -q
+```
+
+Use `docs/security/CAPTURE-ENCRYPTION.md` for KMS, object-header, and encrypted-volume
+deployment acceptance. Development MinIO may remain plaintext and is not production evidence.

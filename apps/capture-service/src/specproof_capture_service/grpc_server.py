@@ -469,6 +469,10 @@ def _start_synchronization(
         object_store=S3CaptureObjectStore(
             bucket_name=bucket_name,
             endpoint_url=os.getenv("SPEC_PROOF_S3_ENDPOINT"),
+            server_side_encryption=os.getenv("SPEC_PROOF_S3_SERVER_SIDE_ENCRYPTION"),
+            kms_key_id=os.getenv("SPEC_PROOF_S3_KMS_KEY_ID"),
+            require_encryption=os.getenv("SPEC_PROOF_ENVIRONMENT", "Development").lower()
+            == "production",
         ),
     )
     result_sync = InspectionResultSynchronizer(

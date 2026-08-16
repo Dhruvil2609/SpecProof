@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-16T08:32:52Z
+**Last Updated:** 2026-08-16T08:44:57Z
 **Timezone:** UTC
 **Language:** en
 
@@ -26,8 +26,8 @@
 |         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
 |         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
 |         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      24 |      69% |
-|         8 | Production Hardening          | `IN_PROGRESS` |      50 |       3 |       6% |
-| **Total** |                               |               | **401** | **312** |  **78%** |
+|         8 | Production Hardening          | `IN_PROGRESS` |      50 |       4 |       8% |
+| **Total** |                               |               | **401** | **313** |  **78%** |
 
 Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
 
@@ -37,9 +37,9 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | ----------------------------- | ------- | ------------------------------------ |
 | Python formatting and lint    | PARTIAL | Phase 7 performance files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
 | Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 197 tests, including Phase 8 scope, threat-model, and release-evidence regressions |
+| Python tests and coverage     | PASS    | 201 tests, including capture encryption configuration and upload metadata |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
-| .NET tests                    | PASS    | 57 tests: 34 platform API/station/storage, 6 contracts, 17 data |
+| .NET tests                    | PASS    | 58 tests: 35 platform API/station/storage, 6 contracts, 17 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
 | Frontend tests                | PASS    | 28 unit/integration tests plus 8 Edge E2E/axe/visual tests |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
@@ -57,6 +57,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-16T08:44:57Z | 8     | Enforced capture encryption at rest with S3 AES256/KMS metadata, production HTTPS/KMS validation, encrypted upload registration, platform rejection of plaintext production captures, BitLocker/LUKS policy, and five new tests. |
 | 2026-08-16T08:32:52Z | 8     | Completed authentication/authorisation and TLS audits with fail-closed API authentication, hardened JWT claims, production secret/HTTPS validation, station certificate chain/EKU/revocation/root policy, security headers, documentation, and six new tests. |
 | 2026-08-16T08:16:19Z | 8     | Started Phase 8, corrected its scope from 36 to 50 tasks and the roadmap from 387 to 401, documented the production threat model, and added a canonical evidence contract for all 15 release quality gates with three passing tests. |
 | 2026-08-15T09:00:23Z | 7     | Completed all six pilot-preparation tasks with operator training, deployment/support/incident procedures, OTLP/Prometheus/Grafana monitoring and alerting, and verified PostgreSQL/MinIO backup/restore tooling; live empty-environment restore acceptance remains open. |

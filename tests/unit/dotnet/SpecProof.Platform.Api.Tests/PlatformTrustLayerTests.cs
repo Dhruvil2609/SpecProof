@@ -169,6 +169,14 @@ public sealed class PlatformTrustLayerTests
     }
 
     [Fact]
+    public void CaptureUploadSecurity_ProductionUnencryptedUpload_RejectsRequest()
+    {
+        Assert.False(CaptureUploadSecurity.IsAccepted(production: true, encrypted: false));
+        Assert.True(CaptureUploadSecurity.IsAccepted(production: true, encrypted: true));
+        Assert.True(CaptureUploadSecurity.IsAccepted(production: false, encrypted: false));
+    }
+
+    [Fact]
     public async Task DeviceStationRequestFilter_MismatchedStation_ReturnsForbidden()
     {
         var context = new DefaultHttpContext

@@ -8,6 +8,7 @@
 
 ### Added
 
+- 2026-08-16T08:44:57Z - Added capture encryption-at-rest enforcement with S3 AES256/KMS upload controls, HTTPS/KMS production validation, encryption metadata propagated to platform capture records, plaintext production registration rejection, local BitLocker/LUKS policy, and five automated tests.
 - 2026-08-16T08:32:52Z - Added a fail-closed platform API authentication boundary, hardened JWT claim validation, production security startup policy, station certificate validity/EKU/chain/revocation/root controls, restrictive response headers, authentication/authorisation audit, TLS baseline, and six security regression tests.
 - 2026-08-16T08:16:19Z - Started Phase 8 with a production threat model covering assets, principals, trust boundaries, threats, invariants, and external risks; added a canonical JSON Schema and evidence catalogue for all 15 production quality gates, plus three baseline regression tests.
 - 2026-08-15T09:00:23Z - Added the Phase 7 pilot operations package: assessed operator training, deployment/rollback checklist, support runbook, incident severity/escalation matrix, OTLP-to-Prometheus collection, database-backed pilot gauges, six alert rules, a provisioned Grafana dashboard, and PostgreSQL/MinIO backup/verify/restore tooling with UTC SHA-256 manifests and automated integrity tests.
@@ -73,6 +74,7 @@
 
 ### Security
 
+- 2026-08-16T08:44:57Z - Required encrypted object storage and encrypted station volumes for sensitive production captures while preserving canonical plaintext evidence hashes.
 - 2026-08-16T08:32:52Z - Closed production identity fail-open risks by rejecting development credentials and incomplete TLS/certificate policy at startup, rejecting malformed or untrusted JWTs, and requiring authenticated `/api/v1` access by default.
 
 ### Blocked

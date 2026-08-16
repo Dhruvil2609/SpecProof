@@ -163,7 +163,10 @@ the platform API in the `Development` environment and is not production evidence
 ## 12. Capture Storage and Credentials
 
 - Keep station credentials behind the configured credential-store abstraction; Windows workstations use DPAPI.
-- Store `.spcapture` payloads in filesystem staging and MinIO/S3, never in PostgreSQL.
+- Store `.spcapture` payloads only on a BitLocker/LUKS-protected station volume and encrypted
+  MinIO/S3 storage, never in PostgreSQL.
 - PostgreSQL stores capture identity, object key, checksum, size, status, and UTC timestamps.
 - Treat `Admin` / `Admin@123` and all Compose credentials as local-development values only.
 - Real `.bag` and `.spcapture` fixtures belong in Git LFS.
+- Production station storage requires `SPEC_PROOF_S3_SERVER_SIDE_ENCRYPTION`; use `aws:kms`
+  with `SPEC_PROOF_S3_KMS_KEY_ID` where managed KMS is available.
