@@ -11,13 +11,14 @@ import json
 import math
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import numpy as np
 import cv2 as cv
-
+import numpy as np
 from pydantic import BaseModel, Field
 
+if TYPE_CHECKING:
+    from onnxruntime import InferenceSession
 
 # ---------------------------------------------------------------------------
 # Report data models
@@ -107,9 +108,9 @@ class EvaluationPipeline:
         self.output_dir = Path(output_dir)
         self.image_height = image_height
         self.image_width = image_width
-        self._session: Any = None
+        self._session: InferenceSession | None = None
 
-    def _get_session(self) -> Any:
+    def _get_session(self) -> InferenceSession:
         """Lazy-load ONNX Runtime session."""
         if self._session is None:
             try:
@@ -121,7 +122,8 @@ class EvaluationPipeline:
                 )
             except ModuleNotFoundError as exc:
                 raise ModuleNotFoundError(
-                    "onnxruntime is required for inference.  Install with: uv pip install onnxruntime"
+                    "onnxruntime is required for inference. "
+                    "Install with: uv pip install onnxruntime"
                 ) from exc
         return self._session
 
@@ -149,10 +151,9 @@ class EvaluationPipeline:
             raise ValueError(f"Unknown model_type '{self.model_type}'")
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        report_path = (
-            self.output_dir
-            / f"eval_{model_name.replace('/', '_')}_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}.json"
-        )
+        safe_model_name = model_name.replace("/", "_")
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        report_path = self.output_dir / f"eval_{safe_model_name}_{timestamp}.json"
         report_path.write_text(report.to_canonical_json() + "\n", encoding="utf-8", newline="\n")
         return report
 

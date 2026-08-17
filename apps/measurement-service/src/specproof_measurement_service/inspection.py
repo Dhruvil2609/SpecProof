@@ -259,7 +259,7 @@ class InspectionPipeline:
         evidence: EvidenceRecord,
         captured_at_utc: str,
     ) -> PlatformInspectionSubmission:
-        measurements = [
+        measurements: list[dict[str, object]] = [
             {
                 "pomId": measurement.pom_id,
                 "canonicalName": measurement.canonical_name,

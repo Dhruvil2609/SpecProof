@@ -260,12 +260,13 @@ try {
     if ($InfrastructureOnly) {
         Write-Host ""
         Write-Host "SpecProof Docker infrastructure is running." -ForegroundColor Green
-        Write-Host "PostgreSQL:  localhost:5432"
+        Write-Host "PostgreSQL:  localhost:55432"
         Write-Host "MinIO:       http://localhost:9001"
         Write-Host "RabbitMQ:    http://localhost:15672"
         Write-Host "Prometheus:  http://localhost:9090"
         Write-Host "Grafana:     http://localhost:3000"
         Write-Host "Loki:        http://localhost:3100/ready"
+        Write-Host "MLflow:      http://localhost:5000"
         Write-Host ""
         Write-Host "Stop infrastructure with: .\stop-development.ps1"
         exit 0
@@ -287,6 +288,7 @@ try {
     Write-Host ""
     Write-Host "SpecProof development environment is running." -ForegroundColor Green
     Write-Host "Platform API: http://127.0.0.1:5080"
+    Write-Host "Station API:  http://127.0.0.1:5090"
     Write-Host "OpenAPI:      http://127.0.0.1:5080/api/v1/openapi.json"
     Write-Host "Operator UI:  http://127.0.0.1:5173"
     Write-Host "Admin UI:     http://127.0.0.1:5174"

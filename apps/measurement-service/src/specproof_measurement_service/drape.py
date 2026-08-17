@@ -22,7 +22,6 @@ import numpy as np
 
 from specproof_measurement_service.parameterization import SurfaceParameterization
 
-
 # ---------------------------------------------------------------------------
 # Data contracts
 # ---------------------------------------------------------------------------
@@ -177,7 +176,6 @@ def flatten_surface(
             f"flatten_surface requires at least 3 surface points; got {len(points)}"
         )
 
-    n = len(points)
     xs = np.array([p.x_metres for p in points], dtype=np.float64) * 1000.0  # → mm
     ys = np.array([p.y_metres for p in points], dtype=np.float64) * 1000.0
     zs = np.array([p.z_metres for p in points], dtype=np.float64) * 1000.0
@@ -251,8 +249,8 @@ def estimate_fabric_slack(
     # Angular deviation of each point normal from support-plane normal
     dots = np.clip(np.abs(unit_normals @ support_n), -1.0, 1.0)
     deviations_rad = np.arccos(dots)
-    mean_dev_deg = float(np.degrees(np.mean(deviations_rad)))
-    mean_dev_rad = float(np.mean(deviations_rad))
+    mean_dev_rad = sum(float(value) for value in deviations_rad) / len(deviations_rad)
+    mean_dev_deg = float(np.degrees(mean_dev_rad))
 
     # Slack ratio: sin of mean deviation (fraction of extra fabric in plane)
     slack_ratio = float(np.sin(mean_dev_rad))

@@ -1,7 +1,7 @@
 # SpecProof Development Progress
 
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-16T10:36:10Z
+**Last Updated:** 2026-08-17T17:41:28Z
 **Timezone:** UTC
 **Language:** en
 
@@ -16,30 +16,33 @@
 
 ## Phase Summary
 
-|     Phase | Name                          | Status        |   Tasks |    Done | Progress |
-| --------: | ----------------------------- | ------------- | ------: | ------: | -------: |
-|         0 | Development Environment Setup | `IN_PROGRESS` |      54 |      40 |      74% |
-|         1 | Project Foundation            | `IN_PROGRESS` |      51 |      48 |      94% |
-|         2 | Capture Station Core          | `IN_PROGRESS` |      43 |      37 |      86% |
-|         3 | Perception Pipeline           | `COMPLETE`    |      37 |      37 |     100% |
-|         4 | Measurement Engine            | `COMPLETE`    |      36 |      36 |     100% |
-|         5 | Platform and Trust Layer      | `IN_PROGRESS` |      46 |      38 |      83% |
-|         6 | Web Application               | `IN_PROGRESS` |      49 |      49 |     100% |
-|         7 | Integration and Pilot         | `IN_PROGRESS` |      35 |      24 |      69% |
-|         8 | Production Hardening          | `IN_PROGRESS` |      50 |      17 |      34% |
-| **Total** |                               |               | **401** | **326** |  **81%** |
+|     Phase | Name                          | Implementation | Acceptance    |   Tasks |    Done | Progress |
+| --------: | ----------------------------- | -------------- | ------------- | ------: | ------: | -------: |
+|         0 | Development Environment Setup | `IN_PROGRESS`  | `IN_PROGRESS` |      54 |      40 |      74% |
+|         1 | Project Foundation            | `IN_PROGRESS`  | `IN_PROGRESS` |      51 |      48 |      94% |
+|         2 | Capture Station Core          | `IN_PROGRESS`  | `BLOCKED`     |      43 |      37 |      86% |
+|         3 | Perception Pipeline           | `COMPLETE`     | `BLOCKED`     |      45 |      45 |     100% |
+|         4 | Measurement Engine            | `COMPLETE`     | `BLOCKED`     |      45 |      45 |     100% |
+|         5 | Platform and Trust Layer      | `COMPLETE`     | `IN_PROGRESS` |      46 |      46 |     100% |
+|         6 | Web Application               | `COMPLETE`     | `BLOCKED`     |      49 |      49 |     100% |
+|         7 | Integration and Pilot         | `IN_PROGRESS`  | `BLOCKED`     |      35 |      24 |      69% |
+|         8 | Production Hardening          | `IN_PROGRESS`  | `BLOCKED`     |      50 |      17 |      34% |
+| **Total** |                               |                |               | **418** | **351** |  **84%** |
 
-Task counts follow the detailed phase files. Completed implementation tasks may still have blocked phase-level acceptance gates.
+Task counts are calculated from task checkboxes in the detailed phase files. Implementation
+is complete only when every task checkbox is complete. Acceptance is tracked independently
+and remains blocked where required runtime, cross-platform, external, or hardware evidence is
+not yet available.
 
 ## Current Validation
 
 | Stack                         | Result  | Evidence                             |
 | ----------------------------- | ------- | ------------------------------------ |
-| Python formatting and lint    | PARTIAL | Phase 7 performance files pass Ruff; 59 pre-existing Phase 3 lint findings remain |
-| Python type checking          | PARTIAL | Phase 6 API passes strict Pyright; 17 pre-existing measurement/doctor findings remain |
-| Python tests and coverage     | PASS    | 220 tests, including signed updates, rollback, containers, and packages |
+| Python formatting and lint    | PASS    | Full workspace Ruff validation passes with zero findings |
+| Python type checking          | PASS    | Full strict Pyright validation passes with zero errors and zero warnings |
+| Python tests and coverage     | PASS    | 287 passed, 2 environment-gated skips, 86.12% total coverage |
 | .NET release build            | PASS    | Zero warnings, zero errors           |
-| .NET tests                    | PASS    | 61 tests: 38 platform API/station/storage, 6 contracts, 17 data |
+| .NET tests                    | PASS    | 83 passed and 1 CNG-provider qualification skipped: 60 platform API/station/storage/sync/export/jobs, 6 contracts, 17 data |
 | Frontend lint and type-check  | PASS    | Operator, admin, generated API client |
 | Frontend tests                | PASS    | 28 unit/integration tests plus 8 Edge E2E/axe/visual tests |
 | Frontend coverage             | PASS    | Operator 83.36%; admin 83.13% statements |
@@ -57,6 +60,17 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 
 | Timestamp (UTC)      | Phase | Action                                                                                                                                                   |
 | -------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-17T17:41:28Z | 5     | Completed TASK-5.2.8.5 with successful-delivery, delayed-retry, and fifth-attempt dead-letter regressions. All 46 Phase 5 implementation tasks are complete; acceptance remains separately in progress. |
+| 2026-08-17T17:39:39Z | 5     | Completed TASK-5.2.8.4 with idempotent webhook fan-out, secure secret storage, HMAC-SHA256 delivery, exponential retry/dead-letter transitions, a hosted worker, and two passing notification tests. |
+| 2026-08-17T17:35:30Z | 5     | Completed TASK-5.2.8.2 with a typed durable measurement queue, completed-capture and approved-tech-pack gates, canonical payloads, deterministic idempotency, and three passing queue tests. |
+| 2026-08-17T17:32:14Z | 5     | Completed TASK-5.2.7.3 with a protected, paginated PDF inspection export beside CSV; multi-page unit and authenticated tenant-scoped HTTP tests pass, and all 53 executable platform API tests pass. |
+| 2026-08-17T17:26:54Z | 5     | Completed TASK-5.2.6.5 with persistence-backed replay, conflict, and tenant-isolation tests; fixed sync attempt/conflict updates to save before returning, and all 51 executable platform API tests pass. |
+| 2026-08-17T17:23:37Z | 5     | Completed TASK-5.2.5.2 with atomic encrypted key storage, non-exportable Windows CNG wrapping, and optional TPM provider selection; four portable tests pass and restricted-host CNG qualification remains open. |
+| 2026-08-17T17:16:34Z | 5     | Completed TASK-5.2.4.6 with isolated persistence-backed station registration tests for idempotency, thumbprint normalization, cross-tenant conflicts, and validation failures; 44 platform API tests pass. |
+| 2026-08-17T17:11:33Z | 5     | Completed TASK-5.2.1.7 with three HTTP-level ASP.NET pipeline tests for health/security headers, authentication enforcement, development JWTs, and versioned OpenAPI; 41 platform API tests pass. |
+| 2026-08-17T17:07:37Z | 3/4   | Closed Python quality debt: Ruff 56→0, Pyright 815→0 after binding Pyright to the locked workspace environment and correcting genuine typing issues; hardened tech-pack input validation and passed 287 tests at 86.12% coverage. |
+| 2026-08-17T16:54:57Z | 3     | Restored all locked Python dependency groups, fixed nondeterministic uncheckpointed landmark ONNX verification, and passed the full suite: 282 tests, 2 environment-gated skips, 86.06% coverage. |
+| 2026-08-17T16:44:15Z | 0-8   | Reconciled all phase checkboxes: corrected Phases 3 and 4 to 45 tasks each and the roadmap to 418 total / 343 done / 82%; separated implementation completion from acceptance and recorded current Python validation blockers. |
 | 2026-08-16T10:36:10Z | 8     | Added RSA-PSS signed update manifests, package hashes, schema compatibility, deterministic staged rollout, offline staging, atomic activation/rollback, locked cryptography, and four passing tests; managed signing/publication gates remain open. |
 | 2026-08-16T10:21:03Z | 8     | Hardened all four application OCI images with non-root users, image health checks, OCI labels, read-only filesystems, dropped capabilities, no-new-privileges, non-root nginx runtime paths, and six passing tests; live Docker acceptance remains open. |
 | 2026-08-16T10:13:27Z | 8     | Added an offline Linux amd64 Debian package with preserved configuration, lifecycle scripts, payload hashes, hardened systemd units, Linux CI, and three passing tests; remote build and live lifecycle acceptance remain open. |
@@ -65,7 +79,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | 2026-08-16T08:53:45Z | 8     | Completed the production secret-management review with runtime-injection and rotation policy, a placeholder-only environment template, a tracked-file credential scanner, and four passing regression tests; the repository scan reports zero findings. |
 | 2026-08-16T08:44:57Z | 8     | Enforced capture encryption at rest with S3 AES256/KMS metadata, production HTTPS/KMS validation, encrypted upload registration, platform rejection of plaintext production captures, BitLocker/LUKS policy, and five new tests. |
 | 2026-08-16T08:32:52Z | 8     | Completed authentication/authorisation and TLS audits with fail-closed API authentication, hardened JWT claims, production secret/HTTPS validation, station certificate chain/EKU/revocation/root policy, security headers, documentation, and six new tests. |
-| 2026-08-16T08:16:19Z | 8     | Started Phase 8, corrected its scope from 36 to 50 tasks and the roadmap from 387 to 401, documented the production threat model, and added a canonical evidence contract for all 15 release quality gates with three passing tests. |
+| 2026-08-16T08:16:19Z | 8     | Started Phase 8, corrected its scope from 36 to 50 tasks and the then-reported roadmap from 387 to 401 (later reconciled to 418), documented the production threat model, and added a canonical evidence contract for all 15 release quality gates with three passing tests. |
 | 2026-08-15T09:00:23Z | 7     | Completed all six pilot-preparation tasks with operator training, deployment/support/incident procedures, OTLP/Prometheus/Grafana monitoring and alerting, and verified PostgreSQL/MinIO backup/restore tooling; live empty-environment restore acceptance remains open. |
 | 2026-08-15T08:38:15Z | 7     | Added versioned cross-platform replay fingerprints/tolerances and Windows/Ubuntu CI, application containers/Compose profile, and a verified Linux x64 station package with locked requirements, service templates, and SHA-256 manifest; live CI/container/package startup remains open. |
 | 2026-08-15T08:09:24Z | 7     | Added process crash, ambiguous network, duplicate delivery, checksum, dead-letter, database-503 retention, and flaky-camera recovery suites; added controlled database 503 handling, audit tenant isolation, and a gated concurrent PostgreSQL stress test. |
@@ -79,7 +93,7 @@ Task counts follow the detailed phase files. Completed implementation tasks may 
 | 2026-08-14T18:41:43Z | 5     | Closed the tenant write-path vulnerability: JWT tenant claims are authoritative, conflicting headers and request tenants return 403, station registration requires authorisation, and 16 focused platform API tests pass. |
 | 2026-08-14T18:25:20Z | 6     | Implemented all 49 Phase 6 tasks, including industrial React apps, shared UI/generated client, JWT/RBAC flows, station browser API, authorised evidence assets, tech-pack facade/gateway, tenant persistence, immutable migration, API retry tests, and Edge E2E/axe/visual coverage. Phase remains in progress until Chromium CI and database runtime acceptance execute. |
 | 2026-08-06T17:32:54Z | 5     | Added Phase 5 platform/trust backbone: versioned API groups, validation, rate limiting, tenant query filters, RBAC/JWT, station/device management, evidence signing, sync envelopes, reporting/export, webhook/job persistence, reversible migration, and 11 new tests. Phase 5 is 37/46 tasks done. |
-| 2026-08-05T17:52:00Z | 3     | **Phase 3 COMPLETE.** Added U-Net segmentation model, heatmap landmark model, annotation schema, dataset registry, experiment tracker, model registry, training pipeline, evaluation pipeline, drift detector, ONNX exports (T-3.008 PASS), model cards, graph landmark refinement, drape compensation, and 93 new tests (25 drape, 26 segmentation, 32 landmark, 35 ML integration). All 37 Phase 3 tasks done. |
+| 2026-08-05T17:52:00Z | 3     | **Phase 3 implementation complete.** Added U-Net segmentation model, heatmap landmark model, annotation schema, dataset registry, experiment tracker, model registry, training pipeline, evaluation pipeline, drift detector, ONNX exports (T-3.008 PASS), model cards, graph landmark refinement, drape compensation, and Phase 3 tests. All 45 implementation tasks are checked complete; hardware acceptance remains separate. |
 | 2026-08-05T17:16:30Z | 4     | Added deterministic POM ontology, tech-pack import, compiler, executor, decision engine, evidence hashing, .NET contracts/data, and passing Phase 4 tests |
 | 2026-08-01T08:20:52Z | 3     | Added replay regression and performance tests for canonical JSON stability, landmark consistency, mesh validity, and 15-second runtime target       |
 | 2026-08-01T08:09:33Z | 3     | Added lightweight indexed visualisation mesh generation, canonical mesh JSON export, perception-result mesh metadata, and 4 unit tests              |

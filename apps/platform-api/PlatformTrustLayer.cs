@@ -765,6 +765,8 @@ public sealed class SyncProtocolService
             cancellationToken);
         if (existing is not null)
         {
+            existing.Attempts++;
+            existing.LastAttemptAtUtc = DateTimeOffset.UtcNow;
             if (!string.Equals(existing.PayloadHashSha256, request.PayloadHashSha256, StringComparison.Ordinal))
             {
                 existing.Status = "conflict";
@@ -777,6 +779,7 @@ public sealed class SyncProtocolService
                     SpecProofJsonOptions.Canonical);
             }
 
+            await database.SaveChangesAsync(cancellationToken);
             return existing;
         }
 
@@ -802,6 +805,8 @@ public sealed class SyncProtocolService
 
 public sealed class ReportingExportService
 {
+    private const int PdfRowsPerPage = 30;
+
     public string ToInspectionCsv(IEnumerable<InspectionResultDto> inspections)
     {
         var builder = new StringBuilder();
@@ -823,6 +828,116 @@ public sealed class ReportingExportService
 
         return builder.ToString();
     }
+
+    public byte[] ToInspectionPdf(IEnumerable<InspectionResultDto> inspections)
+    {
+        var rows = inspections.ToArray();
+        var pageCount = Math.Max(1, (rows.Length + PdfRowsPerPage - 1) / PdfRowsPerPage);
+        var pageObjectNumbers = Enumerable.Range(0, pageCount).Select(index => 4 + (index * 2)).ToArray();
+        var objects = new SortedDictionary<int, string>
+        {
+            [1] = "<< /Type /Catalog /Pages 2 0 R >>",
+            [2] = $"<< /Type /Pages /Kids [{string.Join(' ', pageObjectNumbers.Select(number => $"{number} 0 R"))}] /Count {pageCount} >>",
+            [3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        };
+
+        for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
+        {
+            var pageObjectNumber = pageObjectNumbers[pageIndex];
+            var contentObjectNumber = pageObjectNumber + 1;
+            var pageRows = rows
+                .Skip(pageIndex * PdfRowsPerPage)
+                .Take(PdfRowsPerPage);
+            var content = BuildPdfPageContent(pageRows, pageIndex + 1, pageCount);
+            var contentLength = Encoding.ASCII.GetByteCount(content);
+            objects[pageObjectNumber] =
+                $"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents {contentObjectNumber} 0 R >>";
+            objects[contentObjectNumber] = $"<< /Length {contentLength} >>\nstream\n{content}endstream";
+        }
+
+        return BuildPdfDocument(objects);
+    }
+
+    private static string BuildPdfPageContent(
+        IEnumerable<InspectionResultDto> inspections,
+        int pageNumber,
+        int pageCount)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("BT")
+            .AppendLine("/F1 16 Tf")
+            .AppendLine("50 750 Td")
+            .AppendLine("(SpecProof Inspection Report) Tj")
+            .AppendLine("0 -24 Td")
+            .AppendLine("/F1 8 Tf")
+            .AppendLine("(Inspection ID | Station | Captured UTC | Status | Evidence Hash) Tj");
+        foreach (var inspection in inspections)
+        {
+            var row = string.Join(
+                " | ",
+                inspection.InspectionId,
+                Truncate(inspection.StationId, 18),
+                inspection.CapturedAtUtc.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture),
+                inspection.Status,
+                Truncate(inspection.EvidenceRecordHash, 12));
+            builder.AppendLine("0 -18 Td")
+                .Append('(')
+                .Append(EscapePdfText(row))
+                .AppendLine(") Tj");
+        }
+
+        builder.AppendLine("0 -24 Td")
+            .Append('(')
+            .Append(EscapePdfText($"Page {pageNumber} of {pageCount}"))
+            .AppendLine(") Tj")
+            .AppendLine("ET");
+        return builder.ToString();
+    }
+
+    private static byte[] BuildPdfDocument(IReadOnlyDictionary<int, string> objects)
+    {
+        var builder = new StringBuilder("%PDF-1.4\n");
+        var offsets = new int[objects.Count + 1];
+        foreach (var (objectNumber, body) in objects)
+        {
+            offsets[objectNumber] = Encoding.ASCII.GetByteCount(builder.ToString());
+            builder.Append(objectNumber)
+                .AppendLine(" 0 obj")
+                .AppendLine(body)
+                .AppendLine("endobj");
+        }
+
+        var crossReferenceOffset = Encoding.ASCII.GetByteCount(builder.ToString());
+        builder.AppendLine("xref")
+            .Append("0 ")
+            .AppendLine((objects.Count + 1).ToString(CultureInfo.InvariantCulture))
+            .AppendLine("0000000000 65535 f ");
+        for (var objectNumber = 1; objectNumber <= objects.Count; objectNumber++)
+        {
+            builder.Append(offsets[objectNumber].ToString("D10", CultureInfo.InvariantCulture))
+                .AppendLine(" 00000 n ");
+        }
+
+        builder.AppendLine("trailer")
+            .Append("<< /Size ")
+            .Append(objects.Count + 1)
+            .AppendLine(" /Root 1 0 R >>")
+            .AppendLine("startxref")
+            .AppendLine(crossReferenceOffset.ToString(CultureInfo.InvariantCulture))
+            .AppendLine("%%EOF");
+        return Encoding.ASCII.GetBytes(builder.ToString());
+    }
+
+    private static string EscapePdfText(string value) =>
+        new string(value
+            .Select(character => character is >= ' ' and <= '~' ? character : '?')
+            .ToArray())
+        .Replace("\\", "\\\\", StringComparison.Ordinal)
+        .Replace("(", "\\(", StringComparison.Ordinal)
+        .Replace(")", "\\)", StringComparison.Ordinal);
+
+    private static string Truncate(string value, int maximumLength) =>
+        value.Length <= maximumLength ? value : value[..maximumLength];
 
     private static string Escape(string value) =>
         value.Contains(',', StringComparison.Ordinal) || value.Contains('"', StringComparison.Ordinal)

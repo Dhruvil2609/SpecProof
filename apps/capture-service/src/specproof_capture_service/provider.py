@@ -25,7 +25,7 @@ class CameraProvider(Protocol):
         """Capture aligned RGB-D frames."""
         ...
 
-    async def stream_preview(
+    def stream_preview(
         self,
         camera_serial: str,
         profile: StreamProfile,

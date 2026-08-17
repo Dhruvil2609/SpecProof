@@ -16,7 +16,6 @@ Usage
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -24,7 +23,6 @@ from typing import Any
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.optim as optim
 
 from ml.datasets.annotation_schema import GarmentAnnotation, split_annotations
@@ -35,7 +33,6 @@ from ml.training.segmentation_model import (
     segmentation_iou,
     segmentation_loss,
 )
-
 
 # ---------------------------------------------------------------------------
 # Trainer configuration

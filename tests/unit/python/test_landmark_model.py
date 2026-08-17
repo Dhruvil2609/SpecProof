@@ -9,7 +9,6 @@ Covers:
 
 from __future__ import annotations
 
-import math
 import sys
 from pathlib import Path
 
@@ -21,14 +20,13 @@ import torch
 sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from ml.training.landmark_model import (
+    NUM_LANDMARKS,
     GarmentLandmarkModel,
     LandmarkModelConfig,
-    NUM_LANDMARKS,
     generate_heatmap_targets,
     landmark_heatmap_loss,
     landmark_recall_at_threshold,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -140,7 +138,7 @@ class TestHeatmapTargets:
         targets = generate_heatmap_targets(points, height=64, width=64, sigma=3.0)  # type: ignore[arg-type]
         channel = targets[0]
         flat_idx = int(channel.argmax().item())
-        h, w = 64, 64
+        w = 64
         peak_y = flat_idx // w
         peak_x = flat_idx % w
         assert peak_x == 20 and peak_y == 30, (
@@ -257,7 +255,11 @@ class TestGraphRefineLandmarks:
     def test_graph_refine_returns_landmark_set(self) -> None:
         """graph_refine_landmarks returns a LandmarkSet."""
         import numpy as np
-        from specproof_measurement_service.landmarks import LandmarkSet, detect_tshirt_landmarks, graph_refine_landmarks
+        from specproof_measurement_service.landmarks import (
+            LandmarkSet,
+            detect_tshirt_landmarks,
+            graph_refine_landmarks,
+        )
 
         mask = np.zeros((200, 200), dtype=np.bool_)
         # Simple rectangle (no neckline)
@@ -270,7 +272,10 @@ class TestGraphRefineLandmarks:
     def test_graph_refine_preserves_landmark_count(self) -> None:
         """Refined landmark set has same number of landmarks."""
         import numpy as np
-        from specproof_measurement_service.landmarks import detect_tshirt_landmarks, graph_refine_landmarks
+        from specproof_measurement_service.landmarks import (
+            detect_tshirt_landmarks,
+            graph_refine_landmarks,
+        )
 
         mask = np.zeros((200, 200), dtype=np.bool_)
         mask[20:180, 60:140] = True
@@ -283,7 +288,10 @@ class TestGraphRefineLandmarks:
         """After refinement, left-side landmarks are ordered top to bottom."""
         import numpy as np
         from specproof_measurement_service.landmarks import (
-            LandmarkName, LandmarkStatus, detect_tshirt_landmarks, graph_refine_landmarks
+            LandmarkName,
+            LandmarkStatus,
+            detect_tshirt_landmarks,
+            graph_refine_landmarks,
         )
 
         # Create a T-shirt mask
@@ -305,7 +313,7 @@ class TestGraphRefineLandmarks:
         )
         prev_y = -1.0
         for name in _LEFT_SEQUENCE:
-            lm = next((l for l in refined.landmarks if l.name == name), None)
+            lm = next((landmark for landmark in refined.landmarks if landmark.name == name), None)
             if lm is None or lm.status != LandmarkStatus.DETECTED:
                 continue
             assert lm.y > prev_y, (
@@ -317,7 +325,10 @@ class TestGraphRefineLandmarks:
     def test_graph_refine_empty_mask_no_error(self) -> None:
         """Graph refinement on empty mask does not raise."""
         import numpy as np
-        from specproof_measurement_service.landmarks import detect_tshirt_landmarks, graph_refine_landmarks
+        from specproof_measurement_service.landmarks import (
+            detect_tshirt_landmarks,
+            graph_refine_landmarks,
+        )
 
         mask = np.zeros((100, 100), dtype=np.bool_)
         original = detect_tshirt_landmarks(mask)
@@ -331,6 +342,24 @@ class TestGraphRefineLandmarks:
 
 
 class TestLandmarkONNXExport:
+    @pytest.mark.unit
+    def test_uncheckpointed_export_is_reproducible(self, tmp_path: Path) -> None:
+        """Repeated uncheckpointed exports use stable weights and verification input."""
+        from ml.exports.export_landmark_onnx import export_landmark_model
+
+        first = export_landmark_model(
+            tmp_path / "landmark-first.onnx",
+            image_height=64,
+            image_width=64,
+        )
+        second = export_landmark_model(
+            tmp_path / "landmark-second.onnx",
+            image_height=64,
+            image_width=64,
+        )
+
+        assert first["verification_detail"] == second["verification_detail"]
+
     @pytest.mark.unit
     def test_onnx_export_and_round_trip(self, tmp_path: Path) -> None:
         """T-3.008 — Landmark ONNX output matches PyTorch output (max diff < 1e-5)."""

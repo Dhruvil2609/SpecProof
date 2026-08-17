@@ -419,7 +419,7 @@ public sealed class BackgroundJobRecord : TenantEntity
 
     public int Attempts { get; set; }
 
-    public DateTimeOffset AvailableAtUtc { get; init; }
+    public DateTimeOffset AvailableAtUtc { get; set; }
 
     public DateTimeOffset? StartedAtUtc { get; set; }
 

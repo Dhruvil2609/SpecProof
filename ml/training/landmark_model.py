@@ -18,7 +18,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -301,7 +300,7 @@ def landmark_recall_at_threshold(
 
     total = 0
     hits = 0
-    for item_decoded, item_gt in zip(decoded, ground_truth):
+    for item_decoded, item_gt in zip(decoded, ground_truth, strict=True):
         for name, gt_point in item_gt.items():
             total += 1
             pred_info = item_decoded.get(name)

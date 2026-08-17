@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -568,6 +569,32 @@ public sealed class PlatformTrustLayerTests
         var csv = service.ToInspectionCsv([inspection]);
 
         Assert.Contains("\"station,quoted\"", csv, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReportingExportService_ToInspectionPdf_WritesValidMultiPageDocument()
+    {
+        var service = new ReportingExportService();
+        var inspections = Enumerable.Range(0, 31)
+            .Select(index => new InspectionResultDto(
+                Guid.Parse($"bbbbbbbb-bbbb-bbbb-bbbb-{index:D12}"),
+                $"station-{index}",
+                "camera-1",
+                DateTimeOffset.Parse("2026-08-06T00:00:00Z").AddMinutes(index),
+                [],
+                InspectionStatus.Pass,
+                new string('a', 64)))
+            .ToArray();
+
+        var pdf = service.ToInspectionPdf(inspections);
+        var document = Encoding.ASCII.GetString(pdf);
+
+        Assert.StartsWith("%PDF-1.4", document, StringComparison.Ordinal);
+        Assert.Contains("/Type /Pages", document, StringComparison.Ordinal);
+        Assert.Contains("/Count 2", document, StringComparison.Ordinal);
+        Assert.Contains("SpecProof Inspection Report", document, StringComparison.Ordinal);
+        Assert.Contains("station-30", document, StringComparison.Ordinal);
+        Assert.EndsWith($"%%EOF{Environment.NewLine}", document, StringComparison.Ordinal);
     }
 
     [Fact]

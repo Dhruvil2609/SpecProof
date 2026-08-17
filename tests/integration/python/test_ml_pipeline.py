@@ -39,7 +39,7 @@ class TestDatasetRegistryIntegration:
         paths = generate_synthetic_tshirt_dataset(ann_dir, count=6)
 
         registry = DatasetRegistry(tmp_path / "registry")
-        version = registry.register(
+        registry.register(
             dataset_id="tshirt-seg",
             version="1.0.0",
             description="Synthetic T-shirt segmentation dataset",

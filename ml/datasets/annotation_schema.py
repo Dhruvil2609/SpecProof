@@ -30,7 +30,6 @@ from typing import Any
 import numpy as np
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Annotation schema
 # ---------------------------------------------------------------------------
@@ -156,7 +155,6 @@ def generate_synthetic_tshirt_dataset(
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    rng = random.Random(seed)
     np_rng = np.random.default_rng(seed)
     paths: list[Path] = []
 

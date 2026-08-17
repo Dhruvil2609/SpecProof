@@ -9,7 +9,7 @@ import time
 import tracemalloc
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, cast
 
 import onnxruntime as ort
 from pydantic import BaseModel
@@ -82,7 +82,8 @@ def benchmark_operation(
 def select_onnx_providers(*, prefer_cuda: bool = True) -> OnnxProviderQualification:
     """Select CUDA when available and leave hardware acceptance explicitly pending otherwise."""
 
-    available = tuple(ort.get_available_providers())
+    provider_names = cast(Sequence[str], ort.get_available_providers())
+    available = tuple(provider_names)
     cuda_available = "CUDAExecutionProvider" in available
     selected = (
         ("CUDAExecutionProvider", "CPUExecutionProvider")

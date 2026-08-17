@@ -2,8 +2,10 @@
 
 **Phase ID:** PHASE-5  
 **Status:** `IN_PROGRESS`  
+**Implementation Status:** `COMPLETE`
+**Acceptance Status:** `IN_PROGRESS`
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-14T18:58:15Z
+**Last Updated:** 2026-08-17T17:41:28Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 4  
 **Language:** en  
@@ -30,7 +32,7 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 - [x] **TASK-5.2.1.4** — Global error handling with RFC 7807 Problem Details ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.1.5** — API versioning strategy ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.1.6** — Rate limiting ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.1.7** — Write API endpoint tests
+- [x] **TASK-5.2.1.7** — Write API endpoint tests ✅ (2026-08-17T17:11:33Z)
 
 ### 5.2.2 Multi-Tenancy
 
@@ -56,12 +58,12 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 - [x] **TASK-5.2.4.3** — Remote diagnostics endpoint ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.4.4** — Station configuration push ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.4.5** — Firmware and software version tracking ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.4.6** — Write station management tests
+- [x] **TASK-5.2.4.6** — Write station management tests ✅ (2026-08-17T17:16:34Z)
 
 ### 5.2.5 Trust and Signing Layer
 
 - [x] **TASK-5.2.5.1** — Evidence record digital signature (service-side) ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.5.2** — Secure key storage (Windows CNG/DPAPI/TPM abstraction)
+- [x] **TASK-5.2.5.2** — Secure key storage (Windows CNG/DPAPI/TPM abstraction) ✅ (2026-08-17T17:23:37Z)
 - [x] **TASK-5.2.5.3** — Signature verification API ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.5.4** — Append-only audit event stream ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.5.5** — Tamper-evident hash chain ✅ (2026-08-06T17:32:54Z)
@@ -73,13 +75,13 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 - [x] **TASK-5.2.6.2** — Idempotent sync protocol ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.6.3** — Conflict detection and resolution ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.6.4** — Retry and dead-letter handling ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.6.5** — Write sync integration tests
+- [x] **TASK-5.2.6.5** — Write sync integration tests ✅ (2026-08-17T17:26:54Z)
 
 ### 5.2.7 Reporting and Export
 
 - [x] **TASK-5.2.7.1** — Inspection result API ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.7.2** — Batch/order summary API ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.7.3** — CSV and PDF export
+- [x] **TASK-5.2.7.3** — CSV and PDF export ✅ (2026-08-17T17:32:14Z)
 - [x] **TASK-5.2.7.4** — Webhook/event output ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.7.5** — Data retention and deletion API ✅ (2026-08-06T17:32:54Z)
 - [x] **TASK-5.2.7.6** — Write export tests ✅ (2026-08-06T17:32:54Z)
@@ -87,10 +89,10 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 ### 5.2.8 Background Processing
 
 - [x] **TASK-5.2.8.1** — Background job infrastructure (Hangfire or custom) ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.8.2** — Measurement processing queue
+- [x] **TASK-5.2.8.2** — Measurement processing queue ✅ (2026-08-17T17:35:30Z)
 - [x] **TASK-5.2.8.3** — Report generation queue ✅ (2026-08-06T17:32:54Z)
-- [ ] **TASK-5.2.8.4** — Notification dispatch
-- [ ] **TASK-5.2.8.5** — Write background job tests
+- [x] **TASK-5.2.8.4** — Notification dispatch ✅ (2026-08-17T17:39:39Z)
+- [x] **TASK-5.2.8.5** — Write background job tests ✅ (2026-08-17T17:41:28Z)
 
 ---
 
@@ -124,6 +126,38 @@ with simulated stations, generated capture metadata, Docker PostgreSQL, and MinI
 - 2026-08-14T18:41:43Z — Made the authenticated JWT `tenant_id` claim authoritative, rejected missing or conflicting tenant context, guarded every tenant-bearing platform write request, and protected station registration with station-management permission.
 - 2026-08-14T18:41:43Z — Passed 16 focused platform API unit tests, including six tenant-boundary regression tests.
 - 2026-08-14T18:58:15Z — Added active-window client-certificate authentication, least-privilege station claims, same-station request enforcement, globally conflict-safe certificate registration, audited certificate rotation, and seven focused regressions; 23 platform API tests pass.
+- 2026-08-17T17:11:33Z — Added three ASP.NET test-host endpoint regressions covering
+  anonymous health and security headers, protected API rejection, development-token
+  authentication, and the versioned OpenAPI document. All 41 platform API tests pass.
+- 2026-08-17T17:16:34Z — Added an isolated EF test host and three station-registration
+  endpoint tests covering idempotent registration, canonical certificate thumbprints,
+  cross-tenant certificate conflicts, and RFC 7807 validation failures. All 44 platform
+  API tests pass.
+- 2026-08-17T17:23:37Z — Added secure key-protector/storage abstractions, atomic
+  ciphertext-only file persistence, non-exportable Windows CNG RSA wrapping, and optional
+  Microsoft Platform Crypto Provider selection for TPM-backed keys. Four portable security
+  tests pass; persistent CNG provider qualification is skipped on the restricted local host
+  and remains an acceptance gate.
+- 2026-08-17T17:26:54Z — Added persistence-backed sync integration tests for identical
+  replay, conflicting payload hashes, and tenant isolation. Fixed replay/conflict state so
+  attempt counts and conflict evidence are saved before returning; all 51 executable platform
+  API tests pass, with one restricted-host CNG qualification skipped.
+- 2026-08-17T17:32:14Z — Added a permission-protected PDF inspection export endpoint with
+  paginated, deterministic PDF output alongside the existing CSV export. Unit coverage verifies
+  valid multi-page structure and an authenticated HTTP test verifies media type, attachment name,
+  and tenant-scoped report content; all 53 executable platform API tests pass.
+- 2026-08-17T17:35:30Z — Added a typed, durable measurement-processing enqueue service and
+  protected API path. Jobs require a completed tenant/station capture and approved tech-pack
+  version, use canonical payloads and deterministic idempotency, and persist to the measurements
+  queue; all 56 executable platform API tests pass.
+- 2026-08-17T17:39:39Z — Added durable, idempotent webhook notification fan-out, secure secret
+  persistence, HMAC-SHA256 request signing, exponential retries, dead-letter handling, and a
+  hosted dispatcher. Queue and signed-delivery tests pass; all 58 executable platform API tests
+  pass with one restricted-host CNG qualification skipped.
+- 2026-08-17T17:41:28Z — Added background-job state-transition regressions for successful
+  dispatch, delayed retry after transient HTTP failure, and dead-lettering on the fifth attempt.
+  All seven focused queue/dispatcher tests and all 60 executable platform API tests pass. Every
+  Phase 5 implementation task is complete; runtime acceptance gates remain tracked separately.
 
 ---
 

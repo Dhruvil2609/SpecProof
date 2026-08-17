@@ -8,12 +8,12 @@ Provides a thin wrapper around MLflow that:
 
 from __future__ import annotations
 
-import json
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+ParamValue = str | int | float | bool | None
 
 # ---------------------------------------------------------------------------
 # Abstract interface
@@ -32,11 +32,11 @@ class ExperimentTracker(ABC):
         """End the current run."""
 
     @abstractmethod
-    def log_param(self, key: str, value: Any) -> None:
+    def log_param(self, key: str, value: ParamValue) -> None:
         """Log a scalar parameter."""
 
     @abstractmethod
-    def log_params(self, params: dict[str, Any]) -> None:
+    def log_params(self, params: dict[str, ParamValue]) -> None:
         """Log multiple parameters at once."""
 
     @abstractmethod
@@ -75,7 +75,7 @@ class _RunRecord:
         self.run_id = run_id
         self.run_name = run_name
         self.tags: dict[str, str] = dict(tags)
-        self.params: dict[str, Any] = {}
+        self.params: dict[str, ParamValue] = {}
         self.metrics: dict[str, list[tuple[float, int | None]]] = {}
         self.artifacts: list[Path] = []
         self.started_at_utc = datetime.now(UTC)
@@ -111,10 +111,10 @@ class NoOpTracker(ExperimentTracker):
             self._runs[self._active_run_id].ended_at_utc = datetime.now(UTC)
         self._active_run_id = None
 
-    def log_param(self, key: str, value: Any) -> None:
+    def log_param(self, key: str, value: ParamValue) -> None:
         self._active_record().params[key] = value
 
-    def log_params(self, params: dict[str, Any]) -> None:
+    def log_params(self, params: dict[str, ParamValue]) -> None:
         self._active_record().params.update(params)
 
     def log_metric(self, key: str, value: float, step: int | None = None) -> None:
@@ -204,10 +204,10 @@ class MLflowTracker(ExperimentTracker):
             self._mlflow.end_run()
             self._active_run = None
 
-    def log_param(self, key: str, value: Any) -> None:
+    def log_param(self, key: str, value: ParamValue) -> None:
         self._mlflow.log_param(key, value)
 
-    def log_params(self, params: dict[str, Any]) -> None:
+    def log_params(self, params: dict[str, ParamValue]) -> None:
         self._mlflow.log_params(params)
 
     def log_metric(self, key: str, value: float, step: int | None = None) -> None:

@@ -21,9 +21,13 @@
         "apps/station-host/SpecProof.Station.Host.csproj"
       ],
       "workingDirectory": ".",
-      "port": null,
-      "healthUrl": null,
-      "environment": {}
+      "port": 5090,
+      "healthUrl": "http://127.0.0.1:5090/api/v1/health",
+      "environment": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://127.0.0.1:5090",
+        "CaptureService__Address": "http://127.0.0.1:50051"
+      }
     },
     {
       "name": "platform-api",
@@ -57,7 +61,10 @@
       "workingDirectory": ".",
       "port": 5173,
       "healthUrl": "http://127.0.0.1:5173",
-      "environment": {}
+      "environment": {
+        "VITE_STATION_API_URL": "http://127.0.0.1:5090",
+        "VITE_STATION_MODE": "simulated"
+      }
     },
     {
       "name": "admin-ui",

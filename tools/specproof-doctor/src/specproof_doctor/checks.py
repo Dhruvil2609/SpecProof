@@ -313,7 +313,10 @@ def default_realsense_stream_probe(_: float) -> bool:
     try:
         import pyrealsense2 as rs
 
-        devices = cast(Sequence[object], rs.context().query_devices())
+        devices = cast(
+            Sequence[object],
+            rs.context().query_devices(),  # pyright: ignore[reportAttributeAccessIssue]
+        )
         return len(devices) > 0
     except (ImportError, RuntimeError):
         return False

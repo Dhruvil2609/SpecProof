@@ -71,6 +71,18 @@ def test_development_launcher_supports_infrastructure_only_mode() -> None:
     assert "[switch]$InfrastructureOnly" in launcher
     assert "SpecProof Docker infrastructure is running." in launcher
     assert "-InfrastructureOnly" in launcher
+    assert "PostgreSQL:  localhost:55432" in launcher
+    assert "MLflow:      http://localhost:5000" in launcher
+
+
+def test_station_host_uses_dedicated_browser_port() -> None:
+    station_host = next(
+        service for service in load_services() if service["name"] == "station-host"
+    )
+
+    assert station_host["port"] == 5090
+    assert station_host["healthUrl"] == "http://127.0.0.1:5090/api/v1/health"
+    assert station_host["environment"]["ASPNETCORE_URLS"] == "http://127.0.0.1:5090"
 
 
 def test_mlflow_image_includes_pinned_postgresql_driver() -> None:

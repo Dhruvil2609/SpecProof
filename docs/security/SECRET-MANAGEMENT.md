@@ -29,6 +29,19 @@ bundles, or copied into release evidence. Example files contain placeholders onl
   listings; use protected environment injection, files with restrictive permissions, or SDKs.
 - Record rotation as an audit event without recording the secret value.
 
+## Windows Secure Key Storage
+
+The platform exposes `ISecureKeyStorage` and `ISecureKeyProtector` boundaries. The production
+Windows provider wraps key material with a non-exportable 3072-bit RSA CNG key and writes only
+ciphertext through an atomic protected-file store. `Trust:KeyStorage:RequireTpm=true` selects
+the Microsoft Platform Crypto Provider so the wrapping key is TPM-backed; otherwise the
+Microsoft Software Key Storage Provider is used. Machine scope is the production default.
+
+Key identifiers are restricted to safe filename characters, temporary writes are atomically
+activated, encrypted buffers are zeroed after use, and plaintext is never written to disk.
+Linux deployment must bind `ISecureKeyProtector` to an approved HSM, KMS, or OS secure-store
+provider; requesting the Windows provider on Linux fails closed.
+
 ## Repository Enforcement
 
 `tools/security/scan_secrets.py` scans Git-tracked text and rejects private-key files, private

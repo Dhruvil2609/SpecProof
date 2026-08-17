@@ -28,14 +28,13 @@ import torch.optim as optim
 from ml.datasets.annotation_schema import GarmentAnnotation, split_annotations
 from ml.training.experiment_tracker import ExperimentTracker, NoOpTracker
 from ml.training.landmark_model import (
+    LANDMARK_NAMES,
+    NUM_LANDMARKS,
     GarmentLandmarkModel,
     LandmarkModelConfig,
     landmark_heatmap_loss,
     landmark_recall_at_threshold,
-    LANDMARK_NAMES,
-    NUM_LANDMARKS,
 )
-
 
 # ---------------------------------------------------------------------------
 # Trainer configuration
@@ -264,6 +263,7 @@ def _load_landmark_batch(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Load a batch of annotation files as input tensors + heatmap targets."""
     import cv2 as cv
+
     from ml.training.landmark_model import generate_heatmap_targets
 
     inputs: list[torch.Tensor] = []

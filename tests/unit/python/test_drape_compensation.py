@@ -10,11 +10,10 @@ Tests use synthetic flat and near-flat garment fixtures to verify:
 from __future__ import annotations
 
 import math
-from datetime import timezone
+from datetime import UTC
 
 import numpy as np
 import pytest
-
 from specproof_measurement_service.drape import (
     AblationResult,
     FlattenedSurface,
@@ -29,7 +28,6 @@ from specproof_measurement_service.parameterization import (
     SurfaceMapPoint,
     SurfaceParameterization,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -133,7 +131,7 @@ class TestFlattenSurface:
         param = _flat_grid_parameterization()
         result = flatten_surface(param)
         assert result.produced_at_utc.tzinfo is not None
-        assert result.produced_at_utc.tzinfo == timezone.utc
+        assert result.produced_at_utc.tzinfo == UTC
 
     @pytest.mark.unit
     def test_raises_on_fewer_than_3_points(self) -> None:
@@ -287,8 +285,9 @@ class TestMapToReferenceConfiguration:
         flattened = flatten_surface(param)
         ref1 = map_to_reference_configuration(flattened, reference_width_mm=400.0)
         # Construct a synthetic FlattenedSurface from the reference output
+        from datetime import datetime
+
         from specproof_measurement_service.drape import FlattenedSurface
-        from datetime import datetime, timezone
 
         re_flattened = FlattenedSurface(
             u_coords_mm=ref1.u_ref_mm,
@@ -297,7 +296,7 @@ class TestMapToReferenceConfiguration:
             angle_distortion_mean_deg=0.0,
             area_distortion_percent=0.0,
             coordinate_system="support_plane_uv_mm",
-            produced_at_utc=datetime.now(timezone.utc),
+            produced_at_utc=datetime.now(UTC),
         )
         ref2 = map_to_reference_configuration(re_flattened, reference_width_mm=400.0)
         # Both should be centred at origin
@@ -307,7 +306,7 @@ class TestMapToReferenceConfiguration:
     @pytest.mark.unit
     def test_empty_surface_handled_gracefully(self) -> None:
         """Empty flattened surface returns zero-size reference without error."""
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         empty = FlattenedSurface(
             u_coords_mm=np.array([], dtype=np.float64),
@@ -316,7 +315,7 @@ class TestMapToReferenceConfiguration:
             angle_distortion_mean_deg=0.0,
             area_distortion_percent=0.0,
             coordinate_system="support_plane_uv_mm",
-            produced_at_utc=datetime.now(timezone.utc),
+            produced_at_utc=datetime.now(UTC),
         )
         result = map_to_reference_configuration(empty)
         assert result.u_ref_mm.size == 0

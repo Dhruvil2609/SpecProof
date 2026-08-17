@@ -29,6 +29,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
+_DEFAULT_EXPORT_SEED = 20260817
+
 
 def export_landmark_model(
     output_path: Path,
@@ -51,7 +53,7 @@ def export_landmark_model(
     image_width:
         Fixed input width for the export.
     opset_version:
-        ONNX opset version (default 17).
+        ONNX opset version (default 18).
 
     Returns
     -------
@@ -64,13 +66,15 @@ def export_landmark_model(
         If ONNX output does not match PyTorch output within 1e-5.
     """
     from ml.training.landmark_model import (
+        NUM_LANDMARKS,
         GarmentLandmarkModel,
         LandmarkModelConfig,
-        NUM_LANDMARKS,
     )
 
     config = LandmarkModelConfig(in_channels=4, num_landmarks=NUM_LANDMARKS, base_channels=32)
-    model = GarmentLandmarkModel(config)
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(_DEFAULT_EXPORT_SEED)
+        model = GarmentLandmarkModel(config)
 
     if checkpoint_path is not None:
         state = torch.load(str(checkpoint_path), map_location="cpu", weights_only=True)
@@ -80,8 +84,16 @@ def export_landmark_model(
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Fixed dummy input for export
-    dummy_input = torch.zeros(1, 4, image_height, image_width)
+    # A local generator keeps verification reproducible without changing application RNG state.
+    # Non-uniform input avoids ambiguous argmax locations caused by tied zero-input heatmaps.
+    generator = torch.Generator(device="cpu").manual_seed(_DEFAULT_EXPORT_SEED)
+    dummy_input = torch.rand(
+        1,
+        4,
+        image_height,
+        image_width,
+        generator=generator,
+    )
 
     # Reference PyTorch output
     with torch.no_grad():

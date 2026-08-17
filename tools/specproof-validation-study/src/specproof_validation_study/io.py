@@ -6,6 +6,7 @@ import csv
 import json
 from html import escape
 from pathlib import Path
+from typing import Any, cast
 
 from specproof_validation_study.models import StudyObservation, StudyReport
 
@@ -45,10 +46,18 @@ def _write_parquet(observations: tuple[StudyObservation, ...], path: Path) -> No
         import pyarrow.parquet as parquet
     except ImportError as error:
         raise RuntimeError("pyarrow is required to write validation-study Parquet") from error
-    table = pa.Table.from_pylist(
-        [observation.model_dump(mode="json") for observation in observations]
+    table = cast(
+        Any,
+        pa.Table.from_pylist(
+            [observation.model_dump(mode="json") for observation in observations]
+        ),
     )
-    parquet.write_table(table, path, compression="zstd", version="2.6")
+    parquet.write_table(
+        table,
+        path,
+        compression="zstd",
+        version="2.6",
+    )
 
 
 def _render_html(report: StudyReport) -> str:

@@ -49,9 +49,34 @@ builder.Services.AddSingleton<IDeviceCertificatePolicy, DeviceCertificatePolicy>
 builder.Services.AddSingleton<IDeviceCertificateAuthenticator, DeviceCertificateAuthenticator>();
 builder.Services.AddSingleton<DeviceCertificateRotationService>();
 builder.Services.AddSingleton<EvidenceSignatureService>();
+builder.Services.AddSingleton<ISecureKeyProtector>(_ =>
+{
+    if (!OperatingSystem.IsWindows())
+    {
+        throw new PlatformNotSupportedException(
+            "Windows CNG key protection is available only on Windows hosts.");
+    }
+
+    return new WindowsCngKeyProtector(
+        builder.Configuration["Trust:KeyStorage:WrappingKeyName"]
+            ?? "SpecProof-Evidence-Key-Wrapping-v1",
+        requireTpm: builder.Configuration.GetValue("Trust:KeyStorage:RequireTpm", false));
+});
+builder.Services.AddSingleton<ISecureKeyStorage>(provider =>
+    new ProtectedFileKeyStorage(
+        provider.GetRequiredService<ISecureKeyProtector>(),
+        builder.Configuration["Trust:KeyStorage:Directory"]
+            ?? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "SpecProof",
+                "keys")));
 builder.Services.AddSingleton<IntegratedInspectionPersistence>();
 builder.Services.AddSingleton<SyncProtocolService>();
 builder.Services.AddSingleton<ReportingExportService>();
+builder.Services.AddSingleton<MeasurementProcessingQueue>();
+builder.Services.AddSingleton<WebhookNotificationQueue>();
+builder.Services.AddHttpClient<WebhookNotificationDispatcher>();
+builder.Services.AddHostedService<WebhookNotificationWorker>();
 builder.Services.AddHostedService<PilotMetricsService>();
 builder.Services.AddSingleton<IEvidenceAssetReader, FileSystemEvidenceAssetReader>();
 builder.Services.AddHttpClient<ITechPackImportGateway, TechPackImportGateway>(client =>
@@ -225,6 +250,31 @@ api.MapGet(
                 Encoding.UTF8);
         })
     .WithName("ExportInspectionsCsv")
+    .RequireSpecProofPermission(PlatformPermissions.ExportReports);
+
+api.MapGet(
+        "/reports/inspections.pdf",
+        async (
+            SpecProofDbContext database,
+            ReportingExportService exportService,
+            CancellationToken cancellationToken) =>
+        {
+            var records = await database.InspectionRecords
+                .Where(record => record.DeletedAtUtc == null)
+                .OrderBy(record => record.CapturedAtUtc)
+                .ToArrayAsync(cancellationToken);
+            var inspections = records
+                .Select(record => JsonSerializer.Deserialize(
+                    record.InspectionResultJson,
+                    SpecProofJsonContext.Default.InspectionResultDto))
+                .Where(result => result is not null)
+                .Cast<InspectionResultDto>();
+            return Results.File(
+                exportService.ToInspectionPdf(inspections),
+                "application/pdf",
+                "specproof-inspections.pdf");
+        })
+    .WithName("ExportInspectionsPdf")
     .RequireSpecProofPermission(PlatformPermissions.ExportReports);
 
 api.MapDelete(
@@ -689,12 +739,27 @@ api.MapPost(
         async (
             WebhookSubscriptionRequest request,
             SpecProofDbContext database,
+            ISecureKeyStorage keyStorage,
             CancellationToken cancellationToken) =>
         {
+            var subscriptionId = Guid.NewGuid();
+            var secret = Encoding.UTF8.GetBytes(request.Secret);
+            try
+            {
+                await keyStorage.StoreAsync(
+                    WebhookNotificationQueue.SecretKeyId(subscriptionId),
+                    secret,
+                    cancellationToken);
+            }
+            finally
+            {
+                System.Security.Cryptography.CryptographicOperations.ZeroMemory(secret);
+            }
+
             database.WebhookSubscriptions.Add(
                 new WebhookSubscription
                 {
-                    Id = Guid.NewGuid(),
+                    Id = subscriptionId,
                     TenantId = request.TenantId,
                     Url = request.Url,
                     EventTypesJson = JsonSerializer.Serialize(request.EventTypes, SpecProofJsonOptions.Canonical),
@@ -703,11 +768,58 @@ api.MapPost(
                     Active = true,
                 });
             await database.SaveChangesAsync(cancellationToken);
-            return Results.Accepted();
+            return Results.Accepted(
+                $"/api/v1/webhooks/{subscriptionId}",
+                new { subscriptionId });
         })
     .WithName("CreateWebhookSubscription")
     .RequireTenantMatch<WebhookSubscriptionRequest>()
     .RequireSpecProofPermission(PlatformPermissions.ExportReports);
+
+api.MapPost(
+        "/notifications",
+        async (
+            WebhookNotificationRequest request,
+            SpecProofDbContext database,
+            WebhookNotificationQueue queue,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await queue.EnqueueAsync(database, request, cancellationToken);
+            return Results.Accepted(
+                value: new WebhookNotificationResponse(result.JobIds));
+        })
+    .WithName("EnqueueWebhookNotification")
+    .RequireTenantMatch<WebhookNotificationRequest>()
+    .RequireSpecProofPermission(PlatformPermissions.ManageBackgroundJobs);
+
+api.MapPost(
+        "/measurements/jobs",
+        async (
+            MeasurementProcessingRequest request,
+            SpecProofDbContext database,
+            MeasurementProcessingQueue queue,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await queue.EnqueueAsync(database, request, cancellationToken);
+            return result.Status switch
+            {
+                MeasurementEnqueueStatus.Queued or MeasurementEnqueueStatus.Replayed =>
+                    Results.Accepted(
+                        $"/api/v1/jobs/{result.JobId}",
+                        new MeasurementProcessingEnqueueResponse(
+                            result.JobId!.Value,
+                            result.Status.ToString().ToLowerInvariant())),
+                MeasurementEnqueueStatus.CaptureUnavailable => Results.NotFound(
+                    new { message = "A completed capture upload was not found for this station." }),
+                MeasurementEnqueueStatus.TechPackUnavailable => Results.NotFound(
+                    new { message = "An approved tech-pack version was not found." }),
+                _ => Results.StatusCode(StatusCodes.Status500InternalServerError),
+            };
+        })
+    .WithName("EnqueueMeasurementProcessing")
+    .RequireTenantMatch<MeasurementProcessingRequest>()
+    .RequireDeviceStationMatch<MeasurementProcessingRequest>()
+    .RequireSpecProofPermission(PlatformPermissions.CaptureInspections);
 
 api.MapPost(
         "/jobs",

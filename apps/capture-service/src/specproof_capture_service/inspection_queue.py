@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from hashlib import sha256
 from pathlib import Path
+from typing import cast
 from uuid import uuid4
 
 
@@ -43,7 +44,7 @@ class InspectionQueueItem:
         value = json.loads(self.payload_json)
         if not isinstance(value, dict):
             raise ValueError("Inspection queue payload must be a JSON object")
-        return value
+        return cast(dict[str, object], value)
 
     def verify_hash(self) -> bool:
         """Verify the immutable payload digest before delivery."""

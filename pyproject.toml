@@ -123,6 +123,8 @@ select = ["E", "F", "I", "UP", "B", "ANN"]
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
 reportMissingImports = false
 reportMissingTypeStubs = false
 reportUnknownMemberType = false

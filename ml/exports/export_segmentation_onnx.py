@@ -113,7 +113,8 @@ def export_segmentation_model(
         # Numerical check: T-3.008
         max_diff = float(np.max(np.abs(ort_output - pytorch_output)))
         assert max_diff < 1e-5, (
-            f"T-3.008 FAILED: max abs diff between PyTorch and ONNX = {max_diff:.2e} (threshold 1e-5)"
+            "T-3.008 FAILED: max abs diff between PyTorch and ONNX = "
+            f"{max_diff:.2e} (threshold 1e-5)"
         )
         verification = "PASS"
         verification_detail = f"max_abs_diff={max_diff:.2e}"

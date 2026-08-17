@@ -24,9 +24,7 @@ For real training with MLflow::
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -37,22 +35,19 @@ import torch.nn as nn
 import torch.optim as optim
 
 from ml.datasets.annotation_schema import GarmentAnnotation, split_annotations
-from ml.datasets.dataset_registry import DatasetRegistry
 from ml.training.experiment_tracker import ExperimentTracker, NoOpTracker, create_tracker
 from ml.training.landmark_model import (
     GarmentLandmarkModel,
     LandmarkModelConfig,
     landmark_heatmap_loss,
-    landmark_recall_at_threshold,
 )
-from ml.training.model_registry import ModelRegistry, ModelStage
+from ml.training.model_registry import ModelRegistry
 from ml.training.segmentation_model import (
     GarmentSegmentationModel,
     SegmentationModelConfig,
     segmentation_iou,
     segmentation_loss,
 )
-
 
 # ---------------------------------------------------------------------------
 # Pipeline configuration
@@ -203,7 +198,10 @@ class TrainingPipeline:
                         "learning_rate": cfg.learning_rate,
                     },
                     run_id=run_id,
-                    description=f"Auto-registered by training pipeline at {datetime.now(UTC).isoformat()}",
+                    description=(
+                        "Auto-registered by training pipeline at "
+                        f"{datetime.now(UTC).isoformat()}"
+                    ),
                 )
             except FileExistsError:
                 registered = registry.get(model_name, cfg.model_version)
@@ -248,7 +246,10 @@ class TrainingPipeline:
         count = 0
         for batch_paths in _batch(annotation_paths, self.config.batch_size):
             inputs, targets = _load_batch(
-                batch_paths, self.config.image_height, self.config.image_width, self.config.model_type
+                batch_paths,
+                self.config.image_height,
+                self.config.image_width,
+                self.config.model_type,
             )
             inputs = inputs.to(self.device)
             targets = targets.to(self.device)
@@ -270,7 +271,10 @@ class TrainingPipeline:
         with torch.no_grad():
             for batch_paths in _batch(annotation_paths, self.config.batch_size):
                 inputs, targets = _load_batch(
-                    batch_paths, self.config.image_height, self.config.image_width, self.config.model_type
+                    batch_paths,
+                    self.config.image_height,
+                    self.config.image_width,
+                    self.config.model_type,
                 )
                 inputs = inputs.to(self.device)
                 targets = targets.to(self.device)
@@ -300,7 +304,7 @@ def _export_to_onnx(
     """Export a model to ONNX format."""
     model.eval()
     dummy_input = torch.zeros(1, 4, height, width)
-    out_channels = 1 if model_type == "segmentation" else 10
+    output_name = "output_mask" if model_type == "segmentation" else "output_heatmaps"
     torch.onnx.export(
         model,
         dummy_input,
@@ -308,10 +312,10 @@ def _export_to_onnx(
         opset_version=18,
 
         input_names=["input_rgbd"],
-        output_names=["output_mask" if model_type == "segmentation" else "output_heatmaps"],
+        output_names=[output_name],
         dynamic_axes={
             "input_rgbd": {0: "batch_size"},
-            ("output_mask" if model_type == "segmentation" else "output_heatmaps"): {0: "batch_size"},
+            output_name: {0: "batch_size"},
         },
     )
 

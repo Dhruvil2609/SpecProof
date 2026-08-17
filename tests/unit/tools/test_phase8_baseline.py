@@ -10,15 +10,21 @@ WORKSPACE = Path(__file__).resolve().parents[3]
 
 
 @pytest.mark.unit
-def test_phase8_tracker_uses_complete_fifty_task_scope() -> None:
+def test_progress_tracker_matches_authoritative_phase_task_scope() -> None:
     phase = (WORKSPACE / "docs/phases/PHASE-8_production-hardening.md").read_text(
         encoding="utf-8"
     )
     progress = (WORKSPACE / "docs/tracking/PROGRESS.md").read_text(encoding="utf-8")
 
     assert len(re.findall(r"^- \[[ x]\] \*\*TASK-8\.", phase, flags=re.MULTILINE)) == 50
-    assert "|         8 | Production Hardening          | `IN_PROGRESS` |      50 |" in progress
-    assert "| **Total** |" in progress and "**401**" in progress
+    assert (
+        "|         8 | Production Hardening          | `IN_PROGRESS`  | `BLOCKED`"
+        "     |      50 |      17 |      34% |"
+    ) in progress
+    assert (
+        "| **Total** |                               |                |"
+        "               | **418** | **343** |  **82%** |"
+    ) in progress
 
 
 @pytest.mark.unit

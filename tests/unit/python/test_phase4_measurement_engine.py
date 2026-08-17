@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import csv
+import json
 import zipfile
 from pathlib import Path
 
+import pytest
 from specproof_measurement_service import (
     COMPILER_VERSION,
     EvidenceRecord,
@@ -86,6 +88,48 @@ def test_phase4_csv_json_and_xlsx_tech_packs_parse_and_map(tmp_path: Path) -> No
     assert json_pack.imported_poms[0].canonical_pom_id == "chest_width"
     assert xlsx_pack.imported_poms[1].original_term == "Shoulder Width"
     assert len(csv_pack.version_hash_sha256) == 64
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        [],
+        {"rows": "not-an-array"},
+        {"rows": ["not-an-object"]},
+    ),
+)
+def test_phase4_json_tech_pack_rejects_invalid_row_structure(
+    tmp_path: Path,
+    payload: object,
+) -> None:
+    resolver = default_mapping_resolver(tshirt_ontology())
+    path = tmp_path / "invalid-tech-pack.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        parse_json_tech_pack(path, resolver)
+
+
+def test_phase4_json_tech_pack_rejects_non_scalar_measurement(tmp_path: Path) -> None:
+    resolver = default_mapping_resolver(tshirt_ontology())
+    path = tmp_path / "invalid-measurement.json"
+    path.write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {
+                        "pom": "Across Chest",
+                        "size": "M",
+                        "target_mm": {"unexpected": "object"},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Expected a numeric tech-pack value"):
+        parse_json_tech_pack(path, resolver)
 
 
 def test_phase4_referenced_tech_pack_version_is_immutable(tmp_path: Path) -> None:

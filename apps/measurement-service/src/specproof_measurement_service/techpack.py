@@ -5,10 +5,12 @@ from __future__ import annotations
 import csv
 import json
 import zipfile
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from hashlib import sha256
 from pathlib import Path
+from typing import cast
 from xml.etree import ElementTree
 
 from pydantic import BaseModel, Field, model_validator
@@ -142,15 +144,31 @@ def parse_csv_tech_pack(
     """Parse a structured CSV tech pack."""
 
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = tuple(csv.DictReader(handle))
+        rows = tuple(
+            {str(key): value for key, value in row.items() if key is not None}
+            for row in csv.DictReader(handle)
+        )
     return _rows_to_tech_pack(rows, resolver, metadata)
 
 
 def parse_json_tech_pack(path: Path, resolver: MappingResolver) -> TechPackVersion:
     """Parse a structured JSON tech pack."""
 
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return _rows_to_tech_pack(data["rows"], resolver, data)
+    raw_data = cast(object, json.loads(path.read_text(encoding="utf-8")))
+    if not isinstance(raw_data, dict):
+        raise ValueError("Tech-pack JSON must contain an object")
+    data = cast(dict[object, object], raw_data)
+    metadata = {str(key): value for key, value in data.items()}
+    raw_rows = metadata.get("rows")
+    if not isinstance(raw_rows, list):
+        raise ValueError("Tech-pack JSON 'rows' must contain an array")
+    rows: list[dict[str, object]] = []
+    for raw_row in cast(list[object], raw_rows):
+        if not isinstance(raw_row, dict):
+            raise ValueError("Each tech-pack row must contain an object")
+        row = cast(dict[object, object], raw_row)
+        rows.append({str(key): value for key, value in row.items()})
+    return _rows_to_tech_pack(rows, resolver, metadata)
 
 
 def parse_xlsx_tech_pack(
@@ -204,26 +222,26 @@ def _read_shared_strings(archive: zipfile.ZipFile) -> tuple[str, ...]:
 
 
 def _rows_to_tech_pack(
-    rows: tuple[dict[str, object], ...],
+    rows: Sequence[Mapping[str, object]],
     resolver: MappingResolver,
-    metadata: dict[str, object],
+    metadata: Mapping[str, object],
 ) -> TechPackVersion:
     poms: dict[str, list[GradingRule]] = {}
     for row in rows:
         original_term = str(row.get("pom") or row.get("original_term") or row.get("name"))
         size_code = str(row.get("size") or row.get("size_code"))
-        target_mm = float(row.get("target_mm") or row.get("target") or 0.0)
-        lower = float(
+        target_mm = _to_float(row.get("target_mm") or row.get("target"), default=0.0)
+        lower = _to_float(
             row.get("lower_tolerance_mm")
             or row.get("tolerance_minus_mm")
-            or row.get("tolerance")
-            or 0.0
+            or row.get("tolerance"),
+            default=0.0,
         )
-        upper = float(
+        upper = _to_float(
             row.get("upper_tolerance_mm")
             or row.get("tolerance_plus_mm")
-            or row.get("tolerance")
-            or 0.0
+            or row.get("tolerance"),
+            default=0.0,
         )
         poms.setdefault(original_term, []).append(
             GradingRule(
@@ -233,7 +251,7 @@ def _rows_to_tech_pack(
                 upper_tolerance_mm=abs(upper),
             )
         )
-    imported = []
+    imported: list[TechPackPom] = []
     for original_term, rules in poms.items():
         canonical_id, status = resolver.resolve(original_term)
         imported.append(
@@ -246,13 +264,29 @@ def _rows_to_tech_pack(
         )
     return TechPackVersion(
         tech_pack_id=str(metadata.get("tech_pack_id", "tech-pack")),
-        version=int(metadata.get("version", 1)),
+        version=_to_int(metadata.get("version"), default=1),
         brand=str(metadata.get("brand", "Unknown")),
         style_code=str(metadata.get("style_code", "UNKNOWN")),
         garment_category=str(metadata.get("garment_category", "t_shirt")),
         imported_poms=tuple(imported),
         approved=all(pom.mapping_status == MappingStatus.APPROVED for pom in imported),
     )
+
+
+def _to_float(value: object, *, default: float) -> float:
+    if value is None or value == "":
+        return default
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+        raise ValueError(f"Expected a numeric tech-pack value, received {type(value).__name__}")
+    return float(value)
+
+
+def _to_int(value: object, *, default: int) -> int:
+    if value is None or value == "":
+        return default
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise ValueError(f"Expected an integer tech-pack value, received {type(value).__name__}")
+    return int(value)
 
 
 def _normalize_term(value: str) -> str:

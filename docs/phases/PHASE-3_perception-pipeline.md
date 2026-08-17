@@ -2,8 +2,9 @@
 
 **Phase ID:** PHASE-3
 **Status:** `COMPLETE`
+**Acceptance Status:** `BLOCKED` — qualified hardware capture revalidation is outstanding
 **Created:** 2026-07-25T13:15:00Z
-**Last Updated:** 2026-08-05T17:52:00Z
+**Last Updated:** 2026-08-17T17:07:37Z
 **Estimated Duration:** 6–10 weeks
 **Dependencies:** Phase 2
 **Language:** en
@@ -124,3 +125,11 @@ The trainable heatmap CNN, ONNX export, graph refinement post-processing, and mo
 Initial software completion uses synthetic and replay datasets. Final model
 acceptance must be rerun with hardware-captured garments when qualified hardware and
 capture fixtures are available.
+
+### Latest Software Validation
+
+- 2026-08-17T17:07:37Z — Restored every locked Python dependency group and made
+  uncheckpointed landmark ONNX exports deterministic with a non-degenerate verification
+  input. The full Python suite passed with 287 tests, 2 environment-gated skips, and 86.12%
+  total coverage. T-3.008 passed repeatedly on ONNX Runtime CPU; full Ruff and strict
+  Pyright validation also passed with zero findings.

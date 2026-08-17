@@ -26,7 +26,6 @@ from ml.training.segmentation_model import (
     segmentation_loss,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -280,7 +279,10 @@ class TestSegmentationEvaluation:
     @pytest.mark.unit
     def test_synthetic_dataset_iou_is_one(self, tmp_path: Path) -> None:
         """Deterministic segmentation on synthetic masks achieves IoU = 1.0."""
-        from ml.datasets.annotation_schema import generate_synthetic_tshirt_dataset, GarmentAnnotation
+        from ml.datasets.annotation_schema import (
+            GarmentAnnotation,
+            generate_synthetic_tshirt_dataset,
+        )
 
         paths = generate_synthetic_tshirt_dataset(tmp_path / "anns", count=2, seed=7)
         for p in paths:

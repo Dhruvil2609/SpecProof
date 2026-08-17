@@ -1,9 +1,10 @@
 # Phase 6 — Web Application
 
 **Phase ID:** PHASE-6  
-**Status:** `IN_PROGRESS`  
+**Status:** `COMPLETE`
+**Acceptance Status:** `BLOCKED` — Chromium CI and database runtime acceptance are outstanding
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-14T18:25:20Z
+**Last Updated:** 2026-08-17T16:44:15Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 5  
 **Language:** en  

@@ -2,8 +2,9 @@
 
 **Phase ID:** PHASE-4  
 **Status:** `COMPLETE`  
+**Acceptance Status:** `BLOCKED` — physical measurement-study evidence is outstanding
 **Created:** 2026-07-25T13:15:00Z  
-**Last Updated:** 2026-08-05T17:16:30Z
+**Last Updated:** 2026-08-17T17:07:37Z
 **Estimated Duration:** 6–8 weeks  
 **Dependencies:** Phase 3  
 **Language:** en  
@@ -122,3 +123,10 @@ Physical measurement validation is deferred to Phase 7.
 Software completion is based on deterministic synthetic geometry, fixture tech packs,
 and replay packages. Hardware measurement studies are acceptance evidence, not a
 blocker for implementing the engine.
+
+### Latest Software Validation
+
+- 2026-08-17T17:07:37Z — Hardened CSV/JSON/XLSX tech-pack boundaries with typed row
+  normalization and explicit scalar numeric validation. Added five malformed-input
+  regression cases. Full Ruff and strict Pyright checks pass with zero findings; the full
+  Python suite passes 287 tests with 86.12% total coverage.
